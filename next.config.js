@@ -26,29 +26,29 @@ import {
 
 const copy = {
   ru: {
-    nav: ['Услуги', 'Рекрутинг', 'Методология', 'Отчёт', 'Контакты'],
+    nav: ['Услуги', 'Подбор персонала', 'Методология', 'Отчёт', 'Контакты'],
     heroKicker: 'Конфиденциальная проверка рисков · Комплексная аналитика · Деловая разведка',
     heroTitle: 'Комплексная проверка рисков для бизнеса, финансового сектора и кадровых решений.',
     heroText:
-      'M_Art_KYC проводит проверки контрагентов, кандидатов, сотрудников, иностранных компаний и деловой репутации для банков, инвесторов, юридических фирм, рекрутинговых агентств и крупного бизнеса.',
+      'M_Art_KYC проводит проверки контрагентов, кандидатов, сотрудников, иностранных компаний и деловой репутации для банков, инвесторов, юридических фирм, кадровых агентств и крупного бизнеса.',
     request: 'Запросить проверку',
     consult: 'Получить консультацию',
     trustedBy: 'Для решений, где цена ошибки измеряется деньгами, репутацией, сроками сделки и доверием клиента.',
     metrics: [
       ['24 часа', 'первичная обработка заявки'],
       ['10+ источников', 'для многоуровневой проверки'],
-      ['NDA', 'по запросу клиента'],
+      ['Соглашение', 'о конфиденциальности'],
     ],
     servicesTitle: 'Проверки для решений, где нельзя ошибиться',
     servicesText: 'Не программа для самостоятельных проверок. Не личный кабинет. Это экспертная аналитическая услуга с выводами, рисками и рекомендациями.',
-    recruitmentTitle: 'Для рекрутинговых агентств, кадровых компаний и executive search',
+    recruitmentTitle: 'Для кадровых агентств, служб подбора и компаний по поиску руководителей',
     recruitmentHeadline: 'Кандидат прошёл интервью — но не прошёл службу безопасности клиента?',
     recruitmentText:
-      'Агентства теряют недели работы, комиссию и доверие клиента, когда финальный кандидат не проходит внутреннюю проверку безопасности. M_Art_KYC помогает выявлять биографические, репутационные, корпоративные и международные риски до передачи кандидата клиенту.',
+      'Агентства теряют недели работы, вознаграждение и доверие клиента, когда финальный кандидат не проходит внутреннюю проверку безопасности. M_Art_KYC помогает выявлять биографические, репутационные, корпоративные и международные риски до передачи кандидата клиенту.',
     painsTitle: 'Что теряет агентство',
     valueTitle: 'Что даёт предварительная проверка',
-    pains: ['потеря времени рекрутера', 'срыв закрытия вакансии', 'повторный поиск кандидата', 'испортенные отношения с клиентом', 'репутационные риски агентства', 'потеря комиссии'],
-    benefits: ['меньше отказов после оффера', 'ускорение найма', 'выше доверие клиента', 'предварительный профиль риска', 'сильнее позиция агентства', 'меньше неожиданных проблем'],
+    pains: ['потеря времени специалиста по подбору', 'срыв закрытия вакансии', 'повторный поиск кандидата', 'испортенные отношения с клиентом', 'репутационные риски агентства', 'потеря комиссии'],
+    benefits: ['меньше отказов после предложения', 'ускорение найма', 'выше доверие клиента', 'предварительный профиль риска', 'сильнее позиция агентства', 'меньше неожиданных проблем'],
     checkCandidate: 'Проверить кандидата',
     howTitle: 'Как проходит проверка',
     trustTitle: 'Почему нам доверяют',
@@ -59,7 +59,7 @@ const copy = {
     reportText: 'Клиент получает краткую картину риска: что найдено, насколько это критично, какие вопросы требуют уточнения и какие действия рекомендуются.',
     formTitle: 'Оставить заявку на проверку',
     formText: 'Опишите задачу. Мы свяжемся, уточним контекст и предложим формат проверки.',
-    footer: 'Конфиденциальность, NDA и аккуратная работа с чувствительной информацией — базовый стандарт M_Art_KYC.',
+    footer: 'Конфиденциальность, соглашение о неразглашении и аккуратная работа с чувствительной информацией — базовый стандарт M_Art_KYC.',
     success: 'Заявка отправлена. Мы свяжемся с вами после первичного анализа запроса.',
     error: 'Не удалось отправить заявку. Проверьте данные или попробуйте позже.',
     sending: 'Отправляем...',
@@ -68,7 +68,7 @@ const copy = {
     company: 'Компания',
     phone: 'Телефон',
     comment: 'Комментарий',
-    footerNda: 'NDA по запросу · Конфиденциальная коммуникация',
+    footerNda: 'Соглашение о конфиденциальности по запросу · Закрытая коммуникация',
   },
   en: {
     nav: ['Services', 'Recruitment', 'Methodology', 'Report', 'Contacts'],
@@ -122,7 +122,7 @@ const serviceSets = {
     ['Проверка контрагентов', 'Финансовые, правовые, репутационные и корпоративные риски партнёра.', Building2],
     ['Проверка сотрудников', 'Оценка благонадёжности персонала для чувствительных ролей.', UserCheck],
     ['Комплексная проверка бизнеса', 'Аналитика перед сделкой, партнёрством или инвестиционным решением.', FileSearch],
-    ['Проверка клиентов и партнёров', 'Санкционные, комплаенс и деловые риски в одном отчёте.', Fingerprint],
+    ['Проверка клиентов и партнёров', 'Санкционные, нормативные и деловые риски в одном отчёте.', Fingerprint],
     ['Проверка иностранных компаний', 'Структура владения, связи, юрисдикции и международный контекст.', Globe2],
     ['Корпоративная разведка', 'Скрытые связи, конфликт интересов, репутационные сигналы.', Radar],
     ['Проверка благонадёжности кандидатов', 'Предварительная проверка до передачи кандидата клиенту.', Users],
@@ -170,7 +170,7 @@ const steps = {
 
 const trustItems = {
   ru: [
-    [LockKeyhole, 'Конфиденциальность', 'Ограниченный доступ, аккуратная коммуникация, NDA по запросу.'],
+    [LockKeyhole, 'Конфиденциальность', 'Ограниченный доступ, аккуратная коммуникация, соглашение о конфиденциальности по запросу.'],
     [Landmark, 'Корпоративная методология', 'Подход для банков, инвесторов, юридических фирм и крупного бизнеса.'],
     [BadgeCheck, 'Экспертные аналитики', 'Не автоматическая выгрузка, а ручная интерпретация найденных рисков.'],
     [Globe2, 'Международный контекст', 'Проверка иностранных компаний, связей, юрисдикций и публичных следов.'],
@@ -189,12 +189,12 @@ const checkTypes = {
   ru: [
     ['counterparty', 'Проверка контрагента'],
     ['employee', 'Проверка сотрудника'],
-    ['due_diligence', 'Комплексная проверка бизнеса'],
-    ['aml_kyc', 'Проверка клиента или партнёра'],
+    ['business_check', 'Комплексная проверка бизнеса'],
+    ['client_partner', 'Проверка клиента или партнёра'],
     ['foreign_company', 'Проверка иностранной компании'],
-    ['risk_intelligence', 'Корпоративная разведка'],
-    ['background_screening', 'Проверка кандидата'],
-    ['executive_screening', 'Проверка руководителя'],
+    ['corporate_research', 'Корпоративная разведка'],
+    ['candidate_check', 'Проверка кандидата'],
+    ['executive_check', 'Проверка руководителя'],
     ['consultation', 'Консультация'],
   ],
   en: [
@@ -285,8 +285,8 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>M_Art_KYC — Premium Risk Intelligence</title>
-        <meta name="description" content="Confidential counterparty checks, risk intelligence, business due diligence and candidate screening for enterprise clients." />
+        <title>M_Art_KYC — Комплексная проверка рисков</title>
+        <meta name="description" content="Конфиденциальные проверки контрагентов, кандидатов, сотрудников и иностранных компаний для бизнеса." />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
       <main className="noise min-h-screen overflow-hidden bg-radial-premium text-white">
@@ -302,7 +302,7 @@ export default function Home() {
             <nav className="hidden items-center gap-7 text-sm text-platinum/80 lg:flex">
               {t.nav.map((item, i) => <a key={item} href={['#services','#recruitment','#methodology','#report','#contact'][i]} className="hover:text-white">{item}</a>)}
             </nav>
-            <button onClick={() => setLang(lang === 'ru' ? 'en' : 'ru')} className="rounded-full border border-white/15 bg-white/[.04] px-4 py-2 text-xs font-bold text-white">{lang.toUpperCase()} / {lang === 'ru' ? 'EN' : 'RU'}</button>
+            <button onClick={() => setLang(lang === 'ru' ? 'en' : 'ru')} className="rounded-full border border-white/15 bg-white/[.04] px-4 py-2 text-xs font-bold text-white">{lang === 'ru' ? 'Русский / Английский' : 'EN / RU'}</button>
           </div>
         </header>
 
@@ -354,8 +354,8 @@ export default function Home() {
 
         <section className="mx-auto max-w-7xl px-5 py-14">
           <div className="grid gap-4 md:grid-cols-4">
-            {(lang === 'ru' ? ['Заявки обрабатываются быстро', 'Международные источники', 'Конфиденциальные отчёты', 'Риск-ориентированный подход'] : ['Fast request processing', 'International sources', 'Confidential reports', 'Risk-based methodology']).map((x, i) => (
-              <div key={x} className="glass rounded-3xl p-6"><div className="text-3xl font-extrabold text-white">{['24ч','10+','NDA','360°'][i]}</div><div className="mt-2 text-sm leading-6 text-steel">{x}</div></div>
+            {(lang === 'ru' ? ['Быстрая обработка заявок', 'Международные источники', 'Конфиденциальные отчёты', 'Риск-ориентированный подход'] : ['Fast request processing', 'International sources', 'Confidential reports', 'Risk-based methodology']).map((x, i) => (
+              <div key={x} className="glass rounded-3xl p-6"><div className="text-3xl font-extrabold text-white">{['24ч','10+','Закрыто','360°'][i]}</div><div className="mt-2 text-sm leading-6 text-steel">{x}</div></div>
             ))}
           </div>
         </section>
@@ -371,7 +371,7 @@ export default function Home() {
           <div className="glass grid gap-8 rounded-[2rem] p-8 md:p-10 lg:grid-cols-[.8fr_1.2fr] lg:items-center">
             <div><SectionLabel>{t.confidentialityTitle}</SectionLabel><p className="text-lg leading-8 text-platinum/75">{t.confidentialityText}</p></div>
             <div className="grid gap-3 sm:grid-cols-2">
-              {(lang === 'ru' ? ['NDA по запросу', 'Ограниченный доступ аналитиков', 'Конфиденциальная коммуникация', 'Отчёт только для клиента'] : ['NDA on request', 'Restricted analyst access', 'Confidential communication', 'Client-only report']).map(x => <div key={x} className="rounded-2xl border border-white/10 bg-white/[.04] p-4 text-sm text-platinum/75">{x}</div>)}
+              {(lang === 'ru' ? ['Соглашение о конфиденциальности по запросу', 'Ограниченный доступ аналитиков', 'Закрытая коммуникация', 'Отчёт только для клиента'] : ['NDA on request', 'Restricted analyst access', 'Confidential communication', 'Client-only report']).map(x => <div key={x} className="rounded-2xl border border-white/10 bg-white/[.04] p-4 text-sm text-platinum/75">{x}</div>)}
             </div>
           </div>
         </section>
@@ -381,7 +381,7 @@ export default function Home() {
             <div><SectionLabel>{t.reportTitle}</SectionLabel><h2 className="font-display text-4xl font-extrabold tracking-[-.04em] md:text-5xl">{t.reportHeadline}</h2><p className="mt-5 text-lg leading-8 text-platinum/70">{t.reportText}</p></div>
             <div className="glass report-glow rounded-[2rem] p-5">
               <div className="relative overflow-hidden rounded-[1.5rem] bg-platinum p-6 text-ink shadow-premium">
-                <div className="watermark">CONFIDENTIAL</div>
+                <div className="watermark">{lang === 'ru' ? 'КОНФИДЕНЦИАЛЬНО' : 'CONFIDENTIAL'}</div>
                 <div className="light-reflection" />
                 <div className="relative flex items-start justify-between border-b border-ink/10 pb-5"><div><div className="text-xs font-bold uppercase tracking-[.24em] text-ink/45">M_Art_KYC</div><h3 className="mt-2 text-2xl font-extrabold">{lang === 'ru' ? 'Аналитический отчёт по рискам' : 'Risk Assessment Report'}</h3></div><div className="rounded-2xl bg-ink px-4 py-3 text-center text-white"><div className="text-xs text-white/55">{lang === 'ru' ? 'Оценка риска' : 'Risk Score'}</div><div className="text-3xl font-extrabold">72</div></div></div>
                 <div className="relative mt-6 grid gap-4 md:grid-cols-2"><div className="rounded-2xl bg-white p-4"><div className="text-xs font-bold uppercase text-ink/45">{lang === 'ru' ? 'Краткий вывод' : 'Executive Summary'}</div><p className="mt-2 text-sm text-ink/70">{lang === 'ru' ? 'Рекомендована углублённая проверка из-за непрозрачной структуры и репутационных сигналов.' : 'Enhanced review recommended due to ownership opacity and reputation signals.'}</p></div><div className="rounded-2xl bg-white p-4"><div className="text-xs font-bold uppercase text-ink/45">{lang === 'ru' ? 'Найденные факторы' : 'Findings'}</div><p className="mt-2 text-sm text-ink/70">{lang === 'ru' ? 'Связи, судебные следы, санкционная близость и публичные упоминания.' : 'Corporate links, litigation traces, sanctions proximity and media exposure.'}</p></div></div>
@@ -393,9 +393,9 @@ export default function Home() {
 
         <section id="contact" className="mx-auto max-w-7xl px-5 py-20">
           <div className="grid gap-10 lg:grid-cols-[.85fr_1.15fr]">
-            <div><SectionLabel>{t.formLabel}</SectionLabel><h2 className="font-display text-4xl font-extrabold tracking-[-.04em] md:text-5xl">{t.formTitle}</h2><p className="mt-5 text-lg leading-8 text-platinum/70">{t.formText}</p><div className="mt-8 space-y-3 text-sm text-steel"><div className="flex items-center gap-3"><Mail className="h-4 w-4 text-signal" /> contact@mart-kyc.com</div><div className="flex items-center gap-3"><Phone className="h-4 w-4 text-signal" /> Telegram: @mart_kyc</div></div></div>
+            <div><SectionLabel>{t.formLabel}</SectionLabel><h2 className="font-display text-4xl font-extrabold tracking-[-.04em] md:text-5xl">{t.formTitle}</h2><p className="mt-5 text-lg leading-8 text-platinum/70">{t.formText}</p><div className="mt-8 space-y-3 text-sm text-steel"><div className="flex items-center gap-3"><Mail className="h-4 w-4 text-signal" /> contact@mart-kyc.com</div><div className="flex items-center gap-3"><Phone className="h-4 w-4 text-signal" /> Телеграм: @mart_kyc</div></div></div>
             <form onSubmit={submitLead} className="glass rounded-[2rem] p-6 md:p-8">
-              <div className="grid gap-4 md:grid-cols-2"><input required name="name" placeholder={t.name} className="rounded-2xl border border-white/10 bg-ink/70 px-4 py-4 outline-none focus:border-signal" /><input name="company" placeholder={t.company} className="rounded-2xl border border-white/10 bg-ink/70 px-4 py-4 outline-none focus:border-signal" /><input required type="email" name="email" placeholder="Email" className="rounded-2xl border border-white/10 bg-ink/70 px-4 py-4 outline-none focus:border-signal" /><input name="phone" placeholder={t.phone} className="rounded-2xl border border-white/10 bg-ink/70 px-4 py-4 outline-none focus:border-signal" /></div>
+              <div className="grid gap-4 md:grid-cols-2"><input required name="name" placeholder={t.name} className="rounded-2xl border border-white/10 bg-ink/70 px-4 py-4 outline-none focus:border-signal" /><input name="company" placeholder={t.company} className="rounded-2xl border border-white/10 bg-ink/70 px-4 py-4 outline-none focus:border-signal" /><input required type="email" name="email" placeholder={lang === 'ru' ? 'Электронная почта' : 'Email'} className="rounded-2xl border border-white/10 bg-ink/70 px-4 py-4 outline-none focus:border-signal" /><input name="phone" placeholder={t.phone} className="rounded-2xl border border-white/10 bg-ink/70 px-4 py-4 outline-none focus:border-signal" /></div>
               <select name="checkType" className="mt-4 w-full rounded-2xl border border-white/10 bg-ink/70 px-4 py-4 text-white outline-none focus:border-signal">{checkTypes[lang].map(([v,l]) => <option key={v} value={v}>{l}</option>)}</select>
               <textarea name="comment" rows="5" placeholder={t.comment} className="mt-4 w-full rounded-2xl border border-white/10 bg-ink/70 px-4 py-4 outline-none focus:border-signal" />
               <button disabled={status === 'loading'} className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-6 py-4 font-bold text-ink transition hover:bg-platinum disabled:opacity-60">{status === 'loading' ? t.sending : t.request}<Sparkles className="h-4 w-4" /></button>
@@ -406,7 +406,7 @@ export default function Home() {
         </section>
 
         <footer className="border-t border-white/10 px-5 py-10 pb-24 md:pb-10">
-          <div className="mx-auto flex max-w-7xl flex-col justify-between gap-6 text-sm text-steel md:flex-row"><div><div className="font-display text-xl font-extrabold text-white">M_Art_KYC</div><p className="mt-2 max-w-2xl">{t.footer}</p></div><div className="space-y-1 md:text-right"><div>contact@mart-kyc.com</div><div>Telegram: @mart_kyc</div><div>{t.footerNda}</div></div></div>
+          <div className="mx-auto flex max-w-7xl flex-col justify-between gap-6 text-sm text-steel md:flex-row"><div><div className="font-display text-xl font-extrabold text-white">M_Art_KYC</div><p className="mt-2 max-w-2xl">{t.footer}</p></div><div className="space-y-1 md:text-right"><div>contact@mart-kyc.com</div><div>Телеграм: @mart_kyc</div><div>{t.footerNda}</div></div></div>
         </footer>
 
         <a href="#contact" className="fixed bottom-4 left-4 right-4 z-50 rounded-2xl bg-white px-5 py-4 text-center text-sm font-extrabold text-ink shadow-premium md:hidden">{t.request}</a>
