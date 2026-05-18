@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="820" viewBox="0 0 1200 820">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FBBF24"/>
+      <stop offset="100%" stop-color="#F472B6"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#020617" flood-opacity="0.35"/>
+    </filter>
+    <pattern id="dots" width="28" height="28" patternUnits="userSpaceOnUse">
+      <circle cx="4" cy="4" r="2" fill="rgba(255,255,255,0.20)"/>
+    </pattern>
+  </defs>
+  <rect width="1200" height="820" rx="44" fill="#050816"/>
+  <rect x="28" y="28" width="1144" height="764" rx="38" fill="url(#bg)"/>
+  <rect x="28" y="28" width="1144" height="764" rx="38" fill="url(#dots)" opacity="0.45"/>
+  <path d="M0 640 C260 520 380 760 650 610 C850 500 960 530 1200 430 L1200 820 L0 820 Z" fill="rgba(255,255,255,0.16)"/>
+  <path d="M80 120 C250 35 420 45 560 115" stroke="rgba(255,255,255,0.35)" stroke-width="16" stroke-linecap="round" fill="none"/>
+  <g filter="url(#shadow)">
+    <rect x="94" y="92" width="1012" height="560" rx="34" fill="rgba(255,255,255,0.92)"/>
+    <rect x="124" y="122" width="952" height="500" rx="26" fill="#F8FAFC"/>
+  </g>
+  <rect x="185" y="435" width="830" height="44" rx="22" fill="#E2E8F0"/>
+  <rect x="430" y="290" width="340" height="145" rx="28" fill="#FEF3C7" stroke="#F59E0B" stroke-width="8"/>
+  <g>
+    <circle cx="310" cy="310" r="42" fill="#FBCFE8"/>
+    <path d="M266 300 C295 252 342 258 358 300 C330 286 305 288 266 300Z" fill="#111827"/>
+    <circle cx="296" cy="314" r="5" fill="#0F172A"/>
+    <circle cx="326" cy="314" r="5" fill="#0F172A"/>
+    <path d="M296 332 Q310 346 328 332" stroke="#0F172A" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <path d="M240 458 C265 380 362 380 386 458Z" fill="#2563EB"/>
+    <rect x="232" y="422" width="156" height="94" rx="24" fill="#2563EB"/>
+  </g>
+  <g>
+    <circle cx="600" cy="270" r="42" fill="#FBCFE8"/>
+    <path d="M556 260 C585 212 632 218 648 260 C620 246 595 248 556 260Z" fill="#334155"/>
+    <circle cx="586" cy="274" r="5" fill="#0F172A"/>
+    <circle cx="616" cy="274" r="5" fill="#0F172A"/>
+    <path d="M586 292 Q600 306 618 292" stroke="#0F172A" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <path d="M530 418 C555 340 652 340 676 418Z" fill="#16A34A"/>
+    <rect x="522" y="382" width="156" height="94" rx="24" fill="#16A34A"/>
+  </g>
+  <g>
+    <circle cx="900" cy="310" r="42" fill="#FBCFE8"/>
+    <path d="M856 300 C885 252 932 258 948 300 C920 286 895 288 856 300Z" fill="#111827"/>
+    <circle cx="886" cy="314" r="5" fill="#0F172A"/>
+    <circle cx="916" cy="314" r="5" fill="#0F172A"/>
+    <path d="M886 332 Q900 346 918 332" stroke="#0F172A" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <path d="M830 458 C855 380 952 380 976 458Z" fill="#9333EA"/>
+    <rect x="822" y="422" width="156" height="94" rx="24" fill="#9333EA"/>
+  </g>
+  <path d="M520 360 L580 405 L700 315" stroke="#22C55E" stroke-width="22" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <g filter="url(#shadow)">
+    <rect x="130" y="145" width="260" height="82" rx="22" fill="#FFFFFF"/>
+    <text x="260.0" y="194.0" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="800" text-anchor="middle" fill="#0F172A">Отличный опыт!</text>
+  </g>
+  <g filter="url(#shadow)">
+    <rect x="770" y="145" width="280" height="82" rx="22" fill="#FFFFFF"/>
+    <text x="910.0" y="194.0" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="800" text-anchor="middle" fill="#0F172A">Берём финалиста</text>
+  </g>
+  <g>
+    <rect x="94" y="675" width="1012" height="82" rx="28" fill="rgba(15,23,42,0.82)"/>
+    <text x="132" y="725" font-family="Inter, Arial, sans-serif" font-size="34" font-weight="800" fill="#FFFFFF">Кандидат выглядит идеально</text>
+    <text x="760" y="724" font-family="Inter, Arial, sans-serif" font-size="24" font-weight="700" fill="#BAE6FD">The candidate looks perfect</text>
+  </g>
+  <text x="1030" y="168" font-family="Inter, Arial, sans-serif" font-size="72" text-anchor="middle">⭐</text>
+</svg>
