@@ -1,0 +1,180 @@
+import Head from 'next/head'
+import Link from 'next/link'
+import { useState } from 'react'
+import { ArrowRight, CheckCircle2, ShieldCheck } from 'lucide-react'
+
+const services = {
+  "ru": {
+    "subtitle": "Корпоративная разведка и проверка рисков",
+    "kicker": "Комплексная проверка бизнеса",
+    "title": "Due diligence для сделок, инвестиций и партнёрств",
+    "description": "HEIMDALL проводит комплексный анализ бизнеса, владельцев, структуры владения, судебных рисков, репутации и скрытых связей перед важным решением.",
+    "cta": "Запросить due diligence",
+    "back": "На главную",
+    "cardTitle": "Что входит",
+    "cardItems": [
+      "корпоративная структура и бенефициары",
+      "судебная и регуляторная история",
+      "репутационные сигналы и adverse media",
+      "скрытые связи, конфликты интересов и red flags"
+    ],
+    "blocks": [
+      [
+        "Перед сделкой",
+        "Понимание рисков до подписания документов и перевода средств."
+      ],
+      [
+        "Перед инвестицией",
+        "Независимый взгляд на владельцев, активы и потенциальные проблемы."
+      ],
+      [
+        "Результат",
+        "Executive report с выводами, индексом риска и рекомендацией."
+      ]
+    ],
+    "finalTitle": "Получите независимую картину перед сделкой",
+    "finalText": "Укажите компанию, страну, контекст и желаемую глубину проверки.",
+    "metaTitle": "Due Diligence — HEIMDALL",
+    "metaDescription": "Комплексная проверка бизнеса, владельцев, судебной истории и репутационных рисков перед сделкой."
+  },
+  "en": {
+    "subtitle": "Corporate intelligence and risk advisory",
+    "kicker": "Business Due Diligence",
+    "title": "Due diligence for transactions, investments and partnerships",
+    "description": "HEIMDALL reviews businesses, owners, corporate structure, litigation risks, reputation profile and hidden affiliations before critical decisions.",
+    "cta": "Request due diligence",
+    "back": "Back to home",
+    "cardTitle": "Scope includes",
+    "cardItems": [
+      "corporate structure and beneficial owners",
+      "litigation and regulatory history",
+      "reputation signals and adverse media",
+      "hidden affiliations, conflicts of interest and red flags"
+    ],
+    "blocks": [
+      [
+        "Before a deal",
+        "Understand risks before signing documents or transferring funds."
+      ],
+      [
+        "Before investing",
+        "Independent view of owners, assets and potential concerns."
+      ],
+      [
+        "Output",
+        "Executive report with findings, risk index and recommendation."
+      ]
+    ],
+    "finalTitle": "Get an independent view before the transaction",
+    "finalText": "Share the company, country, context and preferred review depth.",
+    "metaTitle": "Due Diligence — HEIMDALL",
+    "metaDescription": "Business due diligence covering ownership, litigation history and reputation risks before transactions."
+  }
+}
+
+export default function ServicePage() {
+  const [language, setLanguage] = useState('ru')
+  const t = services[language]
+
+  return (
+    <>
+      <Head>
+        <title>{t.metaTitle}</title>
+        <meta name="description" content={t.metaDescription} />
+        <meta property="og:title" content={t.metaTitle} />
+        <meta property="og:description" content={t.metaDescription} />
+        <meta property="og:type" content="website" />
+      </Head>
+
+      <main className="min-h-screen bg-[#050816] text-white">
+        <div className="fixed inset-0 pointer-events-none">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(37,99,235,0.22),transparent_34%),radial-gradient(circle_at_80%_20%,rgba(14,165,233,0.14),transparent_30%),linear-gradient(135deg,#050816_0%,#08111f_50%,#050816_100%)]" />
+          <div className="absolute inset-0 hero-grid opacity-50" />
+        </div>
+
+        <header className="relative z-10 border-b border-white/10 bg-[#050816]/70 backdrop-blur-2xl">
+          <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5">
+            <Link href="/" className="group">
+              <div className="text-xl font-semibold tracking-[0.34em] text-white">HEIMDALL</div>
+              <div className="mt-1 text-[11px] text-sky-200/70">{t.subtitle}</div>
+            </Link>
+            <div className="flex items-center gap-3">
+              <button onClick={() => setLanguage(language === 'ru' ? 'en' : 'ru')} className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs text-white/80">
+                {language === 'ru' ? 'RU / EN' : 'EN / RU'}
+              </button>
+              <Link href="/#lead" className="hidden rounded-full bg-sky-500 px-5 py-2.5 text-sm font-semibold md:block">
+                {t.cta}
+              </Link>
+            </div>
+          </div>
+        </header>
+
+        <section className="relative z-10 mx-auto max-w-7xl px-5 py-20 md:py-28">
+          <div className="grid gap-12 lg:grid-cols-[1fr_0.9fr] lg:items-center">
+            <div>
+              <div className="inline-flex rounded-full border border-sky-300/20 bg-sky-300/10 px-4 py-2 text-sm text-sky-200">
+                {t.kicker}
+              </div>
+              <h1 className="mt-8 max-w-5xl text-5xl font-semibold leading-[0.98] tracking-[-0.06em] md:text-7xl">
+                {t.title}
+              </h1>
+              <p className="mt-7 max-w-3xl text-lg leading-8 text-white/66 md:text-xl">
+                {t.description}
+              </p>
+              <div className="mt-10 flex flex-col gap-4 sm:flex-row">
+                <Link href="/#lead" className="inline-flex items-center justify-center gap-3 rounded-2xl bg-sky-500 px-7 py-4 font-semibold shadow-[0_0_45px_rgba(56,189,248,0.30)] transition hover:bg-sky-400">
+                  {t.cta}
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+                <Link href="/" className="inline-flex items-center justify-center rounded-2xl border border-white/10 bg-white/5 px-7 py-4 font-semibold transition hover:border-sky-300/35">
+                  {t.back}
+                </Link>
+              </div>
+            </div>
+
+            <div className="rounded-[36px] border border-white/10 bg-white/[0.045] p-6 shadow-premium backdrop-blur-2xl">
+              <div className="rounded-[28px] bg-[#07101f]/90 p-7">
+                <div className="text-xs uppercase tracking-[0.25em] text-sky-300/70">HEIMDALL REVIEW</div>
+                <div className="mt-5 text-3xl font-semibold">{t.cardTitle}</div>
+                <div className="mt-7 space-y-4">
+                  {t.cardItems.map((item) => (
+                    <div key={item} className="flex gap-3 rounded-2xl border border-white/10 bg-white/[0.035] p-4 text-sm leading-6 text-white/70">
+                      <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-sky-300" />
+                      <span>{item}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="relative z-10 mx-auto max-w-7xl px-5 pb-24">
+          <div className="grid gap-5 md:grid-cols-3">
+            {t.blocks.map(([title, text]) => (
+              <div key={title} className="rounded-3xl border border-white/10 bg-white/[0.045] p-7 backdrop-blur-xl">
+                <CheckCircle2 className="mb-5 h-5 w-5 text-sky-300" />
+                <h2 className="text-xl font-semibold">{title}</h2>
+                <p className="mt-3 text-sm leading-7 text-white/60">{text}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="relative z-10 mx-auto max-w-7xl px-5 pb-24">
+          <div className="rounded-[42px] border border-sky-300/20 bg-gradient-to-br from-sky-500/12 via-white/[0.04] to-transparent p-8 backdrop-blur-2xl md:p-12">
+            <div className="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-center">
+              <div>
+                <h2 className="text-4xl font-semibold tracking-[-0.04em]">{t.finalTitle}</h2>
+                <p className="mt-4 max-w-3xl text-lg leading-8 text-white/64">{t.finalText}</p>
+              </div>
+              <Link href="/#lead" className="rounded-2xl bg-sky-500 px-7 py-4 text-center font-semibold shadow-[0_0_45px_rgba(56,189,248,0.30)]">
+                {t.cta}
+              </Link>
+            </div>
+          </div>
+        </section>
+      </main>
+    </>
+  )
+}
