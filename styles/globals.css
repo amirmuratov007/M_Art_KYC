@@ -370,3 +370,51 @@ a {
 #recruitment-comic img {
   display: block;
 }
+/* HEIMDALL mobile fixes */
+
+/* Hide animated cursor on phones/tablets, including landscape orientation.
+   Show it only on devices with a real fine pointer and hover support. */
+.global-cursor-dot,
+.global-cursor-ring {
+  display: none !important;
+}
+
+@media (hover: hover) and (pointer: fine) and (min-width: 1024px) {
+  .global-cursor-dot {
+    display: block !important;
+  }
+
+  .global-cursor-ring {
+    display: block !important;
+  }
+}
+
+@media (hover: none), (pointer: coarse), (max-width: 1023px) {
+  .global-cursor-dot,
+  .global-cursor-ring {
+    display: none !important;
+  }
+}
+
+/* Fix confidentiality/trust block overflow on mobile.
+   Sections with icon + text should stack vertically on small screens. */
+@media (max-width: 768px) {
+  .flex.items-start.gap-5 {
+    flex-direction: column !important;
+  }
+
+  .flex.items-start.gap-5 > svg {
+    flex-shrink: 0;
+  }
+
+  .flex.items-start.gap-5 h2,
+  .flex.items-start.gap-5 p,
+  .flex.items-start.gap-5 div {
+    max-width: 100%;
+  }
+
+  .rounded-\[42px\] {
+    max-width: 100%;
+    overflow: hidden;
+  }
+}
