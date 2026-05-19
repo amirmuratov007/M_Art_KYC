@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://heimdal-group.ru/sitemap.xml
