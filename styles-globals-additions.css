@@ -1,0 +1,10 @@
+@keyframes heimdallFloat {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+.heimdall-float { animation: heimdallFloat 7s ease-in-out infinite; }
+@keyframes heimdallPulseLine {
+  0%, 100% { opacity: .25; }
+  50% { opacity: .75; }
+}
+.heimdall-pulse-line { animation: heimdallPulseLine 3.5s ease-in-out infinite; }
