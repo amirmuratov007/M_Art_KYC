@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1420" height="320" viewBox="0 0 1420 320">
+  <defs>
+    <linearGradient id="g" x1="54" y1="40" x2="266" y2="282" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#93C5FD"/>
+      <stop offset="0.55" stop-color="#38BDF8"/>
+      <stop offset="1" stop-color="#2563EB"/>
+    </linearGradient>
+  </defs>
+  <rect width="1420" height="320" rx="54" fill="#050816"/>
+  <rect x="42" y="42" width="236" height="236" rx="54" fill="#08111F" stroke="#1E3A5F" stroke-width="3"/>
+  <path d="M105 88h38v54h34V88h38v144h-38v-58h-34v58h-38V88Z" fill="url(#g)"/>
+  <path d="M84 70h152" stroke="#93C5FD" stroke-width="6" stroke-linecap="round" opacity="0.45"/>
+  <path d="M84 252h152" stroke="#38BDF8" stroke-width="6" stroke-linecap="round" opacity="0.35"/>
+  <text x="330" y="152" font-family="Inter, Arial, sans-serif" font-size="86" font-weight="800" letter-spacing="22" fill="#FFFFFF">HEIMDALL</text>
+  <text x="334" y="206" font-family="Inter, Arial, sans-serif" font-size="24" font-weight="600" letter-spacing="8" fill="#93C5FD">CORPORATE INTELLIGENCE &amp; RISK ADVISORY</text>
+</svg>
