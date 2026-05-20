@@ -27,23 +27,23 @@ function InlineLogo() {
 
 const plans = [
   {
-    title: 'Проверка кандидата',
-    price: '24 900 ₽',
-    time: '1–2 дня',
-    features: ['Проверка биографии', 'Репутационные сигналы', 'Конфликты интересов', 'Краткое аналитическое заключение']
+    title: 'Candidate Screening',
+    price: '$290',
+    time: '1–2 days',
+    features: ['Background review', 'Reputation signals', 'Conflict of interest review', 'Analytical conclusion']
   },
   {
-    title: 'Проверка контрагента',
-    price: '49 900 ₽',
-    time: '2 дня',
+    title: 'Counterparty Intelligence',
+    price: '$590',
+    time: '2 days',
     featured: true,
-    features: ['Судебная история', 'Санкционные риски', 'Бенефициары и связанные лица', 'Репутационный анализ', 'Краткий индекс риска']
+    features: ['Litigation review', 'Sanctions exposure', 'Beneficial ownership', 'Reputation analysis', 'Risk summary']
   },
   {
-    title: 'Комплексная проверка бизнеса',
-    price: '89 900 ₽',
-    time: '2–4 дня',
-    features: ['Расширенная проверка компании', 'Анализ структуры владения', 'Связи и конфликтные сигналы', 'Executive summary', 'Конфиденциальный формат']
+    title: 'Enhanced Due Diligence',
+    price: '$1,200',
+    time: '2–4 days',
+    features: ['Enhanced company review', 'Ownership structure analysis', 'Affiliations and conflict signals', 'Executive summary', 'Confidential workflow']
   }
 ]
 
@@ -51,8 +51,8 @@ export default function PricingPage() {
   return (
     <>
       <Head>
-        <title>Прайс-лист | HEIMDALL</title>
-        <meta name="description" content="Прайс-лист HEIMDALL: стоимость проверки кандидатов, контрагентов и комплексной проверки бизнеса." />
+        <title>Pricing | HEIMDALL</title>
+        <meta name="description" content="HEIMDALL pricing: candidate screening, counterparty intelligence and enhanced due diligence." />
       </Head>
 
       <main className="min-h-screen overflow-hidden bg-[#050816] text-white">
@@ -64,8 +64,8 @@ export default function PricingPage() {
           <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5">
             <InlineLogo />
             <div className="flex items-center gap-3">
-              <Link href="/pricing-en" className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm">EN</Link>
-              <Link href="/#lead" className="rounded-full bg-sky-500 px-5 py-2.5 text-sm font-semibold">Запросить проверку</Link>
+              <Link href="/pricing" className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm">RU</Link>
+              <Link href="/#lead" className="rounded-full bg-sky-500 px-5 py-2.5 text-sm font-semibold">Request review</Link>
             </div>
           </div>
         </header>
@@ -76,9 +76,9 @@ export default function PricingPage() {
               <ShieldCheck className="h-4 w-4" />
               HEIMDALL
             </div>
-            <h1 className="mt-10 text-5xl font-semibold leading-[0.95] tracking-[-0.06em] md:text-8xl">Прайс-лист на аналитические проверки</h1>
+            <h1 className="mt-10 text-5xl font-semibold leading-[0.95] tracking-[-0.06em] md:text-8xl">Intelligence & Due Diligence Pricing</h1>
             <p className="mt-10 max-w-3xl text-xl leading-9 text-white/64">
-              Фиксированные базовые форматы для проверки кандидатов, контрагентов и бизнеса. Сложные международные и конфиденциальные кейсы рассчитываются индивидуально.
+              Fixed core formats for candidate screening, counterparty intelligence and enhanced due diligence. Complex international and confidential matters are scoped individually.
             </p>
           </div>
         </section>
@@ -95,7 +95,7 @@ export default function PricingPage() {
                 ))}
               </div>
               <Link href="/#lead" className="mt-10 inline-flex items-center gap-3 rounded-2xl bg-sky-500 px-6 py-4 font-semibold text-white shadow-[0_0_35px_rgba(56,189,248,0.24)]">
-                Запросить проверку
+                Request review
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
@@ -105,14 +105,14 @@ export default function PricingPage() {
         <section className="relative z-10 mx-auto max-w-7xl px-5 pb-32">
           <div className="grid gap-8 rounded-[42px] border border-white/10 bg-white/[0.045] p-10 backdrop-blur-2xl md:p-16 lg:grid-cols-[1fr_0.8fr] lg:items-center">
             <div>
-              <div className="text-sm uppercase tracking-[0.25em] text-sky-300/80">Индивидуальные проверки</div>
-              <h2 className="mt-5 text-4xl font-semibold tracking-[-0.05em] md:text-6xl">NDA и закрытый формат работы доступны по запросу</h2>
-              <p className="mt-6 text-lg leading-8 text-white/64">Международные проверки, глубокая корпоративная разведка, санкционные расследования и чувствительные проекты рассчитываются отдельно.</p>
+              <div className="text-sm uppercase tracking-[0.25em] text-sky-300/80">Custom engagements</div>
+              <h2 className="mt-5 text-4xl font-semibold tracking-[-0.05em] md:text-6xl">NDA and secure workflow available on request</h2>
+              <p className="mt-6 text-lg leading-8 text-white/64">International investigations, deep due diligence, sanctions reviews and sensitive corporate matters are scoped individually.</p>
             </div>
             <div className="rounded-[34px] border border-sky-300/20 bg-sky-300/10 p-8">
               <LockKeyhole className="mb-6 h-7 w-7 text-sky-300" />
-              <div className="text-2xl font-semibold">Индивидуальные проекты</div>
-              <div className="mt-5 text-white/65 leading-8">Международные проверки, deep due diligence, санкционные расследования, корпоративная разведка и конфиденциальные проекты - от 150 000 ₽.</div>
+              <div className="text-2xl font-semibold">Custom Intelligence Engagements</div>
+              <div className="mt-5 text-white/65 leading-8">International investigations, deep due diligence, sanctions reviews and confidential projects - starting from $2,000.</div>
             </div>
           </div>
         </section>
