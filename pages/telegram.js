@@ -35,7 +35,7 @@ export default function TelegramPage() {
             <p className="mt-10 max-w-3xl text-xl leading-9 text-white/64">
               Ежедневные заметки о проверке контрагентов, кандидатов, скрытых бенефициаров, санкционных рисках и корпоративной безопасности.
             </p>
-            <a href="https://t.me/" className="mt-10 inline-flex items-center gap-3 rounded-2xl bg-sky-500 px-7 py-4 font-semibold text-white">
+            <a href="https://t.me/heimdall_risk" className="mt-10 inline-flex items-center gap-3 rounded-2xl bg-sky-500 px-7 py-4 font-semibold text-white">
               Открыть Telegram
               <ArrowRight className="h-4 w-4" />
             </a>
