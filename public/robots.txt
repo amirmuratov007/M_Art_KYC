@@ -1,7 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://www.heimdall-group.ru/sitemap.xml
-Sitemap: https://www.heimdall-group.ru/sitemap-seo.xml
-Sitemap: https://www.heimdall-group.ru/sitemap-expansion.xml
-Sitemap: https://www.heimdall-group.ru/sitemap-pricing-reports-telegram.xml
