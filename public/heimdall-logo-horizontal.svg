@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1420" height="320" viewBox="0 0 1420 320">
+  <defs>
+    <linearGradient id="gold" x1="54" y1="40" x2="266" y2="282" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F7D784"/>
+      <stop offset="0.45" stop-color="#D6A84F"/>
+      <stop offset="1" stop-color="#8B6A2F"/>
+    </linearGradient>
+  </defs>
+  <rect width="1420" height="320" rx="54" fill="#050816"/>
+  <rect x="42" y="42" width="236" height="236" rx="54" fill="#08111F" stroke="#5B4521" stroke-width="4"/>
+  <path d="M105 88h38v54h34V88h38v144h-38v-58h-34v58h-38V88Z" fill="url(#gold)"/>
+  <path d="M84 70h152" stroke="#F7D784" stroke-width="6" stroke-linecap="round" opacity="0.55"/>
+  <path d="M84 252h152" stroke="#D6A84F" stroke-width="6" stroke-linecap="round" opacity="0.45"/>
+  <text x="330" y="152" font-family="Arial, sans-serif" font-size="86" font-weight="800" letter-spacing="22" fill="#FFFFFF">HEIMDALL</text>
+  <text x="334" y="206" font-family="Arial, sans-serif" font-size="24" font-weight="600" letter-spacing="8" fill="#D6A84F">INTELLIGENCE GROUP</text>
+</svg>
