@@ -7,7 +7,7 @@ const copy = {
   ru: {
     title: 'Политика конфиденциальности',
     updated: 'Дата обновления: 18 мая 2026',
-    intro: 'Настоящая политика описывает, как HEIMDALL обрабатывает данные, которые пользователь передаёт через сайт heimdal-group.ru.',
+    intro: 'Настоящая политика описывает, как HEIMDALL обрабатывает данные, которые пользователь передаёт через сайт heimdall-group.ru.',
     sections: [
       ['1. Какие данные мы получаем', 'Через форму заявки пользователь может передать имя, компанию, email, телефон, тип проверки и комментарий. Также могут обрабатываться технические данные посещения сайта, необходимые для безопасности и корректной работы сервиса.'],
       ['2. Цели обработки', 'Данные используются для обработки входящей заявки, связи с пользователем, уточнения задачи, подготовки коммерческого предложения и обеспечения конфиденциальной коммуникации.'],
@@ -22,7 +22,7 @@ const copy = {
   en: {
     title: 'Privacy Policy',
     updated: 'Last updated: May 18, 2026',
-    intro: 'This policy explains how HEIMDALL processes data submitted through heimdal-group.ru.',
+    intro: 'This policy explains how HEIMDALL processes data submitted through heimdall-group.ru.',
     sections: [
       ['1. Data we receive', 'Through the request form, a user may submit name, company, email, phone number, review type and comments. Technical website data may also be processed for security and service operation.'],
       ['2. Purposes of processing', 'Data is used to process incoming requests, contact the user, clarify the case, prepare a commercial proposal and support confidential communication.'],
