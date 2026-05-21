@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+Host: www.heimdall-group.ru
+
+Sitemap: https://www.heimdall-group.ru/sitemap.xml
+Sitemap: https://www.heimdall-group.ru/sitemap-business-support.xml
+Sitemap: https://www.heimdall-group.ru/sitemap-reports.xml
