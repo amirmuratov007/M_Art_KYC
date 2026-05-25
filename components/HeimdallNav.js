@@ -1,0 +1,198 @@
+import { useRef, useState } from 'react'
+import Link from 'next/link'
+import { useRouter } from 'next/router'
+import HeimdallLogo from '@/components/HeimdallLogo'
+import ContactModal from '@/components/ContactModal'
+import { Menu, X, ChevronDown } from 'lucide-react'
+
+const ruMenu = [
+  ['Услуги', '/services', [
+    ['Проверка контрагентов', '/proverka-kontragenta'],
+    ['Проверка кандидатов', '/proverka-kandidatov'],
+    ['Проверка бенефициаров', '/proverka-beneficiarov'],
+    ['AML / KYC', '/aml-kyc-russia'],
+    ['Due Diligence', '/due-diligence-russia']
+  ]],
+  ['Сопровождение', '/business-support', [
+    ['Комплексное сопровождение', '/business-support'],
+    ['Клиентское приложение', '/client-app'],
+    ['Прайс-лист сопровождения', '/business-support#pricing']
+  ]],
+  ['Материалы', '/journal', [
+    ['Публикации Telegram', '/journal'],
+    ['Примеры отчётов', '/sample-reports'],
+    ['Кейсы', '/cases']
+  ]]
+]
+
+const enMenu = [
+  ['Services', '/services-en', [
+    ['Corporate Intelligence', '/corporate-intelligence'],
+    ['Background Check', '/background-check'],
+    ['Due Diligence Dubai', '/due-diligence-dubai'],
+    ['Sanctions Screening', '/sanctions-screening'],
+    ['Vendor Screening', '/vendor-screening']
+  ]],
+  ['Support', '/business-support-en', [
+    ['Business Support', '/business-support-en'],
+    ['Client Application', '/client-app-en'],
+    ['Support Pricing', '/business-support-en#pricing']
+  ]],
+  ['Resources', '/journal-en', [
+    ['Telegram Publications', '/journal-en'],
+    ['Sample Reports', '/sample-reports-en'],
+    ['Cases', '/cases-en']
+  ]]
+]
+
+const langMap = {
+  '/': '/en',
+  '/en': '/',
+  '/services': '/services-en',
+  '/services-en': '/services',
+  '/business-support': '/business-support-en',
+  '/business-support-en': '/business-support',
+  '/client-app': '/client-app-en',
+  '/client-app-en': '/client-app',
+  '/journal': '/journal-en',
+  '/journal-en': '/journal',
+  '/sample-reports': '/sample-reports-en',
+  '/sample-reports-en': '/sample-reports'
+}
+
+export default function HeimdallNav({ language }) {
+  const router = useRouter()
+  const detected = router.pathname === '/en' || router.pathname.endsWith('-en') || router.pathname.includes('-en/') ? 'en' : 'ru'
+  const currentLanguage = language || detected
+  const ru = currentLanguage === 'ru'
+  const menu = ru ? ruMenu : enMenu
+  const [mobileOpen, setMobileOpen] = useState(false)
+  const [contactOpen, setContactOpen] = useState(false)
+  const [openMenu, setOpenMenu] = useState(null)
+  const closeTimer = useRef(null)
+  const languageHref = langMap[router.pathname] || (ru ? '/en' : '/')
+
+  const openDropdown = (title) => {
+    if (closeTimer.current) clearTimeout(closeTimer.current)
+    setOpenMenu(title)
+  }
+
+  const closeDropdown = () => {
+    if (closeTimer.current) clearTimeout(closeTimer.current)
+    closeTimer.current = setTimeout(() => setOpenMenu(null), 180)
+  }
+
+  const closeNow = () => {
+    if (closeTimer.current) clearTimeout(closeTimer.current)
+    setOpenMenu(null)
+  }
+
+  return (
+    <>
+      <header className="relative z-[9000] border-b border-white/10 bg-[#050816]/95 backdrop-blur-2xl">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-5">
+          <HeimdallLogo href={ru ? '/' : '/en'} />
+
+          <nav className="hidden items-center gap-1 lg:flex">
+            {menu.map(([title, href, items]) => {
+              const active = openMenu === title
+
+              return (
+                <div
+                  key={title}
+                  className="relative"
+                  onMouseEnter={() => openDropdown(title)}
+                  onMouseLeave={closeDropdown}
+                >
+                  <Link
+                    href={href}
+                    onClick={closeNow}
+                    className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm text-white/70 transition hover:bg-white/7 hover:text-[#F7D784]"
+                  >
+                    {title}
+                    <ChevronDown className={`h-4 w-4 opacity-70 transition ${active ? 'rotate-180 text-[#F7D784]' : ''}`} />
+                  </Link>
+
+                  <div className={`absolute left-1/2 top-full z-[9999] w-84 -translate-x-1/2 pt-3 transition duration-200 ${active ? 'pointer-events-auto translate-y-0 opacity-100' : 'pointer-events-none translate-y-2 opacity-0'}`}>
+                    <div className="w-80 rounded-[26px] border border-white/15 bg-[#050816] p-3 shadow-[0_35px_100px_rgba(0,0,0,0.88)] ring-1 ring-sky-300/10">
+                      {items.map(([label, itemHref]) => (
+                        <Link
+                          key={itemHref}
+                          href={itemHref}
+                          onClick={closeNow}
+                          className="block rounded-2xl px-4 py-3 text-sm text-white/78 transition hover:bg-white/10 hover:text-[#F7D784]"
+                        >
+                          {label}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </nav>
+
+          <div className="hidden items-center gap-3 sm:flex">
+            <Link href={languageHref} className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/80">
+              {ru ? 'EN' : 'RU'}
+            </Link>
+
+            <button type="button" onClick={() => setContactOpen(true)} className="rounded-full bg-sky-500 px-5 py-2.5 text-sm font-semibold text-white shadow-[0_0_35px_rgba(56,189,248,0.22)]">
+              {ru ? 'Связаться' : 'Contact'}
+            </button>
+          </div>
+
+          <button type="button" onClick={() => setMobileOpen(true)} className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-white lg:hidden">
+            <Menu className="h-5 w-5" />
+          </button>
+        </div>
+      </header>
+
+      {mobileOpen && (
+        <div className="fixed inset-0 z-[9999] bg-[#050816] text-white lg:hidden">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_5%,rgba(37,99,235,0.20),transparent_35%),linear-gradient(135deg,#050816_0%,#08111f_55%,#050816_100%)]" />
+
+          <div className="relative z-10 flex h-full flex-col">
+            <div className="flex items-center justify-between border-b border-white/10 px-4 py-4">
+              <HeimdallLogo href={ru ? '/' : '/en'} />
+              <button type="button" onClick={() => setMobileOpen(false)} className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/10">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto px-4 py-5">
+              <div className="grid gap-4 pb-8">
+                {menu.map(([title, href, items]) => (
+                  <div key={title} className="rounded-[28px] border border-white/10 bg-white/[0.06] p-4 shadow-2xl">
+                    <Link href={href} onClick={() => setMobileOpen(false)} className="mb-4 block text-xs uppercase tracking-[0.24em] text-[#F7D784]">
+                      {title}
+                    </Link>
+                    <div className="grid gap-2">
+                      {items.map(([label, itemHref]) => (
+                        <Link key={itemHref} href={itemHref} onClick={() => setMobileOpen(false)} className="rounded-2xl border border-white/10 bg-black/25 px-4 py-4 text-base font-medium text-white/82">
+                          {label}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+
+                <div className="grid grid-cols-2 gap-3">
+                  <Link href={languageHref} onClick={() => setMobileOpen(false)} className="rounded-2xl border border-white/10 bg-white/10 px-4 py-4 text-center text-sm font-semibold text-white">
+                    {ru ? 'EN' : 'RU'}
+                  </Link>
+
+                  <button type="button" onClick={() => { setMobileOpen(false); setContactOpen(true) }} className="rounded-2xl bg-sky-500 px-4 py-4 text-center text-sm font-semibold text-white">
+                    {ru ? 'Связаться' : 'Contact'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <ContactModal open={contactOpen} onClose={() => setContactOpen(false)} language={currentLanguage} />
+    </>
+  )
+}
