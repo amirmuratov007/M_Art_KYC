@@ -1,0 +1,1 @@
+export const growthPosts = ['supplier verification','executive screening','beneficial ownership']
