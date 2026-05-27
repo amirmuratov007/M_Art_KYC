@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://heimdall-group.ru/sitemap-growth.xml
