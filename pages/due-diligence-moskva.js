@@ -1,0 +1,1 @@
+export default function Page(){return <div style={{padding:'40px',background:'#050816',minHeight:'100vh',color:'white'}}>Due Diligence Москва SEO Page</div>}
