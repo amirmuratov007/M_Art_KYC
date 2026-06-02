@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1460" height="340" viewBox="0 0 1460 340" role="img" aria-label="HEIMDALL Intelligence Group">
+  <rect width="1460" height="340" rx="54" fill="#050816"/>
+  <image href="/heimdall-logo-gold-mark.svg" x="34" y="24" width="292" height="292"/>
+  <text x="370" y="158" font-family="Inter, Arial, sans-serif" font-size="82" font-weight="700" letter-spacing="24" fill="#F8FAFC">HEIMDALL</text>
+  <text x="376" y="216" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="600" letter-spacing="9" fill="#D6A84F">INTELLIGENCE GROUP</text>
+  <path d="M370 248h646" stroke="#D6A84F" stroke-opacity=".30" stroke-width="2"/>
+</svg>
