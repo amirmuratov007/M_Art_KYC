@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { useState } from 'react'
 import HeimdallNav from '@/components/HeimdallNav'
 import ContactModal from '@/components/ContactModal'
-import { ArrowRight, ShieldCheck, FileSearch, LockKeyhole, Network, Gauge, Bell, Newspaper } from 'lucide-react'
+import { ArrowRight, ShieldCheck, FileSearch, LockKeyhole, Network, Gauge, Bell, Newspaper, Sparkles } from 'lucide-react'
 
 const core = [
   ['Counterparty Intelligence', 'Litigation, beneficial owners, sanctions risks, related parties and reputation signals.', '/corporate-intelligence', FileSearch],
@@ -12,8 +12,26 @@ const core = [
   ['Sample Reports', 'See how HEIMDALL analytical conclusions look.', '/sample-reports-en', Gauge]
 ]
 
+const decisionMoments = [
+  ['Before a deal', 'Review ownership, litigation, reputation and hidden links before signing.'],
+  ['Before supplier payment', 'Detect shell-company indicators, related-party risk and sanctions exposure.'],
+  ['Before hiring', 'Reduce risk before access to money, data, procurement or management decisions.'],
+  ['Before partnership', 'Understand who actually stands behind the business and what risks follow.']
+]
+
+const trustProof = [
+  ['Methodology', 'Analytical conclusions with clear risk logic, not a database extract.', '/methodology-en'],
+  ['Data Sources', 'Registries, courts, media, corporate links and compliance signals.', '/data-sources-en'],
+  ['Privacy', 'Tasks, documents and review results are handled confidentially.', '/privacy-en']
+]
+
 export default function HomePage() {
   const [contactOpen, setContactOpen] = useState(false)
+  const [topic, setTopic] = useState('General request')
+  const openContact = (nextTopic = 'General request') => {
+    setTopic(nextTopic)
+    setContactOpen(true)
+  }
 
   return (
     <>
@@ -37,13 +55,19 @@ export default function HomePage() {
               <span className="truncate">Corporate Intelligence</span>
             </div>
 
-            <h1 className="mt-8 max-w-5xl text-4xl font-semibold leading-[0.98] tracking-[-0.055em] sm:text-6xl md:text-7xl lg:text-8xl">Intelligence for better business decisions</h1>
-            <p className="mt-7 max-w-3xl text-base leading-8 text-white/64 sm:text-xl sm:leading-9">HEIMDALL helps identify risks in counterparties, candidates, beneficial owners and business structures before a deal, hire or partnership.</p>
+            <h1 className="mt-8 max-w-5xl text-4xl font-semibold leading-[0.98] tracking-[-0.055em] sm:text-6xl md:text-7xl lg:text-8xl">Check people and companies before costly mistakes happen</h1>
+            <p className="mt-7 max-w-3xl text-base leading-8 text-white/64 sm:text-xl sm:leading-9">HEIMDALL helps you understand who you are dealing with: actual owners, hidden links, litigation and sanctions exposure, conflicts of interest and reputation red flags.</p>
 
             <div className="mt-9 grid gap-4 sm:flex sm:flex-row">
-              <button onClick={() => setContactOpen(true)} className="inline-flex items-center justify-center gap-3 rounded-2xl bg-sky-500 px-6 py-4 font-semibold text-white">Contact <ArrowRight className="h-4 w-4" /></button>
-              <Link href="/business-support-en" className="inline-flex items-center justify-center gap-3 rounded-2xl border border-[#D6A84F]/25 bg-[#D6A84F]/10 px-6 py-4 font-semibold text-[#F7D784]">Business Support</Link>
-              <Link href="/sample-reports-en" className="inline-flex items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/10 px-6 py-4 font-semibold text-white">View reports</Link>
+              <button onClick={() => openContact('Counterparty intelligence')} className="inline-flex items-center justify-center gap-3 rounded-2xl bg-sky-500 px-6 py-4 font-semibold text-white">Check a counterparty <ArrowRight className="h-4 w-4" /></button>
+              <Link href="/sample-reports-en" className="inline-flex items-center justify-center gap-3 rounded-2xl border border-[#D6A84F]/25 bg-[#D6A84F]/10 px-6 py-4 font-semibold text-[#F7D784]">Get sample report</Link>
+              <Link href="/trust-center-en" className="inline-flex items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/10 px-6 py-4 font-semibold text-white">Why trust us</Link>
+            </div>
+
+            <div className="mt-7 flex flex-wrap gap-3 text-sm text-white/62">
+              {['Deal', 'Procurement', 'Hiring', 'Partnership', 'Investment'].map((item) => (
+                <span key={item} className="rounded-full border border-white/10 bg-white/[0.055] px-4 py-2">{item}</span>
+              ))}
             </div>
           </div>
 
@@ -64,6 +88,41 @@ export default function HomePage() {
                 ))}
               </div>
             </div>
+          </div>
+        </section>
+
+        <section className="relative z-10 mx-auto max-w-7xl px-4 pb-16 sm:px-5 sm:pb-24">
+          <div className="grid gap-5 lg:grid-cols-4">
+            {decisionMoments.map(([title, text]) => (
+              <div key={title} className="rounded-[30px] border border-white/10 bg-white/[0.045] p-6 backdrop-blur-2xl">
+                <div className="text-sm uppercase tracking-[0.22em] text-[#F7D784]/80">When HEIMDALL helps</div>
+                <h2 className="mt-5 text-2xl font-semibold tracking-[-0.04em]">{title}</h2>
+                <p className="mt-4 text-sm leading-7 text-white/58">{text}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="relative z-10 mx-auto max-w-7xl px-4 pb-16 sm:px-5 sm:pb-24">
+          <div className="grid gap-6 rounded-[36px] border border-sky-300/20 bg-sky-300/[0.07] p-6 backdrop-blur-2xl sm:rounded-[42px] sm:p-10 lg:grid-cols-[1fr_auto] lg:items-center">
+            <div>
+              <div className="inline-flex items-center gap-3 rounded-full border border-sky-300/25 bg-black/20 px-4 py-2 text-sm uppercase tracking-[0.22em] text-sky-200"><Sparkles className="h-4 w-4" /> Fast start</div>
+              <h2 className="mt-6 text-3xl font-semibold tracking-[-0.05em] sm:text-5xl">Describe the object - we will suggest the review scope</h2>
+              <p className="mt-5 max-w-3xl text-base leading-8 text-white/64 sm:text-lg">A company, person, supplier, investor or partner. A name, website, profile or short context is enough to start.</p>
+            </div>
+            <button onClick={() => openContact('Review scope assessment')} className="inline-flex items-center justify-center gap-3 rounded-2xl bg-sky-500 px-6 py-4 font-semibold text-white shadow-[0_0_45px_rgba(56,189,248,0.25)]">Request scope <ArrowRight className="h-4 w-4" /></button>
+          </div>
+        </section>
+
+        <section className="relative z-10 mx-auto max-w-7xl px-4 pb-16 sm:px-5 sm:pb-24">
+          <div className="grid gap-5 md:grid-cols-3">
+            {trustProof.map(([title, text, href]) => (
+              <Link key={href} href={href} className="rounded-[30px] border border-[#D6A84F]/20 bg-[#D6A84F]/[0.06] p-7 backdrop-blur-2xl transition hover:border-[#D6A84F]/40">
+                <h2 className="text-2xl font-semibold tracking-[-0.04em]">{title}</h2>
+                <p className="mt-4 text-sm leading-7 text-white/60">{text}</p>
+                <div className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-[#F7D784]">Open <ArrowRight className="h-4 w-4" /></div>
+              </Link>
+            ))}
           </div>
         </section>
 
@@ -102,7 +161,7 @@ export default function HomePage() {
         </section>
       </main>
 
-      <ContactModal open={contactOpen} onClose={() => setContactOpen(false)} language="en" />
+      <ContactModal open={contactOpen} onClose={() => setContactOpen(false)} language="en" defaultTopic={topic} />
     </>
   )
 }

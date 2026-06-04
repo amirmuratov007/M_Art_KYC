@@ -32,6 +32,20 @@ const advantages = [
   ['Telegram + кабинет', 'Заявки, статусы, отчеты и клиентский доступ без лишней бюрократии.']
 ]
 
+
+const decisionMoments = [
+  ['Перед сделкой', 'Проверить владельцев, судебный фон, репутацию и признаки номинальности до подписания.'],
+  ['Перед оплатой поставщику', 'Увидеть фиктивность, аффилированность, санкционную экспозицию и конфликтные связи.'],
+  ['Перед наймом', 'Снизить риск допуска к деньгам, данным, закупкам и управленческим решениям.'],
+  ['Перед партнерством', 'Понять, кто реально стоит за компанией и какие риски придут вместе с партнером.']
+]
+
+const trustProof = [
+  ['Методология', 'Не просто справки из баз, а аналитический вывод с логикой риска.', '/methodology'],
+  ['Источники данных', 'Открытые реестры, суды, медиа, корпоративные связи и комплаенс-сигналы.', '/data-sources'],
+  ['Конфиденциальность', 'Задачи, документы и результаты проверки не раскрываются третьим лицам.', '/privacy']
+]
+
 export default function HomePage() {
   const [contactOpen, setContactOpen] = useState(false)
   const [topic, setTopic] = useState('Общий запрос')
@@ -65,25 +79,31 @@ export default function HomePage() {
             </div>
 
             <h1 className="mt-8 max-w-5xl text-4xl font-semibold leading-[0.98] tracking-[-0.055em] sm:text-6xl md:text-7xl lg:text-8xl">
-              Корпоративная разведка для решений с высокой ценой ошибки
+              Проверяйте людей и компании до того, как ошибка станет дорогой
             </h1>
 
             <p className="mt-7 max-w-3xl text-base leading-8 text-white/64 sm:text-xl sm:leading-9">
-              HEIMDALL выявляет риски в контрагентах, кандидатах, бенефициарах и бизнес-структурах до сделки, найма, инвестиций или партнерства.
+              HEIMDALL помогает быстро понять, с кем вы имеете дело: кто стоит за компанией, где скрыты связи, судебные и санкционные риски, конфликт интересов и репутационные красные флаги.
             </p>
 
             <div className="mt-9 grid gap-4 sm:flex sm:flex-row">
               <button onClick={() => openContact('Проверка контрагента')} className="inline-flex items-center justify-center gap-3 rounded-2xl bg-sky-500 px-6 py-4 font-semibold text-white shadow-[0_0_45px_rgba(56,189,248,0.30)]">
-                Получить консультацию <ArrowRight className="h-4 w-4" />
+                Проверить контрагента <ArrowRight className="h-4 w-4" />
               </button>
 
-              <Link href="/business-support" className="inline-flex items-center justify-center gap-3 rounded-2xl border border-[#D6A84F]/25 bg-[#D6A84F]/10 px-6 py-4 font-semibold text-[#F7D784]">
-                Комплексное сопровождение
+              <Link href="/sample-reports" className="inline-flex items-center justify-center gap-3 rounded-2xl border border-[#D6A84F]/25 bg-[#D6A84F]/10 px-6 py-4 font-semibold text-[#F7D784]">
+                Получить пример отчета
               </Link>
 
-              <Link href="/sample-reports" className="inline-flex items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/10 px-6 py-4 font-semibold text-white">
-                Примеры отчетов
+              <Link href="/trust-center" className="inline-flex items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/10 px-6 py-4 font-semibold text-white">
+                Почему нам доверяют
               </Link>
+            </div>
+
+            <div className="mt-7 flex flex-wrap gap-3 text-sm text-white/62">
+              {['Сделка', 'Закупка', 'Найм', 'Партнерство', 'Инвестиции'].map((item) => (
+                <span key={item} className="rounded-full border border-white/10 bg-white/[0.055] px-4 py-2">{item}</span>
+              ))}
             </div>
           </div>
 
@@ -104,6 +124,41 @@ export default function HomePage() {
                 ))}
               </div>
             </div>
+          </div>
+        </section>
+
+        <section className="relative z-10 mx-auto max-w-7xl px-4 pb-16 sm:px-5 sm:pb-24">
+          <div className="grid gap-5 lg:grid-cols-4">
+            {decisionMoments.map(([title, text]) => (
+              <div key={title} className="rounded-[30px] border border-white/10 bg-white/[0.045] p-6 backdrop-blur-2xl">
+                <div className="text-sm uppercase tracking-[0.22em] text-[#F7D784]/80">Когда нужен HEIMDALL</div>
+                <h2 className="mt-5 text-2xl font-semibold tracking-[-0.04em]">{title}</h2>
+                <p className="mt-4 text-sm leading-7 text-white/58">{text}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="relative z-10 mx-auto max-w-7xl px-4 pb-16 sm:px-5 sm:pb-24">
+          <div className="grid gap-6 rounded-[36px] border border-sky-300/20 bg-sky-300/[0.07] p-6 backdrop-blur-2xl sm:rounded-[42px] sm:p-10 lg:grid-cols-[1fr_auto] lg:items-center">
+            <div>
+              <div className="inline-flex items-center gap-3 rounded-full border border-sky-300/25 bg-black/20 px-4 py-2 text-sm uppercase tracking-[0.22em] text-sky-200"><Sparkles className="h-4 w-4" /> Быстрый старт</div>
+              <h2 className="mt-6 text-3xl font-semibold tracking-[-0.05em] sm:text-5xl">Опишите объект проверки - мы подскажем формат</h2>
+              <p className="mt-5 max-w-3xl text-base leading-8 text-white/64 sm:text-lg">Компания, человек, поставщик, инвестор или партнер. Достаточно названия, ИНН, сайта, профиля или короткого описания ситуации.</p>
+            </div>
+            <button onClick={() => openContact('Подбор формата проверки')} className="inline-flex items-center justify-center gap-3 rounded-2xl bg-sky-500 px-6 py-4 font-semibold text-white shadow-[0_0_45px_rgba(56,189,248,0.25)]">Подобрать проверку <ArrowRight className="h-4 w-4" /></button>
+          </div>
+        </section>
+
+        <section className="relative z-10 mx-auto max-w-7xl px-4 pb-16 sm:px-5 sm:pb-24">
+          <div className="grid gap-5 md:grid-cols-3">
+            {trustProof.map(([title, text, href]) => (
+              <Link key={href} href={href} className="rounded-[30px] border border-[#D6A84F]/20 bg-[#D6A84F]/[0.06] p-7 backdrop-blur-2xl transition hover:border-[#D6A84F]/40">
+                <h2 className="text-2xl font-semibold tracking-[-0.04em]">{title}</h2>
+                <p className="mt-4 text-sm leading-7 text-white/60">{text}</p>
+                <div className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-[#F7D784]">Открыть <ArrowRight className="h-4 w-4" /></div>
+              </Link>
+            ))}
           </div>
         </section>
 
