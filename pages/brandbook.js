@@ -33,7 +33,7 @@ export default function BrandbookRu() {
         <header className="relative z-10 border-b border-white/10 bg-[#050816]/70 backdrop-blur-2xl">
           <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5">
             <Link href="/">
-              <img src="/heimdall-logo-horizontal.png" alt="HEIMDALL" className="h-12 w-auto" />
+              <img src="/heimdall-logo-full.png" alt="HEIMDALL" className="h-12 w-auto" />
             </Link>
             <div className="flex gap-3">
               <Link href="/brandbook-en" className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm">EN</Link>
@@ -78,7 +78,7 @@ export default function BrandbookRu() {
                 <p className="mt-6 text-lg leading-8 text-white/62">Монограмма H построена как строгий intelligence-symbol: вертикальные опоры, структура, контроль и точность.</p>
               </div>
               <div className="rounded-[34px] border border-sky-300/20 bg-[#07101f] p-10">
-                <img src="/heimdall-logo-horizontal.png" alt="HEIMDALL logo" className="w-full" />
+                <img src="/heimdall-logo-full.png" alt="HEIMDALL logo" className="w-full" />
               </div>
             </div>
           </div>
