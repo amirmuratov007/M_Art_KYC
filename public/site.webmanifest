@@ -1,11 +1,65 @@
 {
-  "name": "HEIMDALL Intelligence Group",
+  "name": "HEIMDALL Client App",
   "short_name": "HEIMDALL",
-  "icons": [
-    { "src": "/android-chrome-192x192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "/android-chrome-512x512.png", "sizes": "512x512", "type": "image/png" }
+  "description": "Private client application for HEIMDALL checks, reports and risk signals.",
+  "id": "/app-download",
+  "start_url": "/app-download",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#050816",
+  "theme_color": "#050816",
+  "categories": [
+    "business",
+    "productivity"
   ],
-  "theme_color": "#020A18",
-  "background_color": "#020A18",
-  "display": "standalone"
+  "icons": [
+    {
+      "src": "/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Client Account",
+      "short_name": "Account",
+      "url": "/account",
+      "icons": [
+        {
+          "src": "/android-chrome-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Demo Account",
+      "short_name": "Demo",
+      "url": "/demo-client-app",
+      "icons": [
+        {
+          "src": "/android-chrome-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "New Request",
+      "short_name": "Request",
+      "url": "/client-app#request",
+      "icons": [
+        {
+          "src": "/android-chrome-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
 }
