@@ -44,6 +44,14 @@ export default function App({ Component, pageProps }) {
         </Script>
       )}
 
+      <Script id="heimdall-service-worker" strategy="afterInteractive">
+        {`
+          if ('serviceWorker' in navigator && window.location.protocol === 'https:') {
+            navigator.serviceWorker.register('/sw.js').catch(function () {});
+          }
+        `}
+      </Script>
+
       <AnimatedCursor />
       <Component {...pageProps} />
     </>
