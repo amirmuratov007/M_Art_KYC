@@ -10,14 +10,14 @@ const services = [
   {
     title: 'Проверка контрагентов',
     text: 'Суды, владельцы, связанные компании, репутация, санкционные и финансовые сигналы.',
-    href: '/proverka-kontragenta',
+    href: '/proverka-kontragenta-pered-sdelkoy',
     icon: FileSearch,
     bestFor: 'перед договором, авансом, отсрочкой платежа или партнерством'
   },
   {
     title: 'Проверка поставщика из Китая',
     text: 'Проверка производителя, торговой компании, реквизитов, сайта, документов и следов фиктивности.',
-    href: '/china-supplier-verification',
+    href: '/proverka-postavshchika-iz-kitaya',
     icon: Building2,
     bestFor: 'перед авансом, первой поставкой или сменой поставщика'
   },
@@ -38,7 +38,7 @@ const services = [
   {
     title: 'AML / KYC',
     text: 'Комплаенс-проверка клиентов, контрагентов и сделок с учетом санкционной экспозиции.',
-    href: '/aml-kyc-russia',
+    href: '/komplaens-proverka-kontragenta',
     icon: Scale,
     bestFor: 'санкции, PEP, платежный маршрут, комплаенс и репутация'
   },

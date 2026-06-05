@@ -10,14 +10,14 @@ const services = [
   {
     title: 'Corporate Intelligence',
     text: 'Counterparty, ownership, litigation, reputation and sanctions risk review.',
-    href: '/corporate-intelligence',
+    href: '/counterparty-check-before-deal',
     icon: FileSearch,
     bestFor: 'before a contract, advance payment, payment deferral or partnership'
   },
   {
     title: 'China Supplier Verification',
     text: 'Manufacturer, trading company, bank details, website, documents and shell indicators.',
-    href: '/china-supplier-verification-en',
+    href: '/china-supplier-verification',
     icon: Building2,
     bestFor: 'before advance payment, first shipment or supplier replacement'
   },
@@ -38,7 +38,7 @@ const services = [
   {
     title: 'AML / KYC',
     text: 'Compliance review for clients, counterparties and transactions.',
-    href: '/sanctions-screening-dubai-en',
+    href: '/compliance-counterparty-check',
     icon: Scale,
     bestFor: 'sanctions, PEP, payment route, compliance and reputation'
   },

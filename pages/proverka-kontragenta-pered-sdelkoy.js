@@ -6,8 +6,8 @@ import HeimdallFooter from '@/components/HeimdallFooter'
 import ContactModal from '@/components/ContactModal'
 import { ArrowRight, CheckCircle2, FileSearch, ShieldCheck, AlertTriangle } from 'lucide-react'
 
-const signals = ["управленческая история и связанные юридические лица", "судебные, долговые и репутационные сигналы", "признаки номинальности и конфликта интересов", "связи с конкурентами, поставщиками или проблемными структурами"]
-const useCases = ["перед назначением на чувствительную должность", "перед сделкой с компанией", "при сомнениях в фактическом контроле"]
+const signals = ["структура владения, бенефициары и связанные лица", "судебный фон, исполнительные производства и долговые признаки", "санкционная и репутационная экспозиция", "красные флаги, которые меняют условия сделки"]
+const useCases = ["перед крупным договором или партнерством", "перед отсрочкой платежа или передачей доступа", "перед покупкой доли, актива или бизнеса"]
 
 export default function Page() {
   const [open, setOpen] = useState(false)
@@ -15,9 +15,9 @@ export default function Page() {
   return (
     <>
       <Head>
-        <title>Проверка директора | HEIMDALL</title>
-        <meta name="description" content="Проверка директора перед сделкой, назначением или партнерством: деловая биография, связанные компании, судебные риски, репутация и конфликт интересов." />
-        <link rel="canonical" href="https://www.heimdall-group.ru/proverka-direktora" />
+        <title>Проверка контрагента перед сделкой | HEIMDALL</title>
+        <meta name="description" content="Проверка контрагента перед сделкой: владельцы, суды, санкции, связи, репутация, финансовые и корпоративные риски." />
+        <link rel="canonical" href="https://www.heimdall-group.ru/proverka-kontragenta-pered-sdelkoy" />
       </Head>
 
       <main className="min-h-screen overflow-hidden bg-[#050816] text-white">
@@ -32,15 +32,15 @@ export default function Page() {
           <div>
             <div className="inline-flex items-center gap-3 rounded-full border border-[#D6A84F]/25 bg-[#D6A84F]/10 px-5 py-2 text-xs uppercase tracking-[0.24em] text-[#F7D784]">
               <ShieldCheck className="h-4 w-4" />
-              Executive Screening
+              Контрагент / сделка
             </div>
 
             <h1 className="mt-9 text-5xl font-semibold leading-[0.95] tracking-[-0.06em] md:text-8xl">
-              Проверка директора компании
+              Проверка контрагента перед сделкой
             </h1>
 
             <p className="mt-8 max-w-3xl text-lg leading-8 text-white/64 md:text-xl md:leading-9">
-              Проверяем деловой след руководителя, связанные компании, конфликты интересов и признаки номинальности.
+              Перед подписанием важно понять не только юридическое лицо, но и людей, связи и историю вокруг сделки.
             </p>
 
             <div className="mt-10 flex flex-col gap-4 sm:flex-row">
@@ -90,8 +90,8 @@ export default function Page() {
               <h2 className="mt-6 text-4xl font-semibold tracking-[-0.05em]">Что получает клиент</h2>
               <p className="mt-5 text-lg leading-8 text-white/64">Структурированный вывод по риску: что найдено, почему это важно и какое управленческое решение безопаснее.</p>
               <div className="mt-8 flex flex-wrap gap-3">
-                <Link href="/cases/cfo-screening" className="inline-flex items-center gap-2 rounded-2xl border border-[#D6A84F]/25 bg-[#D6A84F]/10 px-5 py-3 text-sm font-semibold text-[#F7D784]">
-                  Читать связанный кейс: Кейс: проверка кандидата на CFO <ArrowRight className="h-4 w-4" />
+                <Link href="/cases/kontragent-180m" className="inline-flex items-center gap-2 rounded-2xl border border-[#D6A84F]/25 bg-[#D6A84F]/10 px-5 py-3 text-sm font-semibold text-[#F7D784]">
+                  Читать связанный кейс: Кейс: контракт на 180 млн рублей <ArrowRight className="h-4 w-4" />
                 </Link>
                 <Link href="/trust-center" className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/10 px-5 py-3 text-sm font-semibold text-white">
                   Trust Center
@@ -120,7 +120,7 @@ export default function Page() {
         <HeimdallFooter language="ru" />
       </main>
 
-      <ContactModal open={open} onClose={() => setOpen(false)} language="ru" defaultTopic="Проверка директора" />
+      <ContactModal open={open} onClose={() => setOpen(false)} language="ru" defaultTopic="Проверка контрагента перед сделкой" />
     </>
   )
 }

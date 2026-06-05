@@ -6,8 +6,8 @@ import HeimdallFooter from '@/components/HeimdallFooter'
 import ContactModal from '@/components/ContactModal'
 import { ArrowRight, CheckCircle2, FileSearch, ShieldCheck, AlertTriangle } from 'lucide-react'
 
-const signals = ["управленческая история и связанные юридические лица", "судебные, долговые и репутационные сигналы", "признаки номинальности и конфликта интересов", "связи с конкурентами, поставщиками или проблемными структурами"]
-const useCases = ["перед назначением на чувствительную должность", "перед сделкой с компанией", "при сомнениях в фактическом контроле"]
+const signals = ["address, contact, representative and digital-trace overlaps", "links to client employees, former employees or contractors", "shell-company and unjustified margin indicators", "litigation and reputation signals across the supply chain"]
+const useCases = ["when procurement costs increase", "before adding a contractor to the supplier pool", "when affiliation or kickback risk is suspected"]
 
 export default function Page() {
   const [open, setOpen] = useState(false)
@@ -15,9 +15,9 @@ export default function Page() {
   return (
     <>
       <Head>
-        <title>Проверка директора | HEIMDALL</title>
-        <meta name="description" content="Проверка директора перед сделкой, назначением или партнерством: деловая биография, связанные компании, судебные риски, репутация и конфликт интересов." />
-        <link rel="canonical" href="https://www.heimdall-group.ru/proverka-direktora" />
+        <title>Procurement Contractor Check | HEIMDALL</title>
+        <meta name="description" content="Procurement contractor check: affiliation, conflict of interest, shell companies, inflated margins and hidden links." />
+        <link rel="canonical" href="https://www.heimdall-group.ru/procurement-contractor-check" />
       </Head>
 
       <main className="min-h-screen overflow-hidden bg-[#050816] text-white">
@@ -26,31 +26,31 @@ export default function Page() {
           <div className="absolute inset-0 opacity-[0.045] [background-image:linear-gradient(rgba(255,255,255,0.14)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.14)_1px,transparent_1px)] [background-size:52px_52px]" />
         </div>
 
-        <HeimdallNav language="ru" />
+        <HeimdallNav language="en" />
 
         <section className="relative z-10 mx-auto grid max-w-7xl gap-12 px-4 py-20 sm:px-5 md:py-24 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
           <div>
             <div className="inline-flex items-center gap-3 rounded-full border border-[#D6A84F]/25 bg-[#D6A84F]/10 px-5 py-2 text-xs uppercase tracking-[0.24em] text-[#F7D784]">
               <ShieldCheck className="h-4 w-4" />
-              Executive Screening
+              Procurement Risk
             </div>
 
             <h1 className="mt-9 text-5xl font-semibold leading-[0.95] tracking-[-0.06em] md:text-8xl">
-              Проверка директора компании
+              Procurement contractor and intermediary check
             </h1>
 
             <p className="mt-8 max-w-3xl text-lg leading-8 text-white/64 md:text-xl md:leading-9">
-              Проверяем деловой след руководителя, связанные компании, конфликты интересов и признаки номинальности.
+              We review contractors, intermediaries and suppliers for affiliation indicators and procurement conflict of interest.
             </p>
 
             <div className="mt-10 flex flex-col gap-4 sm:flex-row">
               <button type="button" onClick={() => setOpen(true)} className="inline-flex items-center justify-center gap-3 rounded-2xl bg-sky-500 px-7 py-4 font-semibold text-white shadow-[0_0_45px_rgba(56,189,248,0.30)]">
-                Получить консультацию
+                Request consultation
                 <ArrowRight className="h-4 w-4" />
               </button>
 
-              <Link href="/sample-reports" className="inline-flex items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/10 px-7 py-4 font-semibold text-white">
-                Пример отчета
+              <Link href="/sample-reports-en" className="inline-flex items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/10 px-7 py-4 font-semibold text-white">
+                Sample report
               </Link>
             </div>
           </div>
@@ -58,7 +58,7 @@ export default function Page() {
           <div className="rounded-[42px] border border-white/10 bg-white/[0.045] p-6 backdrop-blur-2xl">
             <div className="rounded-[34px] border border-[#D6A84F]/20 bg-[#07101f]/90 p-7">
               <div className="text-sm uppercase tracking-[0.25em] text-[#F7D784]/80">
-                Что проверяем
+                Review scope
               </div>
 
               <div className="mt-8 grid gap-4">
@@ -77,7 +77,7 @@ export default function Page() {
           <div className="grid gap-6 lg:grid-cols-[0.82fr_1fr]">
             <div className="rounded-[36px] border border-[#D6A84F]/20 bg-[#D6A84F]/[0.07] p-8 backdrop-blur-2xl">
               <AlertTriangle className="h-8 w-8 text-[#F7D784]" />
-              <h2 className="mt-6 text-4xl font-semibold tracking-[-0.05em]">Когда нужна проверка</h2>
+              <h2 className="mt-6 text-4xl font-semibold tracking-[-0.05em]">When this review is needed</h2>
               <div className="mt-8 grid gap-4">
                 {useCases.map((item) => (
                   <div key={item} className="rounded-2xl border border-white/10 bg-black/20 px-5 py-4 text-sm leading-6 text-white/72">{item}</div>
@@ -87,17 +87,17 @@ export default function Page() {
 
             <div className="rounded-[36px] border border-white/10 bg-white/[0.045] p-8 backdrop-blur-2xl">
               <FileSearch className="h-8 w-8 text-sky-200" />
-              <h2 className="mt-6 text-4xl font-semibold tracking-[-0.05em]">Что получает клиент</h2>
-              <p className="mt-5 text-lg leading-8 text-white/64">Структурированный вывод по риску: что найдено, почему это важно и какое управленческое решение безопаснее.</p>
+              <h2 className="mt-6 text-4xl font-semibold tracking-[-0.05em]">What the client receives</h2>
+              <p className="mt-5 text-lg leading-8 text-white/64">A structured risk conclusion: what was found, why it matters and which decision is safer.</p>
               <div className="mt-8 flex flex-wrap gap-3">
-                <Link href="/cases/cfo-screening" className="inline-flex items-center gap-2 rounded-2xl border border-[#D6A84F]/25 bg-[#D6A84F]/10 px-5 py-3 text-sm font-semibold text-[#F7D784]">
-                  Читать связанный кейс: Кейс: проверка кандидата на CFO <ArrowRight className="h-4 w-4" />
+                <Link href="/cases-en/procurement-conflict-of-interest" className="inline-flex items-center gap-2 rounded-2xl border border-[#D6A84F]/25 bg-[#D6A84F]/10 px-5 py-3 text-sm font-semibold text-[#F7D784]">
+                  Read related case: Case: procurement conflict of interest <ArrowRight className="h-4 w-4" />
                 </Link>
-                <Link href="/trust-center" className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/10 px-5 py-3 text-sm font-semibold text-white">
+                <Link href="/trust-center-en" className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/10 px-5 py-3 text-sm font-semibold text-white">
                   Trust Center
                 </Link>
-                <Link href="/services" className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/10 px-5 py-3 text-sm font-semibold text-white">
-                  Все услуги
+                <Link href="/services-en" className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/10 px-5 py-3 text-sm font-semibold text-white">
+                  All services
                 </Link>
               </div>
             </div>
@@ -107,20 +107,20 @@ export default function Page() {
         <section className="relative z-10 mx-auto max-w-7xl px-4 pb-28 sm:px-5">
           <div className="grid gap-6 rounded-[42px] border border-sky-300/20 bg-sky-300/[0.07] p-8 backdrop-blur-2xl md:p-12 lg:grid-cols-[1fr_auto] lg:items-center">
             <div>
-              <h2 className="text-4xl font-semibold tracking-[-0.05em] md:text-6xl">Нужно проверить объект перед решением?</h2>
-              <p className="mt-5 max-w-3xl text-base leading-8 text-white/64">Оставьте заявку и коротко опишите ситуацию. Мы предложим формат проверки, срок и перечень необходимых данных.</p>
+              <h2 className="text-4xl font-semibold tracking-[-0.05em] md:text-6xl">Need to review an object before a decision?</h2>
+              <p className="mt-5 max-w-3xl text-base leading-8 text-white/64">Submit a request and briefly describe the situation. We will suggest the review format, timing and required inputs.</p>
             </div>
             <button type="button" onClick={() => setOpen(true)} className="inline-flex items-center justify-center gap-3 rounded-2xl bg-sky-500 px-7 py-4 font-semibold text-white shadow-[0_0_45px_rgba(56,189,248,0.28)]">
-              Получить консультацию
+              Request consultation
               <ArrowRight className="h-4 w-4" />
             </button>
           </div>
         </section>
 
-        <HeimdallFooter language="ru" />
+        <HeimdallFooter language="en" />
       </main>
 
-      <ContactModal open={open} onClose={() => setOpen(false)} language="ru" defaultTopic="Проверка директора" />
+      <ContactModal open={open} onClose={() => setOpen(false)} language="en" defaultTopic="Procurement Contractor Check" />
     </>
   )
 }

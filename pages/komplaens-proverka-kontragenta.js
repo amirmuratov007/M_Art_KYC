@@ -6,8 +6,8 @@ import HeimdallFooter from '@/components/HeimdallFooter'
 import ContactModal from '@/components/ContactModal'
 import { ArrowRight, CheckCircle2, FileSearch, ShieldCheck, AlertTriangle } from 'lucide-react'
 
-const signals = ["управленческая история и связанные юридические лица", "судебные, долговые и репутационные сигналы", "признаки номинальности и конфликта интересов", "связи с конкурентами, поставщиками или проблемными структурами"]
-const useCases = ["перед назначением на чувствительную должность", "перед сделкой с компанией", "при сомнениях в фактическом контроле"]
+const signals = ["санкционные, PEP и adverse media сигналы", "бенефициары, связанные лица и корпоративный контур", "платежный маршрут и юрисдикционная экспозиция", "косвенные риски без прямого совпадения в списках"]
+const useCases = ["перед международной сделкой или платежом", "перед onboarding нового клиента или партнера", "когда прямого санкционного совпадения нет, но контекст рискованный"]
 
 export default function Page() {
   const [open, setOpen] = useState(false)
@@ -15,9 +15,9 @@ export default function Page() {
   return (
     <>
       <Head>
-        <title>Проверка директора | HEIMDALL</title>
-        <meta name="description" content="Проверка директора перед сделкой, назначением или партнерством: деловая биография, связанные компании, судебные риски, репутация и конфликт интересов." />
-        <link rel="canonical" href="https://www.heimdall-group.ru/proverka-direktora" />
+        <title>Комплаенс проверка контрагента | HEIMDALL</title>
+        <meta name="description" content="Комплаенс-проверка контрагента: санкции, PEP, adverse media, владельцы, платежный маршрут, репутация и регуляторные риски." />
+        <link rel="canonical" href="https://www.heimdall-group.ru/komplaens-proverka-kontragenta" />
       </Head>
 
       <main className="min-h-screen overflow-hidden bg-[#050816] text-white">
@@ -32,15 +32,15 @@ export default function Page() {
           <div>
             <div className="inline-flex items-center gap-3 rounded-full border border-[#D6A84F]/25 bg-[#D6A84F]/10 px-5 py-2 text-xs uppercase tracking-[0.24em] text-[#F7D784]">
               <ShieldCheck className="h-4 w-4" />
-              Executive Screening
+              Compliance / AML / KYC
             </div>
 
             <h1 className="mt-9 text-5xl font-semibold leading-[0.95] tracking-[-0.06em] md:text-8xl">
-              Проверка директора компании
+              Комплаенс-проверка контрагента
             </h1>
 
             <p className="mt-8 max-w-3xl text-lg leading-8 text-white/64 md:text-xl md:leading-9">
-              Проверяем деловой след руководителя, связанные компании, конфликты интересов и признаки номинальности.
+              Проверяем не только совпадения в списках, но и связи, платежный маршрут, владельцев и репутационный контекст.
             </p>
 
             <div className="mt-10 flex flex-col gap-4 sm:flex-row">
@@ -90,8 +90,8 @@ export default function Page() {
               <h2 className="mt-6 text-4xl font-semibold tracking-[-0.05em]">Что получает клиент</h2>
               <p className="mt-5 text-lg leading-8 text-white/64">Структурированный вывод по риску: что найдено, почему это важно и какое управленческое решение безопаснее.</p>
               <div className="mt-8 flex flex-wrap gap-3">
-                <Link href="/cases/cfo-screening" className="inline-flex items-center gap-2 rounded-2xl border border-[#D6A84F]/25 bg-[#D6A84F]/10 px-5 py-3 text-sm font-semibold text-[#F7D784]">
-                  Читать связанный кейс: Кейс: проверка кандидата на CFO <ArrowRight className="h-4 w-4" />
+                <Link href="/cases/sanctions-risk-without-direct-match" className="inline-flex items-center gap-2 rounded-2xl border border-[#D6A84F]/25 bg-[#D6A84F]/10 px-5 py-3 text-sm font-semibold text-[#F7D784]">
+                  Читать связанный кейс: Кейс: санкционный риск без прямого совпадения <ArrowRight className="h-4 w-4" />
                 </Link>
                 <Link href="/trust-center" className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/10 px-5 py-3 text-sm font-semibold text-white">
                   Trust Center
@@ -120,7 +120,7 @@ export default function Page() {
         <HeimdallFooter language="ru" />
       </main>
 
-      <ContactModal open={open} onClose={() => setOpen(false)} language="ru" defaultTopic="Проверка директора" />
+      <ContactModal open={open} onClose={() => setOpen(false)} language="ru" defaultTopic="Комплаенс проверка контрагента" />
     </>
   )
 }
