@@ -1,18 +1,14 @@
 {
   "name": "HEIMDALL Client App",
   "short_name": "HEIMDALL",
-  "description": "Private client application for HEIMDALL checks, reports and risk signals.",
-  "id": "/app-download",
-  "start_url": "/app-download",
+  "description": "HEIMDALL client app.",
+  "id": "/demo-client-app",
+  "start_url": "/demo-client-app",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#050816",
   "theme_color": "#050816",
-  "categories": [
-    "business",
-    "productivity"
-  ],
   "icons": [
     {
       "src": "/android-chrome-192x192.png",
@@ -29,18 +25,7 @@
   ],
   "shortcuts": [
     {
-      "name": "Client Account",
-      "short_name": "Account",
-      "url": "/account",
-      "icons": [
-        {
-          "src": "/android-chrome-192x192.png",
-          "sizes": "192x192"
-        }
-      ]
-    },
-    {
-      "name": "Demo Account",
+      "name": "Demo App",
       "short_name": "Demo",
       "url": "/demo-client-app",
       "icons": [
@@ -51,9 +36,9 @@
       ]
     },
     {
-      "name": "New Request",
-      "short_name": "Request",
-      "url": "/client-app#request",
+      "name": "Client Account",
+      "short_name": "Account",
+      "url": "/account",
       "icons": [
         {
           "src": "/android-chrome-192x192.png",
