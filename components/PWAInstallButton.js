@@ -49,7 +49,7 @@ export default function PWAInstallButton({ language = 'ru' }) {
     return (
       <div className="inline-flex items-center justify-center gap-3 rounded-2xl border border-emerald-300/25 bg-emerald-300/10 px-6 py-4 font-semibold text-emerald-100">
         <CheckCircle2 className="h-5 w-5" />
-        {ru ? 'Приложение уже установлено' : 'App is already installed'}
+        {ru ? 'Уже установлено' : 'Already installed'}
       </div>
     )
   }
@@ -68,16 +68,16 @@ export default function PWAInstallButton({ language = 'ru' }) {
       {status === 'manual' && (
         <div className="rounded-2xl border border-[#D6A84F]/25 bg-[#D6A84F]/10 px-5 py-4 text-sm leading-6 text-[#F7D784]">
           {ru
-            ? 'Если кнопка не открыла установку: Android - меню браузера → «Установить приложение». iPhone - Safari → Поделиться → «На экран Домой».'
-            : 'If the button did not open install: Android - browser menu → Install app. iPhone - Safari → Share → Add to Home Screen.'}
+            ? 'Android: меню браузера - Установить приложение. iPhone: Safari - Поделиться - На экран Домой.'
+            : 'Android: browser menu - Install app. iPhone: Safari - Share - Add to Home Screen.'}
         </div>
       )}
 
       <div className="flex items-start gap-3 rounded-2xl border border-white/10 bg-white/[0.055] px-5 py-4 text-sm leading-6 text-white/58">
         <Smartphone className="mt-0.5 h-5 w-5 shrink-0 text-sky-300" />
         {ru
-          ? 'Это web-app/PWA. Он ставится на экран телефона и открывает клиентский контур HEIMDALL без магазина приложений.'
-          : 'This is a web app/PWA. It installs to the phone home screen and opens the HEIMDALL client area without an app store.'}
+          ? 'Это web-приложение. APK в загруженном архиве не было.'
+          : 'This is a web app. The uploaded archive did not include an APK.'}
       </div>
     </div>
   )
