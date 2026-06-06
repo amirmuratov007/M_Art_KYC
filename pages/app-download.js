@@ -3,32 +3,19 @@ import Link from 'next/link'
 import HeimdallNav from '@/components/HeimdallNav'
 import HeimdallFooter from '@/components/HeimdallFooter'
 import PWAInstallButton from '@/components/PWAInstallButton'
-import { ArrowRight, Smartphone, Download, KeyRound, CheckCircle2 } from 'lucide-react'
-
-const steps = [
-  ['1', 'На телефон сейчас ставится PWA', 'Откройте эту страницу на телефоне и нажмите кнопку установки.'],
-  ['2', 'Исходники приложения уже доступны', 'Архив мобильного приложения лежит на сайте и скачивается отдельной кнопкой.'],
-  ['3', 'APK/TestFlight подключим после сборки', 'Когда будет готов APK или TestFlight-ссылка, кнопка скачивания будет вести прямо туда.']
-]
+import { ArrowRight, Download, KeyRound, Smartphone } from 'lucide-react'
 
 const credentials = [
   ['Email', 'demo@heimdall-group.ru'],
-  ['Password', 'HeimdallDemo2026!'],
-  ['Company', 'Meridian Capital Demo']
-]
-
-const downloads = [
-  ['Исходники мобильного приложения', '/downloads/heimdall-client-mobile-source.zip', 'ZIP'],
-  ['iOS trial package', '/downloads/heimdall-ios-trial-site-package.zip', 'ZIP'],
-  ['Windows demo', '/downloads/HeimdallCabinet-Windows-demo.exe', 'EXE']
+  ['Password', 'HeimdallDemo2026!']
 ]
 
 export default function AppDownloadPage() {
   return (
     <>
       <Head>
-        <title>Скачать клиентское приложение | HEIMDALL</title>
-        <meta name="description" content="Установка клиентского приложения HEIMDALL на телефон: PWA-доступ, тестовый аккаунт, исходники мобильного приложения и демо-кабинет." />
+        <title>Клиентское приложение | HEIMDALL</title>
+        <meta name="description" content="Установка клиентского web-приложения HEIMDALL на телефон и тестовый демо-доступ." />
         <link rel="canonical" href="https://www.heimdall-group.ru/app-download" />
       </Head>
 
@@ -40,7 +27,7 @@ export default function AppDownloadPage() {
 
         <HeimdallNav language="ru" />
 
-        <section className="relative z-10 mx-auto grid max-w-7xl gap-10 px-4 py-16 sm:px-5 sm:py-24 lg:grid-cols-[1fr_0.82fr] lg:items-center">
+        <section className="relative z-10 mx-auto grid max-w-7xl gap-10 px-4 py-16 sm:px-5 sm:py-24 lg:grid-cols-[1fr_0.8fr] lg:items-center">
           <div>
             <div className="inline-flex items-center gap-3 rounded-full border border-[#D6A84F]/25 bg-[#D6A84F]/10 px-5 py-2 text-sm uppercase tracking-[0.24em] text-[#F7D784]">
               <Download className="h-4 w-4" />
@@ -48,24 +35,25 @@ export default function AppDownloadPage() {
             </div>
 
             <h1 className="mt-9 text-5xl font-semibold leading-[0.95] tracking-[-0.06em] md:text-8xl">
-              Установка и файлы клиентского приложения
+              Клиентское приложение
             </h1>
 
             <p className="mt-8 max-w-3xl text-lg leading-8 text-white/64 md:text-xl md:leading-9">
-              В загруженном архиве нет APK или IPA, поэтому я не делаю фальшивую кнопку «скачать APK». Сейчас активна установка PWA на телефон, а исходники приложения и trial-пакеты доступны для скачивания.
+              Сейчас доступна web-версия приложения. Она открывается на телефоне и ставится на экран Домой.
             </p>
 
-            <div className="mt-10 max-w-xl">
-              <PWAInstallButton language="ru" />
-            </div>
-
-            <div className="mt-6 flex flex-col gap-4 sm:flex-row">
-              <Link href="/demo-client-app" className="inline-flex items-center justify-center gap-3 rounded-2xl border border-[#D6A84F]/25 bg-[#D6A84F]/10 px-7 py-4 font-semibold text-[#F7D784]">
-                Открыть демо-кабинет <ArrowRight className="h-4 w-4" />
+            <div className="mt-10 grid max-w-xl gap-4 sm:grid-cols-2">
+              <Link href="/demo-client-app" className="inline-flex items-center justify-center gap-3 rounded-2xl bg-sky-500 px-7 py-4 font-semibold text-white shadow-[0_0_45px_rgba(56,189,248,0.30)]">
+                Открыть приложение
+                <ArrowRight className="h-4 w-4" />
               </Link>
               <Link href="/account" className="inline-flex items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/10 px-7 py-4 font-semibold text-white">
-                Войти в реальный кабинет
+                Войти в кабинет
               </Link>
+            </div>
+
+            <div className="mt-6 max-w-xl">
+              <PWAInstallButton language="ru" />
             </div>
           </div>
 
@@ -73,8 +61,8 @@ export default function AppDownloadPage() {
             <div className="rounded-[34px] border border-[#D6A84F]/20 bg-[#07101f]/90 p-7">
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <div className="text-xs uppercase tracking-[0.22em] text-[#F7D784]/80">Test Access</div>
-                  <div className="mt-2 text-2xl font-semibold">Тестовый аккаунт</div>
+                  <div className="text-xs uppercase tracking-[0.22em] text-[#F7D784]/80">Demo access</div>
+                  <div className="mt-2 text-2xl font-semibold">Тестовый доступ</div>
                 </div>
                 <KeyRound className="h-6 w-6 text-sky-300" />
               </div>
@@ -88,57 +76,25 @@ export default function AppDownloadPage() {
                 ))}
               </div>
 
-              <p className="mt-6 text-sm leading-7 text-white/58">
-                Эти данные можно использовать как тестовый доступ в нативном приложении после пересборки. На сайте также есть демо-кабинет без риска для Supabase.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        <section className="relative z-10 mx-auto max-w-7xl px-4 pb-24 sm:px-5">
-          <div className="mb-10 max-w-4xl">
-            <div className="text-sm uppercase tracking-[0.25em] text-[#F7D784]/80">Файлы приложения</div>
-            <h2 className="mt-4 text-4xl font-semibold tracking-[-0.05em] md:text-6xl">
-              Скачивание активировано
-            </h2>
-          </div>
-
-          <div className="grid gap-5 md:grid-cols-3">
-            {downloads.map(([title, href, type]) => (
-              <a key={href} href={href} download className="group rounded-[34px] border border-white/10 bg-white/[0.045] p-7 backdrop-blur-2xl transition hover:-translate-y-1 hover:border-[#D6A84F]/35">
-                <div className="inline-flex rounded-full border border-[#D6A84F]/25 bg-[#D6A84F]/10 px-4 py-2 text-sm font-semibold text-[#F7D784]">{type}</div>
-                <h3 className="mt-6 text-2xl font-semibold tracking-[-0.04em]">{title}</h3>
-                <div className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-sky-200">
-                  Скачать <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
-                </div>
-              </a>
-            ))}
-          </div>
-        </section>
-
-        <section className="relative z-10 mx-auto max-w-7xl px-4 pb-24 sm:px-5">
-          <div className="grid gap-5 md:grid-cols-3">
-            {steps.map(([num, title, text]) => (
-              <div key={num} className="rounded-[34px] border border-white/10 bg-white/[0.045] p-7 backdrop-blur-2xl">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-[#D6A84F]/25 bg-[#D6A84F]/10 text-lg font-semibold text-[#F7D784]">{num}</div>
-                <h2 className="mt-6 text-2xl font-semibold tracking-[-0.04em]">{title}</h2>
-                <p className="mt-4 text-sm leading-7 text-white/58">{text}</p>
+              <div className="mt-6 rounded-2xl border border-sky-300/20 bg-sky-300/10 px-5 py-4 text-sm leading-6 text-sky-100">
+                Загруженный ZIP - это исходники, не установочный файл. Для установки нужен APK или TestFlight. Пока используем web-приложение.
               </div>
-            ))}
+            </div>
           </div>
         </section>
 
         <section className="relative z-10 mx-auto max-w-7xl px-4 pb-28 sm:px-5">
-          <div className="grid gap-8 rounded-[42px] border border-sky-300/20 bg-sky-300/[0.07] p-8 backdrop-blur-2xl md:p-12 lg:grid-cols-[1fr_auto] lg:items-center">
+          <div className="grid gap-8 rounded-[42px] border border-[#D6A84F]/20 bg-[#D6A84F]/[0.07] p-8 backdrop-blur-2xl md:p-12 lg:grid-cols-[1fr_auto] lg:items-center">
             <div>
-              <Smartphone className="mb-6 h-8 w-8 text-sky-200" />
-              <h2 className="text-4xl font-semibold tracking-[-0.05em] md:text-6xl">Страница готова под APK/TestFlight</h2>
+              <Smartphone className="mb-6 h-8 w-8 text-[#F7D784]" />
+              <h2 className="text-4xl font-semibold tracking-[-0.05em] md:text-6xl">Когда будет APK</h2>
               <p className="mt-5 max-w-3xl text-base leading-8 text-white/64">
-                Когда ты пересоберешь приложение и пришлешь APK или ссылку TestFlight, я заменю кнопку на прямое скачивание установочного файла.
+                Пришли APK или ссылку TestFlight - я заменю эту страницу на прямое скачивание настоящего приложения.
               </p>
             </div>
-            <Link href="/client-app" className="inline-flex items-center justify-center gap-3 rounded-2xl bg-sky-500 px-7 py-4 font-semibold text-white">
-              О приложении <ArrowRight className="h-4 w-4" />
+            <Link href="/client-app" className="inline-flex items-center justify-center gap-3 rounded-2xl bg-[#D6A84F] px-7 py-4 font-semibold text-[#050816]">
+              О приложении
+              <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
         </section>
