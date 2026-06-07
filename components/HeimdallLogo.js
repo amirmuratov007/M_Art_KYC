@@ -8,7 +8,7 @@ export default function HeimdallLogo({ href = '/', compact = false }) {
       <img
         src={src}
         alt="HEIMDALL"
-        className={compact ? 'h-11 w-auto shrink-0' : 'h-12 w-auto shrink-0 sm:h-14'}
+        className={compact ? 'h-11 w-auto max-w-[64px] shrink-0' : 'h-10 w-auto max-w-[190px] shrink-0 sm:h-14 sm:max-w-[260px] lg:max-w-none'}
       />
     </Link>
   )
