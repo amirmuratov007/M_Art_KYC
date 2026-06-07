@@ -112,6 +112,12 @@ export default function ContactModal({ open, onClose, language = 'ru', defaultTo
             {status === 'loading' ? (ru ? 'Отправляем...' : 'Sending...') : (ru ? 'Отправить заявку' : 'Send request')}
             <ArrowRight className="h-4 w-4" />
           </button>
+
+          <div className="text-xs leading-6 text-white/45">
+            {ru
+              ? 'Нажимая кнопку, вы соглашаетесь с обработкой персональных данных и принимаете политику конфиденциальности.'
+              : 'By clicking the button, you agree to personal data processing and accept the privacy policy.'}
+          </div>
         </form>
 
         {status === 'success' && (

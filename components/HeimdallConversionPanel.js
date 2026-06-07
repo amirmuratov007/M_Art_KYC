@@ -144,9 +144,11 @@ export default function HeimdallConversionPanel({ language = 'ru' }) {
 
           <div className="mt-4 flex items-start gap-3 text-xs leading-6 text-white/45">
             <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-sky-300/70" />
-            {ru
-              ? 'Форма использует существующий рабочий API HEIMDALL. Никакие настройки Supabase и Telegram этим патчем не меняются.'
-              : 'This form uses the existing HEIMDALL API. This patch does not change Supabase or Telegram settings.'}
+            <span>
+              {ru
+                ? 'Нажимая кнопку, вы соглашаетесь с обработкой персональных данных и принимаете политику конфиденциальности. Форма использует существующий рабочий API HEIMDALL.'
+                : 'By clicking the button, you agree to personal data processing and accept the privacy policy. This form uses the existing HEIMDALL API.'}
+            </span>
           </div>
 
           {status === 'success' && (
