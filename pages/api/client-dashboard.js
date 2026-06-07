@@ -1,55 +1,95 @@
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin'
 
+function setNoStore(res) {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
+  res.setHeader('Pragma', 'no-cache')
+  res.setHeader('Expires', '0')
+}
+
+function getToken(req) {
+  const authorization = req.headers.authorization || ''
+  const bearer = authorization.startsWith('Bearer ') ? authorization.slice(7).trim() : ''
+  const headerToken = req.headers['x-heimdall-client-token']
+  const queryToken = req.query?.token
+
+  return bearer || headerToken || queryToken || ''
+}
+
+function isValidTokenFormat(token) {
+  return typeof token === 'string' && /^[a-f0-9]{64}$/i.test(token)
+}
+
+function isExpired(value) {
+  return value && new Date(value).getTime() < Date.now()
+}
+
+function safeClientPayload(access) {
+  return {
+    name: access.client_name || '',
+    email: access.client_email || '',
+    company: access.company || '',
+    plan: access.plan || 'HEIMDALL Client Access',
+    expires_at: access.expires_at || null
+  }
+}
+
 export default async function handler(req, res) {
+  setNoStore(res)
+
   if (req.method !== 'GET') {
     return res.status(405).json({ ok: false, error: 'Method not allowed' })
   }
 
+  const token = getToken(req)
+
+  if (!isValidTokenFormat(token)) {
+    return res.status(401).json({ ok: false, error: 'Client access token is required' })
+  }
+
   try {
     const supabase = getSupabaseAdmin()
-    const { user_id, contact } = req.query || {}
 
-    let checksQuery = supabase
-      .from('client_checks')
-      .select('*')
-      .order('created_at', { ascending: false })
+    const { data: access, error } = await supabase
+      .from('client_access_links')
+      .select('id, client_name, client_email, company, plan, status, expires_at, open_count')
+      .eq('token', token)
+      .single()
 
-    if (user_id) {
-      checksQuery = checksQuery.eq('user_id', user_id)
+    if (error || !access) {
+      return res.status(404).json({ ok: false, error: 'Access link not found' })
     }
 
-    const { data: checks, error: checksError } = await checksQuery
-
-    let leadsQuery = supabase
-      .from('heimdall_leads')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .limit(20)
-
-    if (contact) {
-      leadsQuery = leadsQuery.ilike('contact', `%${contact}%`)
+    if (access.status !== 'active') {
+      return res.status(403).json({ ok: false, error: 'Client access is not active' })
     }
 
-    const { data: leads, error: leadsError } = await leadsQuery
+    if (isExpired(access.expires_at)) {
+      return res.status(403).json({ ok: false, error: 'Client access link expired' })
+    }
 
-    const safeChecks = checksError ? [] : checks || []
-    const safeLeads = leadsError ? [] : leads || []
+    await supabase
+      .from('client_access_links')
+      .update({
+        last_opened_at: new Date().toISOString(),
+        open_count: (access.open_count || 0) + 1
+      })
+      .eq('id', access.id)
 
     return res.status(200).json({
       ok: true,
       source: 'heimdall-client-dashboard',
+      mode: 'secured-client-access',
       updated_at: new Date().toISOString(),
-      checks: safeChecks,
-      leads: safeLeads,
-      errors: {
-        checks: checksError ? checksError.message : null,
-        leads: leadsError ? leadsError.message : null
-      },
+      client: safeClientPayload(access),
+      checks: [],
+      reports: [],
+      signals: [],
       summary: {
-        checks_total: safeChecks.length,
-        leads_total: safeLeads.length,
-        active_checks: safeChecks.filter((item) => ['new', 'in_progress', 'review'].includes(item.status)).length,
-        completed_checks: safeChecks.filter((item) => item.status === 'completed').length
+        checks_total: 0,
+        active_checks: 0,
+        completed_checks: 0,
+        reports_total: 0,
+        signals_total: 0
       }
     })
   } catch (error) {
