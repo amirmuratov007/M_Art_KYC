@@ -33,6 +33,7 @@ const ruMenu = [
     items: [
       ['Комплексное сопровождение', '/business-support'],
       ['Служба безопасности на аутсорсе', '/security-outsourcing'],
+      ['Прайс ИБ и аутсорсинг', '/security-outsourcing#pricing'],
       ['Клиентское приложение', '/client-app'],
       ['Скачать приложение', '/app-download'],
       ['Демо-кабинет', '/demo-client-app'],
@@ -92,6 +93,7 @@ const enMenu = [
     items: [
       ['Business Support', '/business-support-en'],
       ['Security Outsourcing', '/security-outsourcing-en'],
+      ['InfoSec and Outsourcing Pricing', '/security-outsourcing-en#pricing'],
       ['Business Intelligence Support', '/business-intelligence-support-en'],
       ['Client Application', '/client-app-en'],
       ['Download App', '/app-download-en'],
