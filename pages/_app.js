@@ -1,14 +1,39 @@
 import '@/styles/globals.css'
 import Script from 'next/script'
+import { useEffect, useState } from 'react'
 import AnimatedCursor from '@/components/AnimatedCursor'
+import CookieConsentBanner from '@/components/CookieConsentBanner'
+
+const COOKIE_CONSENT_KEY = 'heimdall_cookie_consent'
+const COOKIE_CONSENT_EVENT = 'heimdall-cookie-consent-change'
 
 export default function App({ Component, pageProps }) {
   const gaId = process.env.NEXT_PUBLIC_GA_ID
   const ymId = process.env.NEXT_PUBLIC_YM_ID
+  const [analyticsAllowed, setAnalyticsAllowed] = useState(false)
+
+  useEffect(() => {
+    const readConsent = () => {
+      try {
+        setAnalyticsAllowed(window.localStorage.getItem(COOKIE_CONSENT_KEY) === 'accepted')
+      } catch (error) {
+        setAnalyticsAllowed(false)
+      }
+    }
+
+    readConsent()
+
+    const onConsentChange = (event) => {
+      setAnalyticsAllowed(event.detail === 'accepted')
+    }
+
+    window.addEventListener(COOKIE_CONSENT_EVENT, onConsentChange)
+    return () => window.removeEventListener(COOKIE_CONSENT_EVENT, onConsentChange)
+  }, [])
 
   return (
     <>
-      {gaId && (
+      {analyticsAllowed && gaId && (
         <>
           <Script src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`} strategy="afterInteractive" />
           <Script id="google-analytics" strategy="afterInteractive">
@@ -23,7 +48,7 @@ export default function App({ Component, pageProps }) {
         </>
       )}
 
-      {ymId && (
+      {analyticsAllowed && ymId && (
         <Script id="yandex-metrika" strategy="afterInteractive">
           {`
             (function(m,e,t,r,i,k,a){
@@ -54,6 +79,7 @@ export default function App({ Component, pageProps }) {
 
       <AnimatedCursor />
       <Component {...pageProps} />
+      <CookieConsentBanner />
     </>
   )
 }
