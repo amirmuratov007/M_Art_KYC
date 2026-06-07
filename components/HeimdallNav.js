@@ -15,7 +15,8 @@ const ruMenu = [
       ['Проверка бенефициаров', '/proverka-beneficiarov'],
       ['AML / KYC', '/aml-kyc-russia'],
       ['Due Diligence', '/due-diligence-russia'],
-      ['Внутренние расследования', '/internal-investigations']
+      ['Внутренние расследования', '/internal-investigations'],
+      ['Единый прайс', '/pricing']
     ]
   },
   {
@@ -35,6 +36,7 @@ const ruMenu = [
       ['Комплексное сопровождение', '/business-support'],
       ['Служба безопасности на аутсорсе', '/security-outsourcing'],
       ['Внутренние расследования', '/internal-investigations'],
+      ['Единый прайс', '/pricing'],
       ['Прайс ИБ и аутсорсинг', '/security-outsourcing#pricing'],
       ['Клиентское приложение', '/client-app'],
       ['Скачать приложение', '/app-download'],
@@ -67,7 +69,8 @@ const enMenu = [
       ['CFO Screening', '/cfo-screening-en'],
       ['Procurement Risk Check', '/procurement-risk-check-en'],
       ['Background Check', '/background-check'],
-      ['Internal Investigations', '/internal-investigations-en']
+      ['Internal Investigations', '/internal-investigations-en'],
+      ['Pricing', '/pricing-en']
     ]
   },
   {
@@ -97,6 +100,7 @@ const enMenu = [
       ['Business Support', '/business-support-en'],
       ['Security Outsourcing', '/security-outsourcing-en'],
       ['Internal Investigations', '/internal-investigations-en'],
+      ['Pricing', '/pricing-en'],
       ['InfoSec and Outsourcing Pricing', '/security-outsourcing-en#pricing'],
       ['Business Intelligence Support', '/business-intelligence-support-en'],
       ['Client Application', '/client-app-en'],
@@ -140,6 +144,8 @@ const langMap = {
   '/security-outsourcing-en': '/security-outsourcing',
   '/internal-investigations': '/internal-investigations-en',
   '/internal-investigations-en': '/internal-investigations',
+  '/pricing': '/pricing-en',
+  '/pricing-en': '/pricing',
   '/business-intelligence-support-en': '/business-support',
   '/client-app': '/client-app-en',
   '/client-app-en': '/client-app',

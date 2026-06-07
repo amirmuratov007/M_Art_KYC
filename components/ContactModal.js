@@ -89,6 +89,9 @@ export default function ContactModal({ open, onClose, language = 'ru', defaultTo
                 <option>AML / KYC</option>
                 <option>Due Diligence</option>
                 <option>Внутреннее расследование</option>
+                <option>Информационная безопасность</option>
+                <option>Служба безопасности на аутсорсе</option>
+                <option>Единый прайс и подбор услуги</option>
                 <option>Комплексное сопровождение</option>
                 <option>Клиентское приложение</option>
                 <option>Общий запрос</option>
@@ -101,6 +104,9 @@ export default function ContactModal({ open, onClose, language = 'ru', defaultTo
                 <option>AML / KYC</option>
                 <option>Due Diligence</option>
                 <option>Internal investigation</option>
+                <option>Information security</option>
+                <option>Outsourced security department</option>
+                <option>Pricing and service selection</option>
                 <option>Business support</option>
                 <option>Client application</option>
                 <option>General request</option>
