@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Download, Smartphone, CheckCircle2 } from 'lucide-react'
+import { Download, CheckCircle2 } from 'lucide-react'
 
 export default function PWAInstallButton({ language = 'ru' }) {
   const ru = language === 'ru'
@@ -34,14 +34,7 @@ export default function PWAInstallButton({ language = 'ru' }) {
     }
 
     deferredPrompt.prompt()
-    const choice = await deferredPrompt.userChoice
-
-    if (choice?.outcome === 'accepted') {
-      setStatus('installed')
-    } else {
-      setStatus('manual')
-    }
-
+    await deferredPrompt.userChoice
     setDeferredPrompt(null)
   }
 
@@ -72,13 +65,6 @@ export default function PWAInstallButton({ language = 'ru' }) {
             : 'Android: browser menu - Install app. iPhone: Safari - Share - Add to Home Screen.'}
         </div>
       )}
-
-      <div className="flex items-start gap-3 rounded-2xl border border-white/10 bg-white/[0.055] px-5 py-4 text-sm leading-6 text-white/58">
-        <Smartphone className="mt-0.5 h-5 w-5 shrink-0 text-sky-300" />
-        {ru
-          ? 'Это web-приложение. APK в загруженном архиве не было.'
-          : 'This is a web app. The uploaded archive did not include an APK.'}
-      </div>
     </div>
   )
 }
