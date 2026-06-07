@@ -1,7 +1,7 @@
 {
-  "name": "HEIMDALL Client App",
+  "name": "HEIMDALL",
   "short_name": "HEIMDALL",
-  "description": "HEIMDALL client app.",
+  "description": "HEIMDALL client app",
   "id": "/demo-client-app",
   "start_url": "/demo-client-app",
   "scope": "/",
@@ -21,30 +21,6 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
-    }
-  ],
-  "shortcuts": [
-    {
-      "name": "Demo App",
-      "short_name": "Demo",
-      "url": "/demo-client-app",
-      "icons": [
-        {
-          "src": "/android-chrome-192x192.png",
-          "sizes": "192x192"
-        }
-      ]
-    },
-    {
-      "name": "Client Account",
-      "short_name": "Account",
-      "url": "/account",
-      "icons": [
-        {
-          "src": "/android-chrome-192x192.png",
-          "sizes": "192x192"
-        }
-      ]
     }
   ]
 }
