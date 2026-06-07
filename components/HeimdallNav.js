@@ -3,7 +3,8 @@ import Link from 'next/link'
 import { useRouter } from 'next/router'
 import HeimdallLogo from '@/components/HeimdallLogo'
 import ContactModal from '@/components/ContactModal'
-import { Menu, X, ChevronDown, UserRound } from 'lucide-react'
+import { useHeimdallAuth } from '@/components/HeimdallAuthProvider'
+import { Menu, X, ChevronDown, UserRound, LogOut, ShieldCheck } from 'lucide-react'
 
 const ruMenu = [
   {
@@ -193,6 +194,17 @@ export default function HeimdallNav({ language }) {
   const [contactOpen, setContactOpen] = useState(false)
   const [activeDropdown, setActiveDropdown] = useState(null)
   const languageHref = langMap[router.pathname] || (ru ? '/en' : '/')
+  const { user, signOut } = useHeimdallAuth()
+  const displayName = user?.user_metadata?.full_name || user?.email || ''
+  const shortName = displayName.length > 28 ? `${displayName.slice(0, 25)}...` : displayName
+
+  async function handleLogout() {
+    await signOut()
+    setMobileOpen(false)
+    if (router.pathname === '/account') {
+      router.push('/account')
+    }
+  }
 
   return (
     <>
@@ -227,10 +239,43 @@ export default function HeimdallNav({ language }) {
           </nav>
 
           <div className="hidden items-center gap-3 lg:flex">
-            <Link href="/account" className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/80 transition hover:border-sky-300/30 hover:text-sky-100">
-              <UserRound className="h-4 w-4" />
-              {ru ? 'Кабинет' : 'Account'}
-            </Link>
+            {user ? (
+              <div
+                className="relative"
+                onMouseEnter={() => setActiveDropdown('auth-user')}
+                onMouseLeave={() => setActiveDropdown(null)}
+              >
+                <Link href="/account" className="inline-flex max-w-[260px] items-center gap-2 rounded-full border border-[#D6A84F]/25 bg-[#D6A84F]/10 px-4 py-2 text-sm text-[#F7D784] transition hover:border-[#D6A84F]/45">
+                  <ShieldCheck className="h-4 w-4 shrink-0" />
+                  <span className="truncate">{shortName}</span>
+                  <ChevronDown className="h-4 w-4 opacity-70" />
+                </Link>
+
+                <div className={`absolute right-0 top-full z-[9999] w-72 pt-3 transition duration-200 ${activeDropdown === 'auth-user' ? 'pointer-events-auto translate-y-0 opacity-100' : 'pointer-events-none translate-y-3 opacity-0'}`}>
+                  <div className="rounded-[26px] border border-white/15 bg-[#050816] p-3 shadow-[0_35px_100px_rgba(0,0,0,0.88)] ring-1 ring-sky-300/10">
+                    <div className="mb-2 rounded-2xl border border-[#D6A84F]/20 bg-[#D6A84F]/10 px-4 py-3 text-xs leading-5 text-[#F7D784]">
+                      {ru ? 'Вы вошли как' : 'Signed in as'}<br />
+                      <span className="break-all text-white/80">{displayName}</span>
+                    </div>
+                    <Link href="/account" className="block rounded-2xl px-4 py-3 text-sm text-white/78 transition hover:bg-white/10 hover:text-[#F7D784]">
+                      {ru ? 'Личный кабинет' : 'Client Account'}
+                    </Link>
+                    <Link href="/account?tab=request" className="block rounded-2xl px-4 py-3 text-sm text-white/78 transition hover:bg-white/10 hover:text-[#F7D784]">
+                      {ru ? 'Заказать услугу' : 'Request a service'}
+                    </Link>
+                    <button type="button" onClick={handleLogout} className="mt-2 flex w-full items-center gap-2 rounded-2xl px-4 py-3 text-left text-sm text-red-100/85 transition hover:bg-red-300/10">
+                      <LogOut className="h-4 w-4" />
+                      {ru ? 'Выйти' : 'Sign out'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <Link href="/account" className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/80 transition hover:border-sky-300/30 hover:text-sky-100">
+                <UserRound className="h-4 w-4" />
+                {ru ? 'Кабинет' : 'Account'}
+              </Link>
+            )}
 
             <Link href={languageHref} className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/80">
               {ru ? 'EN' : 'RU'}
@@ -261,10 +306,34 @@ export default function HeimdallNav({ language }) {
 
             <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 py-5">
               <div className="grid gap-4 pb-8">
-                <Link href="/account" onClick={() => setMobileOpen(false)} className="flex items-center justify-center gap-3 rounded-[24px] border border-sky-300/20 bg-sky-300/10 px-4 py-4 text-base font-semibold text-sky-100">
-                  <UserRound className="h-5 w-5" />
-                  {ru ? 'Личный кабинет' : 'Client Account'}
-                </Link>
+                {user ? (
+                  <div className="rounded-[24px] border border-[#D6A84F]/25 bg-[#D6A84F]/10 p-4">
+                    <div className="flex items-center gap-3 text-[#F7D784]">
+                      <ShieldCheck className="h-5 w-5 shrink-0" />
+                      <div className="min-w-0">
+                        <div className="text-xs uppercase tracking-[0.18em] text-[#F7D784]/70">{ru ? 'Авторизован' : 'Signed in'}</div>
+                        <div className="truncate text-base font-semibold text-white">{displayName}</div>
+                      </div>
+                    </div>
+                    <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                      <Link href="/account" onClick={() => setMobileOpen(false)} className="rounded-2xl border border-white/10 bg-black/25 px-4 py-4 text-center text-sm font-semibold text-white">
+                        {ru ? 'Кабинет' : 'Account'}
+                      </Link>
+                      <Link href="/account?tab=request" onClick={() => setMobileOpen(false)} className="rounded-2xl bg-[#D6A84F] px-4 py-4 text-center text-sm font-semibold text-[#050816]">
+                        {ru ? 'Заказать услугу' : 'Request'}
+                      </Link>
+                    </div>
+                    <button type="button" onClick={handleLogout} className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl border border-red-300/20 bg-red-300/10 px-4 py-3 text-sm font-semibold text-red-100">
+                      <LogOut className="h-4 w-4" />
+                      {ru ? 'Выйти' : 'Sign out'}
+                    </button>
+                  </div>
+                ) : (
+                  <Link href="/account" onClick={() => setMobileOpen(false)} className="flex items-center justify-center gap-3 rounded-[24px] border border-sky-300/20 bg-sky-300/10 px-4 py-4 text-base font-semibold text-sky-100">
+                    <UserRound className="h-5 w-5" />
+                    {ru ? 'Личный кабинет' : 'Client Account'}
+                  </Link>
+                )}
 
                 {menu.map((group) => (
                   <div key={group.title} className="min-w-0 rounded-[28px] border border-white/10 bg-white/[0.06] p-4 shadow-2xl">
