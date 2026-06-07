@@ -471,7 +471,27 @@ a,
 span,
 li,
 div {
+  overflow-wrap: break-word;
+  word-break: normal;
+  hyphens: auto;
+}
+
+/* Do not split normal Russian words into single letters on narrow screens. */
+h1,
+h2,
+h3 {
+  overflow-wrap: normal;
+  word-break: normal;
+  hyphens: none;
+}
+
+/* Keep emergency wrapping only for technical strings where overflow is worse than a hard break. */
+code,
+pre,
+.break-anywhere,
+.technical-string {
   overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 @media (max-width: 767px) {
