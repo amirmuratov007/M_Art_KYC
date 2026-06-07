@@ -38,6 +38,7 @@ const ruMenu = [
       ['Внутренние расследования', '/internal-investigations'],
       ['Единый прайс', '/pricing'],
       ['Клиентское приложение', '/client-app'],
+      ['Как работает кабинет', '/client-account-guide'],
       ['Личный кабинет', '/account'],
       ['Примеры отчетов', '/sample-reports']
     ]
@@ -100,6 +101,7 @@ const enMenu = [
       ['Pricing', '/pricing-en'],
       ['Business Intelligence Support', '/business-intelligence-support-en'],
       ['Client Application', '/client-app-en'],
+      ['How Account Works', '/client-account-guide-en'],
       ['Client Account', '/account'],
       ['Sample Reports', '/sample-reports-en']
     ]
@@ -122,6 +124,8 @@ const langMap = {
   '/': '/en',
   '/en': '/',
   '/account': '/account',
+  '/client-account-guide': '/client-account-guide-en',
+  '/client-account-guide-en': '/client-account-guide',
 
   '/proverka-kontragenta-dubai': '/counterparty-check-dubai-en',
   '/counterparty-check-dubai-en': '/proverka-kontragenta-dubai',
