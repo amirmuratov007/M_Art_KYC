@@ -1,8 +1,10 @@
 import Head from 'next/head'
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
+import { useRouter } from 'next/router'
 import HeimdallNav from '@/components/HeimdallNav'
 import { getSupabaseBrowserClient } from '@/lib/supabaseClient'
+import { useHeimdallAuth } from '@/components/HeimdallAuthProvider'
 import {
   ArrowRight,
   CheckCircle2,
@@ -52,6 +54,8 @@ const initialClientRequest = {
 }
 
 export default function AccountPage() {
+  const router = useRouter()
+  const { refreshSession, signOut } = useHeimdallAuth()
   const [mode, setMode] = useState('login')
   const [activeTab, setActiveTab] = useState('checks')
   const [loading, setLoading] = useState(true)
@@ -123,6 +127,21 @@ export default function AccountPage() {
       listener?.subscription?.unsubscribe()
     }
   }, [supabase])
+
+  useEffect(() => {
+    if (!router.isReady) return
+
+    const requestedTab = Array.isArray(router.query.tab) ? router.query.tab[0] : router.query.tab
+    const requestedService = Array.isArray(router.query.service) ? router.query.service[0] : router.query.service
+
+    if (['checks', 'reports', 'request', 'documents'].includes(requestedTab)) {
+      setActiveTab(requestedTab)
+    }
+
+    if (requestedService && serviceOptions.includes(requestedService)) {
+      setClientRequest((current) => ({ ...current, service: requestedService }))
+    }
+  }, [router.isReady, router.query.tab, router.query.service])
 
   function hydrateClientRequest(currentUser) {
     setClientRequest((current) => ({
@@ -200,6 +219,8 @@ export default function AccountPage() {
       } else {
         setUser(data?.user || null)
         setMessage('Вход выполнен.')
+        const requestedTab = Array.isArray(router.query.tab) ? router.query.tab[0] : router.query.tab
+        if (requestedTab === 'request') setActiveTab('request')
       }
     }
 
@@ -215,8 +236,8 @@ export default function AccountPage() {
     setRequestError('')
     setRequestMessage('')
 
-    const { data } = await supabase.auth.getSession()
-    const accessToken = data?.session?.access_token
+    const currentSession = await refreshSession()
+    const accessToken = currentSession?.access_token
 
     if (!accessToken) {
       setRequestLoading(false)
@@ -260,7 +281,7 @@ export default function AccountPage() {
   async function logout() {
     if (!supabase) return
 
-    await supabase.auth.signOut()
+    await signOut()
     setUser(null)
     setChecks([])
     setMessage('')

@@ -3,6 +3,7 @@ import Script from 'next/script'
 import { useEffect, useState } from 'react'
 import AnimatedCursor from '@/components/AnimatedCursor'
 import CookieConsentBanner from '@/components/CookieConsentBanner'
+import { HeimdallAuthProvider } from '@/components/HeimdallAuthProvider'
 
 const COOKIE_CONSENT_KEY = 'heimdall_cookie_consent'
 const COOKIE_CONSENT_EVENT = 'heimdall-cookie-consent-change'
@@ -77,9 +78,11 @@ export default function App({ Component, pageProps }) {
         `}
       </Script>
 
-      <AnimatedCursor />
-      <Component {...pageProps} />
-      <CookieConsentBanner />
+      <HeimdallAuthProvider>
+        <AnimatedCursor />
+        <Component {...pageProps} />
+        <CookieConsentBanner />
+      </HeimdallAuthProvider>
     </>
   )
 }
