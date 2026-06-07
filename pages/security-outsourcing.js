@@ -22,12 +22,47 @@ const coverage = [
 ]
 
 const infosec = [
-  ['Цифровой след компании', 'Проверяем, что видно снаружи: домены, сайты, публичные следы, утечки, упоминания, технические и репутационные сигналы.'],
-  ['Риск подрядчиков и доступов', 'Оцениваем внешних исполнителей, ИТ-поставщиков, интеграторов, людей с доступом к данным и деньгам.'],
-  ['Фишинг и социальная инженерия', 'Выявляем признаки имитации бренда, поддельных доменов, подозрительных контактов и схем давления на сотрудников.'],
-  ['Коммерческая тайна', 'Помогаем снизить риск утечки информации через сотрудников, подрядчиков, переговоры, закупки и контрагентов.'],
-  ['Проверка инцидентов', 'Разбираем подозрительные ситуации: утечка данных, конфликт интересов, странная активность контрагента или сотрудника.'],
-  ['Регламент безопасности', 'Формируем понятный контур: кого проверять, когда усиливать проверку, какие красные флаги считать критичными.']
+  ['Внешняя диагностика цифрового периметра', 'Смотрим компанию глазами атакующего и недобросовестного контрагента: домены, сайты, поддомены, открытые сервисы, публичные следы, технические и репутационные сигналы.'],
+  ['Утечки и компрометация', 'Проверяем публичные признаки утечек корпоративных почт, телефонов, доменов, документов, реквизитов и следов, которые могут использоваться для давления, фишинга или мошенничества.'],
+  ['Подрядчики и доступы', 'Оцениваем ИТ-поставщиков, интеграторов, маркетологов, бухгалтеров, удаленных исполнителей и других людей, у которых есть доступ к данным, деньгам, CRM, сайту, рекламе или переписке.'],
+  ['Фишинг и имитация бренда', 'Ищем поддельные домены, похожие названия, подозрительные контакты, схемы подмены реквизитов, письма от имени руководства и другие признаки социальной инженерии.'],
+  ['Коммерческая тайна и внутренние риски', 'Помогаем снизить риск утечки коммерческих предложений, баз клиентов, условий сделок, закупочных цен, данных контрагентов и внутренней переписки.'],
+  ['Разбор инцидентов', 'Разбираем подозрительные ситуации: странная активность сотрудника, утечка, конфликт интересов, подмена реквизитов, давление со стороны поставщика или неожиданная цифровая активность вокруг компании.']
+]
+
+const infosecProcess = [
+  ['1. Карта активов', 'Фиксируем домены, сайты, публичные каналы, ключевые почты, внешних подрядчиков, сервисы, точки входа и людей с чувствительными доступами.'],
+  ['2. Проверка внешних сигналов', 'Собираем следы из открытых источников: утечки, похожие домены, негатив, публичные документы, технические ошибки, репутационные и мошеннические сигналы.'],
+  ['3. Приоритизация рисков', 'Разделяем находки на критичные, существенные и наблюдаемые. Клиент получает не список страшилок, а понятную очередность действий.'],
+  ['4. План закрытия', 'Готовим управленческий план: что отключить, что ограничить, кого проверить, какие правила ввести, какие доступы пересмотреть и что мониторить постоянно.']
+]
+
+const infosecDeliverables = [
+  'Карта цифрового периметра: домены, публичные активы, внешние сервисы, подрядчики и чувствительные точки доступа',
+  'Реестр рисков по ИБ с приоритетом: критично, важно, наблюдать',
+  'Проверка утечек, похожих доменов, публичных следов и признаков фишинга',
+  'Рекомендации по доступам: что закрыть, кому ограничить, какие роли разделить',
+  'Регламент для собственника и руководителей: как согласовывать доступы, подрядчиков, платежи и передачу данных',
+  'Отчет для управленческого решения без технического тумана'
+]
+
+const infosecBoundaries = [
+  'Не продаем иллюзию абсолютной защиты. HEIMDALL выявляет риски, дает план и помогает построить управляемый контур.',
+  'Не заменяем штатного системного администратора или SOC 24/7, если клиенту нужен именно технический мониторинг инфраструктуры в реальном времени.',
+  'Не проводим вредоносные действия и не атакуем чужие системы. Работа строится на легальных проверках, открытых источниках, документах клиента и согласованных тестах.',
+  'При необходимости подключаем технических специалистов под отдельную задачу: аудит сайта, настройка доступов, проверка почты, доменов, облаков и рабочих процессов.'
+]
+
+const infoSecPricing = [
+  { name: 'ИБ Старт', price: 'от 75 000 ₽', period: 'разовая диагностика', best: 'для малого бизнеса и собственника, который хочет понять текущие риски', includes: ['карта внешнего цифрового периметра', 'проверка доменов, сайта, публичных следов и утечек', 'поиск признаков фишинга и имитации бренда', 'короткий план закрытия критичных рисков'] },
+  { name: 'ИБ Контур', price: 'от 150 000 ₽', period: 'разовая расширенная проверка', best: 'для компании с подрядчиками, CRM, рекламой, удаленными сотрудниками и чувствительными данными', includes: ['все из ИБ Старт', 'проверка подрядчиков и доступов', 'оценка рисков коммерческой тайны', 'регламент доступов и передачи данных', 'управленческий отчет с приоритетами'] },
+  { name: 'ИБ Сопровождение', price: 'от 220 000 ₽ / месяц', period: 'постоянная работа', best: 'для бизнеса, где есть регулярные сделки, сотрудники, подрядчики и риск утечек', includes: ['ежемесячный мониторинг внешних сигналов', 'проверка новых подрядчиков с доступами', 'разбор подозрительных ситуаций', 'обновление реестра рисков', 'приоритетная связь по ИБ-инцидентам'] }
+]
+
+const outsourcingPricing = [
+  { name: 'Контур безопасности', price: 'от 180 000 ₽ / месяц', best: 'для компаний без собственной службы безопасности', includes: ['до 10 проверок в месяц', 'контрагенты, кандидаты, поставщики', 'единый риск-реестр', 'краткие управленческие выводы', 'консультации по красным флагам'] },
+  { name: 'Внешняя служба безопасности', price: 'от 350 000 ₽ / месяц', best: 'для компаний с регулярными закупками, наймом, авансами и международными контрагентами', includes: ['до 25 проверок в месяц', 'расширенные проверки и связи', 'ИБ Контур как часть сопровождения', 'мониторинг ключевых объектов', 'приоритетные задачи собственника'] },
+  { name: 'Корпоративный штаб риска', price: 'от 650 000 ₽ / месяц', best: 'для собственников, групп компаний, сложных сделок и чувствительных конфликтов', includes: ['индивидуальный пул задач', 'сложные проверки и расследования', 'кризисные ситуации и инциденты', 'закрытый контур коммуникации', 'ежемесячный управленческий отчет'] }
 ]
 
 const formats = [
@@ -68,9 +103,9 @@ export default function SecurityOutsourcingPage() {
               <a href="#security-request" className="inline-flex items-center justify-center gap-3 rounded-2xl bg-sky-500 px-7 py-4 font-semibold text-white shadow-[0_0_45px_rgba(56,189,248,0.28)]">
                 Обсудить внешний контур <ArrowRight className="h-4 w-4" />
               </a>
-              <Link href="/sample-reports" className="inline-flex items-center justify-center gap-3 rounded-2xl border border-[#D6A84F]/25 bg-[#D6A84F]/10 px-7 py-4 font-semibold text-[#F7D784]">
-                Смотреть отчеты
-              </Link>
+              <a href="#pricing" className="inline-flex items-center justify-center gap-3 rounded-2xl border border-[#D6A84F]/25 bg-[#D6A84F]/10 px-7 py-4 font-semibold text-[#F7D784]">
+                Прайс и форматы
+              </a>
               <Link href="/business-support" className="inline-flex items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/10 px-7 py-4 font-semibold text-white">
                 Сопровождение бизнеса
               </Link>
@@ -151,6 +186,111 @@ export default function SecurityOutsourcingPage() {
                 ))}
               </div>
             </div>
+          </div>
+        </section>
+
+        <section className="relative z-10 mx-auto max-w-7xl px-5 pb-24">
+          <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+            <div className="rounded-[42px] border border-white/10 bg-white/[0.045] p-8 backdrop-blur-2xl">
+              <div className="text-sm uppercase tracking-[0.24em] text-sky-300/80">Как проходит работа по ИБ</div>
+              <h2 className="mt-5 text-4xl font-semibold tracking-[-0.05em] md:text-5xl">Клиент получает понятный контур, а не набор технических терминов</h2>
+              <p className="mt-6 text-base leading-8 text-white/62">
+                Мы описываем информационную безопасность языком собственника: где компания уязвима, через кого может произойти утечка, какие доступы опасны, где возможна подмена реквизитов и что нужно закрыть в первую очередь.
+              </p>
+            </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              {infosecProcess.map(([title, text]) => (
+                <div key={title} className="rounded-[28px] border border-white/10 bg-black/25 p-6">
+                  <h3 className="text-xl font-semibold tracking-[-0.04em] text-white">{title}</h3>
+                  <p className="mt-4 text-sm leading-7 text-white/60">{text}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="relative z-10 mx-auto max-w-7xl px-5 pb-24">
+          <div className="grid gap-6 lg:grid-cols-2">
+            <div className="rounded-[42px] border border-[#D6A84F]/20 bg-[#D6A84F]/[0.07] p-8 backdrop-blur-2xl">
+              <div className="text-sm uppercase tracking-[0.24em] text-[#F7D784]/80">Что получает клиент</div>
+              <h2 className="mt-5 text-4xl font-semibold tracking-[-0.05em] md:text-5xl">Конкретные результаты по ИБ</h2>
+              <div className="mt-8 grid gap-4">
+                {infosecDeliverables.map((item) => (
+                  <div key={item} className="flex gap-3 rounded-2xl border border-white/10 bg-black/20 p-4 text-sm leading-7 text-white/70">
+                    <CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-[#F7D784]" />
+                    {item}
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="rounded-[42px] border border-white/10 bg-white/[0.045] p-8 backdrop-blur-2xl">
+              <div className="text-sm uppercase tracking-[0.24em] text-sky-300/80">Границы ответственности</div>
+              <h2 className="mt-5 text-4xl font-semibold tracking-[-0.05em] md:text-5xl">Честно показываем, что входит и что не входит</h2>
+              <div className="mt-8 grid gap-4">
+                {infosecBoundaries.map((item) => (
+                  <div key={item} className="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm leading-7 text-white/62">
+                    {item}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="pricing" className="relative z-10 mx-auto max-w-7xl scroll-mt-28 px-5 pb-24">
+          <div className="mb-10 max-w-5xl">
+            <div className="text-sm uppercase tracking-[0.24em] text-[#F7D784]/80">Прайс</div>
+            <h2 className="mt-5 text-4xl font-semibold tracking-[-0.05em] md:text-6xl">Отдельно ИБ и отдельно полное сопровождение службы безопасности</h2>
+            <p className="mt-6 max-w-3xl text-base leading-8 text-white/62">
+              Цены указаны как стартовые ориентиры. Итоговая стоимость зависит от числа объектов проверки, количества сотрудников и подрядчиков, международного контура, срочности и глубины анализа.
+            </p>
+          </div>
+
+          <div className="mb-12">
+            <h3 className="mb-5 text-3xl font-semibold tracking-[-0.04em] text-sky-100">Информационная безопасность</h3>
+            <div className="grid gap-5 lg:grid-cols-3">
+              {infoSecPricing.map((plan, index) => (
+                <div key={plan.name} className={`rounded-[36px] border p-7 backdrop-blur-2xl ${index === 1 ? 'border-sky-300/35 bg-sky-300/10' : 'border-white/10 bg-white/[0.045]'}`}>
+                  <div className="text-sm uppercase tracking-[0.2em] text-white/42">{plan.period}</div>
+                  <h4 className="mt-5 text-3xl font-semibold tracking-[-0.04em]">{plan.name}</h4>
+                  <div className="mt-4 text-3xl font-semibold text-[#F7D784]">{plan.price}</div>
+                  <p className="mt-4 text-sm leading-7 text-white/60">{plan.best}</p>
+                  <div className="mt-7 grid gap-3">
+                    {plan.includes.map((item) => (
+                      <div key={item} className="flex gap-3 text-sm leading-6 text-white/70">
+                        <CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-sky-200" />
+                        {item}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <h3 className="mb-5 text-3xl font-semibold tracking-[-0.04em] text-[#F7D784]">Полное сопровождение как служба безопасности</h3>
+            <div className="grid gap-5 lg:grid-cols-3">
+              {outsourcingPricing.map((plan, index) => (
+                <div key={plan.name} className={`rounded-[36px] border p-7 backdrop-blur-2xl ${index === 1 ? 'border-[#D6A84F]/35 bg-[#D6A84F]/10' : 'border-white/10 bg-white/[0.045]'}`}>
+                  <h4 className="text-3xl font-semibold tracking-[-0.04em]">{plan.name}</h4>
+                  <div className="mt-4 text-3xl font-semibold text-[#F7D784]">{plan.price}</div>
+                  <p className="mt-4 text-sm leading-7 text-white/60">{plan.best}</p>
+                  <div className="mt-7 grid gap-3">
+                    {plan.includes.map((item) => (
+                      <div key={item} className="flex gap-3 text-sm leading-6 text-white/70">
+                        <CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-[#F7D784]" />
+                        {item}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-10 rounded-[32px] border border-white/10 bg-black/25 p-7 text-sm leading-7 text-white/60">
+            Разовые проверки контрагента, кандидата, поставщика или бенефициара можно заказывать отдельно. Прайс выше относится именно к информационной безопасности и постоянному внешнему контуру службы безопасности.
           </div>
         </section>
 

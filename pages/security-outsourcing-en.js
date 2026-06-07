@@ -22,12 +22,47 @@ const coverage = [
 ]
 
 const infosec = [
-  ['Company digital footprint', 'We review what is visible from the outside: domains, websites, public traces, leaks, mentions and technical or reputational signals.'],
-  ['Vendor and access risk', 'We review external contractors, IT providers, integrators and people with access to data or money.'],
-  ['Phishing and social engineering', 'We identify brand imitation, suspicious domains, suspicious contact patterns and pressure schemes targeting employees.'],
-  ['Trade secrets', 'We help reduce leakage risks through employees, contractors, negotiations, procurement and counterparties.'],
-  ['Incident review', 'We analyze suspicious situations: data leaks, conflicts of interest, unusual counterparty behavior or employee activity.'],
-  ['Security rules', 'We define a practical perimeter: who to review, when to deepen checks and which red flags are critical.']
+  ['External digital perimeter diagnostics', 'We look at the company from the outside: domains, websites, subdomains, open services, public traces, technical issues and reputational signals.'],
+  ['Leaks and compromise signals', 'We check public signs of leaked corporate emails, phones, domains, documents, bank details and traces that can be used for pressure, phishing or fraud.'],
+  ['Vendors and access rights', 'We assess IT vendors, integrators, marketing teams, accountants, remote contractors and other people with access to data, money, CRM, website, ads or correspondence.'],
+  ['Phishing and brand imitation', 'We look for lookalike domains, similar names, suspicious contacts, payment-detail substitution schemes and emails sent as if from executives.'],
+  ['Trade secrets and internal risks', 'We help reduce the risk of leaks involving commercial proposals, customer bases, deal terms, purchase prices, counterparty data and internal correspondence.'],
+  ['Incident review', 'We analyze suspicious employee activity, leaks, conflicts of interest, payment-detail substitution, pressure from suppliers or unusual digital activity around the company.']
+]
+
+const infosecProcess = [
+  ['1. Asset map', 'We identify domains, websites, public channels, key emails, external vendors, services, entry points and people with sensitive access.'],
+  ['2. External-signal review', 'We collect open-source traces: leaks, lookalike domains, negative mentions, public documents, technical issues, reputation and fraud signals.'],
+  ['3. Risk prioritization', 'We split findings into critical, material and observed items. The client receives a sequence of actions, not a list of scary technical terms.'],
+  ['4. Remediation plan', 'We prepare a management plan: what to disable, restrict, review, regulate and monitor continuously.']
+]
+
+const infosecDeliverables = [
+  'Digital-perimeter map: domains, public assets, external services, vendors and sensitive access points',
+  'Information-security risk register with priority: critical, important, monitor',
+  'Review of leaks, lookalike domains, public traces and phishing signals',
+  'Access recommendations: what to close, restrict and separate by role',
+  'Management rules for access approvals, vendors, payments and data transfer',
+  'Executive report without technical fog'
+]
+
+const infosecBoundaries = [
+  'We do not sell the illusion of absolute security. HEIMDALL identifies risks, gives a plan and helps build a manageable security perimeter.',
+  'We do not replace a full-time system administrator or 24/7 SOC when real-time infrastructure monitoring is required.',
+  'We do not perform malicious actions or attack third-party systems. Work is based on legal checks, open sources, client documents and agreed testing.',
+  'When needed, technical specialists can be engaged for a separate task: website audit, email, domains, cloud access and workflow hardening.'
+]
+
+const infoSecPricing = [
+  { name: 'InfoSec Start', price: 'from 75,000 RUB', period: 'one-off diagnostics', best: 'for small businesses and owners who need to understand current exposure', includes: ['external digital-perimeter map', 'domain, website, public-trace and leak review', 'phishing and brand-imitation signals', 'short plan for critical-risk closure'] },
+  { name: 'InfoSec Perimeter', price: 'from 150,000 RUB', period: 'expanded one-off review', best: 'for companies with vendors, CRM, ads, remote staff and sensitive data', includes: ['everything in InfoSec Start', 'vendor and access-right review', 'trade-secret risk assessment', 'access and data-transfer rules', 'executive report with priorities'] },
+  { name: 'InfoSec Support', price: 'from 220,000 RUB / month', period: 'ongoing work', best: 'for businesses with recurring deals, employees, vendors and leak exposure', includes: ['monthly external-signal monitoring', 'new vendor checks for sensitive access', 'suspicious-incident review', 'risk-register updates', 'priority communication on InfoSec incidents'] }
+]
+
+const outsourcingPricing = [
+  { name: 'Security Perimeter', price: 'from 180,000 RUB / month', best: 'for companies without an internal security department', includes: ['up to 10 checks per month', 'counterparties, candidates and suppliers', 'single risk register', 'short executive conclusions', 'red-flag consultations'] },
+  { name: 'External Security Department', price: 'from 350,000 RUB / month', best: 'for companies with recurring procurement, hiring, advances and international counterparties', includes: ['up to 25 checks per month', 'expanded reviews and connections', 'InfoSec Perimeter included', 'key-object monitoring', 'owner-priority tasks'] },
+  { name: 'Corporate Risk Office', price: 'from 650,000 RUB / month', best: 'for owners, groups of companies, complex deals and sensitive conflicts', includes: ['individual task capacity', 'complex checks and investigations', 'crisis situations and incidents', 'closed communication perimeter', 'monthly executive report'] }
 ]
 
 const formats = [
@@ -68,9 +103,9 @@ export default function SecurityOutsourcingEnPage() {
               <a href="#security-request" className="inline-flex items-center justify-center gap-3 rounded-2xl bg-sky-500 px-7 py-4 font-semibold text-white shadow-[0_0_45px_rgba(56,189,248,0.28)]">
                 Discuss security scope <ArrowRight className="h-4 w-4" />
               </a>
-              <Link href="/sample-reports-en" className="inline-flex items-center justify-center gap-3 rounded-2xl border border-[#D6A84F]/25 bg-[#D6A84F]/10 px-7 py-4 font-semibold text-[#F7D784]">
-                View reports
-              </Link>
+              <a href="#pricing" className="inline-flex items-center justify-center gap-3 rounded-2xl border border-[#D6A84F]/25 bg-[#D6A84F]/10 px-7 py-4 font-semibold text-[#F7D784]">
+                Pricing and formats
+              </a>
               <Link href="/business-support-en" className="inline-flex items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/10 px-7 py-4 font-semibold text-white">
                 Business support
               </Link>
@@ -151,6 +186,111 @@ export default function SecurityOutsourcingEnPage() {
                 ))}
               </div>
             </div>
+          </div>
+        </section>
+
+        <section className="relative z-10 mx-auto max-w-7xl px-5 pb-24">
+          <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+            <div className="rounded-[42px] border border-white/10 bg-white/[0.045] p-8 backdrop-blur-2xl">
+              <div className="text-sm uppercase tracking-[0.24em] text-sky-300/80">How InfoSec work is done</div>
+              <h2 className="mt-5 text-4xl font-semibold tracking-[-0.05em] md:text-5xl">The client gets a clear perimeter, not technical noise</h2>
+              <p className="mt-6 text-base leading-8 text-white/62">
+                We describe information security in owner-level language: where the company is exposed, through whom a leak can happen, which access rights are dangerous, where payment details can be substituted and what must be fixed first.
+              </p>
+            </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              {infosecProcess.map(([title, text]) => (
+                <div key={title} className="rounded-[28px] border border-white/10 bg-black/25 p-6">
+                  <h3 className="text-xl font-semibold tracking-[-0.04em] text-white">{title}</h3>
+                  <p className="mt-4 text-sm leading-7 text-white/60">{text}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="relative z-10 mx-auto max-w-7xl px-5 pb-24">
+          <div className="grid gap-6 lg:grid-cols-2">
+            <div className="rounded-[42px] border border-[#D6A84F]/20 bg-[#D6A84F]/[0.07] p-8 backdrop-blur-2xl">
+              <div className="text-sm uppercase tracking-[0.24em] text-[#F7D784]/80">What the client receives</div>
+              <h2 className="mt-5 text-4xl font-semibold tracking-[-0.05em] md:text-5xl">Concrete InfoSec deliverables</h2>
+              <div className="mt-8 grid gap-4">
+                {infosecDeliverables.map((item) => (
+                  <div key={item} className="flex gap-3 rounded-2xl border border-white/10 bg-black/20 p-4 text-sm leading-7 text-white/70">
+                    <CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-[#F7D784]" />
+                    {item}
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="rounded-[42px] border border-white/10 bg-white/[0.045] p-8 backdrop-blur-2xl">
+              <div className="text-sm uppercase tracking-[0.24em] text-sky-300/80">Responsibility boundaries</div>
+              <h2 className="mt-5 text-4xl font-semibold tracking-[-0.05em] md:text-5xl">We clearly show what is included and what is not</h2>
+              <div className="mt-8 grid gap-4">
+                {infosecBoundaries.map((item) => (
+                  <div key={item} className="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm leading-7 text-white/62">
+                    {item}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="pricing" className="relative z-10 mx-auto max-w-7xl scroll-mt-28 px-5 pb-24">
+          <div className="mb-10 max-w-5xl">
+            <div className="text-sm uppercase tracking-[0.24em] text-[#F7D784]/80">Pricing</div>
+            <h2 className="mt-5 text-4xl font-semibold tracking-[-0.05em] md:text-6xl">Separate pricing for InfoSec and full outsourced security support</h2>
+            <p className="mt-6 max-w-3xl text-base leading-8 text-white/62">
+              Prices are starting points. Final scope depends on the number of objects, employees and vendors, international exposure, urgency and depth of analysis.
+            </p>
+          </div>
+
+          <div className="mb-12">
+            <h3 className="mb-5 text-3xl font-semibold tracking-[-0.04em] text-sky-100">Information Security</h3>
+            <div className="grid gap-5 lg:grid-cols-3">
+              {infoSecPricing.map((plan, index) => (
+                <div key={plan.name} className={`rounded-[36px] border p-7 backdrop-blur-2xl ${index === 1 ? 'border-sky-300/35 bg-sky-300/10' : 'border-white/10 bg-white/[0.045]'}`}>
+                  <div className="text-sm uppercase tracking-[0.2em] text-white/42">{plan.period}</div>
+                  <h4 className="mt-5 text-3xl font-semibold tracking-[-0.04em]">{plan.name}</h4>
+                  <div className="mt-4 text-3xl font-semibold text-[#F7D784]">{plan.price}</div>
+                  <p className="mt-4 text-sm leading-7 text-white/60">{plan.best}</p>
+                  <div className="mt-7 grid gap-3">
+                    {plan.includes.map((item) => (
+                      <div key={item} className="flex gap-3 text-sm leading-6 text-white/70">
+                        <CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-sky-200" />
+                        {item}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <h3 className="mb-5 text-3xl font-semibold tracking-[-0.04em] text-[#F7D784]">Full outsourced security department</h3>
+            <div className="grid gap-5 lg:grid-cols-3">
+              {outsourcingPricing.map((plan, index) => (
+                <div key={plan.name} className={`rounded-[36px] border p-7 backdrop-blur-2xl ${index === 1 ? 'border-[#D6A84F]/35 bg-[#D6A84F]/10' : 'border-white/10 bg-white/[0.045]'}`}>
+                  <h4 className="text-3xl font-semibold tracking-[-0.04em]">{plan.name}</h4>
+                  <div className="mt-4 text-3xl font-semibold text-[#F7D784]">{plan.price}</div>
+                  <p className="mt-4 text-sm leading-7 text-white/60">{plan.best}</p>
+                  <div className="mt-7 grid gap-3">
+                    {plan.includes.map((item) => (
+                      <div key={item} className="flex gap-3 text-sm leading-6 text-white/70">
+                        <CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-[#F7D784]" />
+                        {item}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-10 rounded-[32px] border border-white/10 bg-black/25 p-7 text-sm leading-7 text-white/60">
+            One-off counterparty, candidate, supplier or beneficial-owner checks can be ordered separately. The pricing above is for information security and the ongoing outsourced security perimeter.
           </div>
         </section>
 
