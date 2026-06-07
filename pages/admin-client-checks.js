@@ -1,4 +1,5 @@
 import Head from 'next/head'
+import { useRouter } from 'next/router'
 import { useEffect, useMemo, useState } from 'react'
 import HeimdallNav from '@/components/HeimdallNav'
 import {
@@ -58,6 +59,7 @@ function inputClass(extra = '') {
 }
 
 export default function AdminClientChecksPage() {
+  const router = useRouter()
   const [secret, setSecret] = useState('')
   const [email, setEmail] = useState('')
   const [userInfo, setUserInfo] = useState(null)
@@ -73,6 +75,11 @@ export default function AdminClientChecksPage() {
     const saved = window.localStorage.getItem('heimdall_admin_secret') || ''
     setSecret(saved)
   }, [])
+
+  useEffect(() => {
+    const emailFromQuery = typeof router.query?.email === 'string' ? router.query.email : ''
+    if (emailFromQuery) setEmail(emailFromQuery)
+  }, [router.query?.email])
 
   const headers = useMemo(() => ({
     'Content-Type': 'application/json',

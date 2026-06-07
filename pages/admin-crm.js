@@ -1,0 +1,616 @@
+import Head from 'next/head'
+import { useEffect, useMemo, useState } from 'react'
+import HeimdallNav from '@/components/HeimdallNav'
+import {
+  AlertTriangle,
+  ArrowRight,
+  BriefcaseBusiness,
+  CalendarClock,
+  CheckCircle2,
+  FileText,
+  Filter,
+  LockKeyhole,
+  MessageSquareText,
+  RefreshCw,
+  Save,
+  Search,
+  ShieldCheck,
+  UserRound
+} from 'lucide-react'
+
+const statusOptions = [
+  ['new', 'Новая заявка'],
+  ['contact', 'Связаться'],
+  ['call', 'Созвон'],
+  ['proposal', 'КП отправлено'],
+  ['contract', 'Договор / NDA'],
+  ['invoice', 'Счет'],
+  ['paid', 'Оплачено'],
+  ['in_work', 'В работе'],
+  ['report_ready', 'Отчет готов'],
+  ['support', 'Сопровождение'],
+  ['closed', 'Закрыто'],
+  ['lost', 'Отказ']
+]
+
+const priorityOptions = [
+  ['low', 'Низкий'],
+  ['normal', 'Обычный'],
+  ['high', 'Высокий'],
+  ['urgent', 'Срочно']
+]
+
+const statusLabels = Object.fromEntries(statusOptions)
+const priorityLabels = Object.fromEntries(priorityOptions)
+
+function inputClass(extra = '') {
+  return `w-full rounded-2xl border border-white/10 bg-black/25 px-5 py-4 text-white outline-none placeholder:text-white/35 focus:border-sky-300/50 ${extra}`
+}
+
+function formatDate(value) {
+  if (!value) return '—'
+  try {
+    return new Intl.DateTimeFormat('ru-RU', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    }).format(new Date(value))
+  } catch {
+    return value
+  }
+}
+
+function getLeadTitle(lead) {
+  return lead.company || lead.name || lead.contact || lead.email || lead.phone || `Заявка #${lead.id}`
+}
+
+function getLeadContact(lead) {
+  return lead.contact || [lead.email, lead.phone].filter(Boolean).join(' · ') || 'Контакт не указан'
+}
+
+function getLeadTopic(lead) {
+  return lead.topic || lead.check_type || lead.type || 'Общий запрос'
+}
+
+function getLeadMessage(lead) {
+  return lead.message || lead.comment || lead.details || 'Описание не заполнено.'
+}
+
+function getLeadId(lead) {
+  return String(lead.id ?? lead.lead_id ?? lead.uuid ?? '')
+}
+
+const emptyEdit = {
+  lead_source: '',
+  lead_id: '',
+  status: 'new',
+  priority: 'normal',
+  amount: '',
+  responsible: '',
+  next_action: '',
+  next_contact_at: '',
+  internal_comment: ''
+}
+
+export default function AdminCrmPage() {
+  const [secret, setSecret] = useState('')
+  const [source, setSource] = useState('')
+  const [query, setQuery] = useState('')
+  const [statusFilter, setStatusFilter] = useState('all')
+  const [leads, setLeads] = useState([])
+  const [selectedLead, setSelectedLead] = useState(null)
+  const [edit, setEdit] = useState(emptyEdit)
+  const [metaAvailable, setMetaAvailable] = useState(true)
+  const [loading, setLoading] = useState(false)
+  const [message, setMessage] = useState('')
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    setSecret(window.localStorage.getItem('heimdall_admin_secret') || '')
+    setSource(window.localStorage.getItem('heimdall_crm_source') || '')
+  }, [])
+
+  const headers = useMemo(() => ({
+    'Content-Type': 'application/json',
+    'x-heimdall-admin-secret': secret
+  }), [secret])
+
+  const filteredLeads = useMemo(() => {
+    if (statusFilter === 'all') return leads
+    return leads.filter((lead) => lead._crm?.status === statusFilter)
+  }, [leads, statusFilter])
+
+  const stats = useMemo(() => {
+    const result = {
+      all: leads.length,
+      new: 0,
+      inWork: 0,
+      money: 0,
+      closed: 0
+    }
+
+    for (const lead of leads) {
+      const status = lead._crm?.status || 'new'
+      if (status === 'new') result.new += 1
+      if (['contact', 'call', 'proposal', 'contract', 'invoice', 'paid', 'in_work', 'report_ready', 'support'].includes(status)) result.inWork += 1
+      if (['proposal', 'contract', 'invoice', 'paid'].includes(status)) result.money += 1
+      if (['closed', 'lost'].includes(status)) result.closed += 1
+    }
+
+    return result
+  }, [leads])
+
+  function saveSecret() {
+    window.localStorage.setItem('heimdall_admin_secret', secret)
+    window.localStorage.setItem('heimdall_crm_source', source)
+    setMessage('Настройки сохранены в этом браузере.')
+    setError('')
+  }
+
+  async function apiRequest(path, options = {}) {
+    const response = await fetch(path, {
+      ...options,
+      headers: {
+        ...headers,
+        ...(options.headers || {})
+      }
+    })
+
+    const result = await response.json().catch(() => ({}))
+
+    if (!response.ok || result.ok === false) {
+      const details = result.sqlNeeded
+        ? ' Нужно выполнить SQL-файл supabase/heimdall_crm_schema.sql один раз в Supabase.'
+        : ''
+      throw new Error((result.error || 'Запрос не выполнен') + details)
+    }
+
+    return result
+  }
+
+  async function loadLeads(event) {
+    if (event) event.preventDefault()
+
+    if (!secret) {
+      setError('Сначала укажи HEIMDALL_ADMIN_SECRET')
+      return
+    }
+
+    setLoading(true)
+    setError('')
+    setMessage('')
+
+    try {
+      const params = new URLSearchParams()
+      if (source) params.set('source', source)
+      if (query) params.set('q', query)
+      params.set('limit', '200')
+
+      const result = await apiRequest(`/api/admin-crm?${params.toString()}`)
+      setLeads(result.leads || [])
+      setMetaAvailable(result.metaAvailable !== false)
+      setMessage(`Заявки загружены: ${result.leads?.length || 0}. Источник: ${result.sourceTable}.`)
+      if (result.metaAvailable === false) {
+        setError('CRM-статусы пока не сохраняются: нужно один раз применить SQL-файл supabase/heimdall_crm_schema.sql в Supabase.')
+      }
+    } catch (error) {
+      setError(error.message || 'Не удалось загрузить заявки')
+      setLeads([])
+    }
+
+    setLoading(false)
+  }
+
+  function selectLead(lead) {
+    const crm = lead._crm || {}
+    setSelectedLead(lead)
+    setEdit({
+      lead_source: crm.lead_source || source || 'heimdall_leads',
+      lead_id: crm.lead_id || getLeadId(lead),
+      status: crm.status || 'new',
+      priority: crm.priority || 'normal',
+      amount: crm.amount ?? '',
+      responsible: crm.responsible || '',
+      next_action: crm.next_action || '',
+      next_contact_at: crm.next_contact_at ? String(crm.next_contact_at).slice(0, 16) : '',
+      internal_comment: crm.internal_comment || ''
+    })
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  function updateEdit(key, value) {
+    setEdit((current) => ({ ...current, [key]: value }))
+  }
+
+  async function saveLeadMeta(event) {
+    event.preventDefault()
+
+    if (!selectedLead) {
+      setError('Сначала выбери заявку')
+      return
+    }
+
+    setLoading(true)
+    setError('')
+    setMessage('')
+
+    try {
+      const result = await apiRequest('/api/admin-crm', {
+        method: 'PATCH',
+        body: JSON.stringify(edit)
+      })
+
+      const updatedMeta = result.meta
+      setLeads((current) => current.map((lead) => {
+        const crm = lead._crm || {}
+        if (String(crm.lead_source) === String(updatedMeta.lead_source) && String(crm.lead_id) === String(updatedMeta.lead_id)) {
+          return {
+            ...lead,
+            _crm: {
+              ...crm,
+              ...updatedMeta
+            }
+          }
+        }
+        return lead
+      }))
+      setSelectedLead((current) => current ? { ...current, _crm: { ...(current._crm || {}), ...updatedMeta } } : current)
+      setMetaAvailable(true)
+      setMessage('CRM-карточка сохранена.')
+    } catch (error) {
+      setError(error.message || 'Не удалось сохранить CRM-карточку')
+    }
+
+    setLoading(false)
+  }
+
+  const selectedEmail = selectedLead?.email || selectedLead?.contact || ''
+
+  return (
+    <>
+      <Head>
+        <title>HEIMDALL CRM | Закрытая панель заявок</title>
+        <meta name="robots" content="noindex,nofollow" />
+        <meta name="description" content="Закрытая CRM-панель HEIMDALL для обработки заявок и ведения продаж." />
+      </Head>
+
+      <main className="min-h-screen overflow-hidden bg-[#050816] text-white">
+        <div className="fixed inset-0 pointer-events-none">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_10%,rgba(37,99,235,0.24),transparent_32%),radial-gradient(circle_at_86%_18%,rgba(214,168,79,0.16),transparent_30%),linear-gradient(135deg,#050816_0%,#08111f_48%,#050816_100%)]" />
+        </div>
+
+        <HeimdallNav language="ru" />
+
+        <section className="relative z-10 mx-auto max-w-7xl px-4 py-16 sm:px-5 sm:py-24">
+          <div className="max-w-5xl">
+            <div className="inline-flex items-center gap-3 rounded-full border border-[#D6A84F]/25 bg-[#D6A84F]/10 px-5 py-2 text-sm uppercase tracking-[0.24em] text-[#F7D784]">
+              <LockKeyhole className="h-4 w-4" />
+              Закрытая CRM v1
+            </div>
+
+            <h1 className="mt-9 text-5xl font-semibold leading-[0.95] tracking-[-0.06em] md:text-8xl">
+              Заявки и продажи
+            </h1>
+
+            <p className="mt-8 max-w-3xl text-lg leading-8 text-white/64 md:text-xl md:leading-9">
+              Первая версия собственной CRM HEIMDALL: заявки с сайта, этапы обработки, приоритет, сумма, следующий шаг и внутренний комментарий.
+            </p>
+          </div>
+        </section>
+
+        <section className="relative z-10 mx-auto grid max-w-7xl gap-8 px-4 pb-28 sm:px-5 lg:grid-cols-[0.8fr_1.2fr] lg:items-start">
+          <div className="grid gap-8">
+            <div className="rounded-[42px] border border-white/10 bg-white/[0.045] p-7 backdrop-blur-2xl md:p-10">
+              <div className="flex items-center gap-3 text-sm uppercase tracking-[0.24em] text-sky-300/80">
+                <ShieldCheck className="h-4 w-4" />
+                Доступ
+              </div>
+
+              <label className="mt-7 block text-sm text-white/55">HEIMDALL_ADMIN_SECRET</label>
+              <input
+                type="password"
+                value={secret}
+                onChange={(event) => setSecret(event.target.value)}
+                placeholder="Админ-ключ из Vercel"
+                className={`mt-3 ${inputClass()}`}
+              />
+
+              <label className="mt-5 block text-sm text-white/55">Таблица заявок</label>
+              <input
+                value={source}
+                onChange={(event) => setSource(event.target.value)}
+                placeholder="Пусто = SUPABASE_LEADS_TABLE или heimdall_leads"
+                className={`mt-3 ${inputClass('font-mono text-sm')}`}
+              />
+
+              <button
+                type="button"
+                onClick={saveSecret}
+                className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-sky-300/20 bg-sky-300/10 px-5 py-4 font-semibold text-sky-100"
+              >
+                <Save className="h-4 w-4" />
+                Сохранить настройки
+              </button>
+
+              <div className="mt-6 rounded-3xl border border-amber-300/15 bg-amber-300/10 p-5 text-sm leading-7 text-amber-100/85">
+                Страница закрыта ключом и не добавлена в меню. Для полной CRM-логики нужен служебный SQL-файл из патча.
+              </div>
+            </div>
+
+            <form onSubmit={loadLeads} className="rounded-[42px] border border-white/10 bg-white/[0.045] p-7 backdrop-blur-2xl md:p-10">
+              <div className="flex items-center gap-3 text-sm uppercase tracking-[0.24em] text-sky-300/80">
+                <Search className="h-4 w-4" />
+                Поиск
+              </div>
+
+              <input
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Имя, компания, контакт, тема"
+                className={`mt-6 ${inputClass()}`}
+              />
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-sky-500 px-5 py-4 font-semibold text-white disabled:opacity-60"
+              >
+                <RefreshCw className="h-4 w-4" />
+                {loading ? 'Загрузка...' : 'Загрузить заявки'}
+              </button>
+            </form>
+
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                ['Всего', stats.all],
+                ['Новые', stats.new],
+                ['В работе', stats.inWork],
+                ['Деньги', stats.money],
+                ['Закрыто', stats.closed]
+              ].map(([label, value]) => (
+                <div key={label} className="rounded-3xl border border-white/10 bg-white/[0.045] p-5">
+                  <div className="text-3xl font-semibold tracking-[-0.04em]">{value}</div>
+                  <div className="mt-1 text-sm text-white/45">{label}</div>
+                </div>
+              ))}
+            </div>
+
+            {(message || error) && (
+              <div className={`rounded-[30px] border p-5 text-sm leading-7 ${error ? 'border-red-300/20 bg-red-300/10 text-red-100' : 'border-emerald-300/20 bg-emerald-300/10 text-emerald-100'}`}>
+                {error || message}
+              </div>
+            )}
+          </div>
+
+          <div className="grid gap-8">
+            {selectedLead && (
+              <form onSubmit={saveLeadMeta} className="rounded-[42px] border border-[#D6A84F]/20 bg-[#D6A84F]/[0.06] p-7 backdrop-blur-2xl md:p-10">
+                <div className="flex flex-wrap items-start justify-between gap-4">
+                  <div>
+                    <div className="flex items-center gap-3 text-sm uppercase tracking-[0.24em] text-[#F7D784]">
+                      <BriefcaseBusiness className="h-4 w-4" />
+                      Карточка заявки
+                    </div>
+                    <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em] md:text-5xl">
+                      {getLeadTitle(selectedLead)}
+                    </h2>
+                    <p className="mt-4 text-sm leading-7 text-white/58">
+                      {getLeadContact(selectedLead)} · {getLeadTopic(selectedLead)}
+                    </p>
+                  </div>
+
+                  <div className="rounded-full border border-white/10 bg-black/25 px-4 py-2 text-sm text-white/55">
+                    ID {getLeadId(selectedLead)}
+                  </div>
+                </div>
+
+                <div className="mt-8 grid gap-4 md:grid-cols-3">
+                  <div>
+                    <label className="mb-2 block text-sm text-white/55">Этап</label>
+                    <select value={edit.status} onChange={(event) => updateEdit('status', event.target.value)} className={inputClass()}>
+                      {statusOptions.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="mb-2 block text-sm text-white/55">Приоритет</label>
+                    <select value={edit.priority} onChange={(event) => updateEdit('priority', event.target.value)} className={inputClass()}>
+                      {priorityOptions.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="mb-2 block text-sm text-white/55">Сумма, ₽</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={edit.amount}
+                      onChange={(event) => updateEdit('amount', event.target.value)}
+                      placeholder="Например: 180000"
+                      className={inputClass()}
+                    />
+                  </div>
+                </div>
+
+                <div className="mt-4 grid gap-4 md:grid-cols-2">
+                  <div>
+                    <label className="mb-2 block text-sm text-white/55">Ответственный</label>
+                    <input
+                      value={edit.responsible}
+                      onChange={(event) => updateEdit('responsible', event.target.value)}
+                      placeholder="Кто ведет заявку"
+                      className={inputClass()}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-2 block text-sm text-white/55">Когда вернуться</label>
+                    <input
+                      type="datetime-local"
+                      value={edit.next_contact_at}
+                      onChange={(event) => updateEdit('next_contact_at', event.target.value)}
+                      className={inputClass()}
+                    />
+                  </div>
+                </div>
+
+                <div className="mt-4">
+                  <label className="mb-2 block text-sm text-white/55">Следующий шаг</label>
+                  <input
+                    value={edit.next_action}
+                    onChange={(event) => updateEdit('next_action', event.target.value)}
+                    placeholder="Например: отправить КП, запросить ИНН, назначить созвон"
+                    className={inputClass()}
+                  />
+                </div>
+
+                <div className="mt-4">
+                  <label className="mb-2 block text-sm text-white/55">Внутренний комментарий</label>
+                  <textarea
+                    rows={5}
+                    value={edit.internal_comment}
+                    onChange={(event) => updateEdit('internal_comment', event.target.value)}
+                    placeholder="Внутренние заметки. Клиент это не видит."
+                    className={inputClass('resize-y leading-7')}
+                  />
+                </div>
+
+                <div className="mt-5 rounded-3xl border border-white/10 bg-black/25 p-5 text-sm leading-7 text-white/62">
+                  <div className="font-semibold text-white">Сообщение клиента</div>
+                  <div className="mt-2 whitespace-pre-wrap">{getLeadMessage(selectedLead)}</div>
+                </div>
+
+                <div className="mt-6 flex flex-wrap gap-3">
+                  <button
+                    type="submit"
+                    disabled={loading || !metaAvailable}
+                    className="inline-flex items-center justify-center gap-3 rounded-2xl bg-[#D6A84F] px-7 py-4 font-semibold text-black shadow-[0_0_45px_rgba(214,168,79,0.25)] disabled:opacity-60"
+                  >
+                    <Save className="h-4 w-4" />
+                    Сохранить CRM-карточку
+                  </button>
+
+                  <a
+                    href={`/admin-client-checks${selectedEmail ? `?email=${encodeURIComponent(selectedEmail)}` : ''}`}
+                    className="inline-flex items-center justify-center gap-3 rounded-2xl border border-sky-300/20 bg-sky-300/10 px-7 py-4 font-semibold text-sky-100"
+                  >
+                    Создать проверку
+                    <ArrowRight className="h-4 w-4" />
+                  </a>
+                </div>
+
+                {!metaAvailable && (
+                  <div className="mt-5 rounded-3xl border border-red-300/20 bg-red-300/10 p-5 text-sm leading-7 text-red-100">
+                    Сначала нужно применить SQL-файл `supabase/heimdall_crm_schema.sql`. После этого статусы и комментарии начнут сохраняться.
+                  </div>
+                )}
+              </form>
+            )}
+
+            <div className="rounded-[42px] border border-white/10 bg-white/[0.045] p-7 backdrop-blur-2xl md:p-10">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-3 text-sm uppercase tracking-[0.24em] text-sky-300/80">
+                    <Filter className="h-4 w-4" />
+                    Воронка
+                  </div>
+                  <h3 className="mt-4 text-3xl font-semibold tracking-[-0.04em]">Список заявок</h3>
+                </div>
+
+                <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)} className="rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white outline-none">
+                  <option value="all">Все этапы</option>
+                  {statusOptions.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+                </select>
+              </div>
+
+              <div className="mt-7 grid gap-4">
+                {filteredLeads.length === 0 ? (
+                  <div className="rounded-[30px] border border-white/10 bg-black/25 p-8 text-white/58">
+                    Заявок пока нет. Нажми “Загрузить заявки”.
+                  </div>
+                ) : (
+                  filteredLeads.map((lead) => {
+                    const crm = lead._crm || {}
+                    const isSelected = selectedLead && getLeadId(selectedLead) === getLeadId(lead)
+
+                    return (
+                      <button
+                        key={`${crm.lead_source}-${getLeadId(lead)}`}
+                        type="button"
+                        onClick={() => selectLead(lead)}
+                        className={`rounded-[30px] border p-5 text-left transition ${isSelected ? 'border-[#D6A84F]/40 bg-[#D6A84F]/10' : 'border-white/10 bg-black/25 hover:border-sky-300/25'}`}
+                      >
+                        <div className="flex flex-wrap items-start justify-between gap-4">
+                          <div className="min-w-0">
+                            <div className="flex flex-wrap items-center gap-3 text-xs uppercase tracking-[0.18em] text-white/35">
+                              <UserRound className="h-3.5 w-3.5" />
+                              {formatDate(lead.created_at)} · ID {getLeadId(lead)}
+                            </div>
+                            <h4 className="mt-3 text-xl font-semibold tracking-[-0.03em] text-white">{getLeadTitle(lead)}</h4>
+                            <p className="mt-2 text-sm text-white/55">{getLeadContact(lead)}</p>
+                            <p className="mt-3 line-clamp-2 text-sm leading-7 text-white/50">{getLeadTopic(lead)} · {getLeadMessage(lead)}</p>
+                          </div>
+
+                          <div className="flex shrink-0 flex-col gap-2 text-right">
+                            <span className="rounded-full border border-sky-300/20 bg-sky-300/10 px-4 py-2 text-sm text-sky-100">
+                              {statusLabels[crm.status] || crm.status || 'Новая'}
+                            </span>
+                            <span className="rounded-full border border-[#D6A84F]/20 bg-[#D6A84F]/10 px-4 py-2 text-sm text-[#F7D784]">
+                              {priorityLabels[crm.priority] || crm.priority || 'Обычный'}
+                            </span>
+                          </div>
+                        </div>
+
+                        {(crm.next_action || crm.amount) && (
+                          <div className="mt-4 grid gap-3 text-sm text-white/55 md:grid-cols-2">
+                            {crm.next_action && (
+                              <div className="flex items-start gap-2">
+                                <MessageSquareText className="mt-0.5 h-4 w-4 text-sky-200" />
+                                {crm.next_action}
+                              </div>
+                            )}
+                            {crm.amount ? (
+                              <div className="flex items-start gap-2">
+                                <FileText className="mt-0.5 h-4 w-4 text-[#F7D784]" />
+                                {Number(crm.amount).toLocaleString('ru-RU')} ₽
+                              </div>
+                            ) : null}
+                          </div>
+                        )}
+
+                        {crm.next_contact_at && (
+                          <div className="mt-3 flex items-center gap-2 text-sm text-amber-100/80">
+                            <CalendarClock className="h-4 w-4" />
+                            Вернуться: {formatDate(crm.next_contact_at)}
+                          </div>
+                        )}
+                      </button>
+                    )
+                  })
+                )}
+              </div>
+            </div>
+
+            <div className="rounded-[34px] border border-emerald-300/15 bg-emerald-300/10 p-6 text-sm leading-7 text-emerald-100/85">
+              <div className="mb-2 flex items-center gap-2 font-semibold">
+                <CheckCircle2 className="h-4 w-4" />
+                Как использовать
+              </div>
+              Загрузи заявки, выбери карточку, назначь этап и следующий шаг. Когда клиент оплатил или началась работа, создай ему проверку через кнопку “Создать проверку”.
+            </div>
+
+            <div className="rounded-[34px] border border-amber-300/15 bg-amber-300/10 p-6 text-sm leading-7 text-amber-100/85">
+              <div className="mb-2 flex items-center gap-2 font-semibold">
+                <AlertTriangle className="h-4 w-4" />
+                Граница v1
+              </div>
+              CRM v1 ведет заявки и этапы. Это еще не бухгалтерия, не документооборот и не файловое хранилище. Эти модули лучше добавлять отдельными патчами.
+            </div>
+          </div>
+        </section>
+      </main>
+    </>
+  )
+}
