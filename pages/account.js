@@ -313,6 +313,13 @@ export default function AccountPage() {
             <p className="mt-8 max-w-3xl text-lg leading-8 text-white/64 md:text-xl md:leading-9">
               Закрытая зона HEIMDALL для клиентов: проверки, статусы, отчеты, документы и новые запросы команде.
             </p>
+
+            <div className="mt-8 flex flex-wrap gap-4">
+              <Link href="/client-account-guide" className="inline-flex items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/10 px-6 py-4 font-semibold text-white">
+                Как работает кабинет
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
           </div>
         </section>
 
@@ -461,6 +468,19 @@ export default function AccountPage() {
                   Выйти
                   <LogOut className="h-4 w-4" />
                 </button>
+              </div>
+
+              <div className="grid gap-6 rounded-[34px] border border-sky-300/20 bg-sky-300/[0.055] p-6 backdrop-blur-2xl md:grid-cols-[1fr_auto] md:items-center md:p-7">
+                <div>
+                  <div className="text-sm uppercase tracking-[0.22em] text-sky-300/80">Подсказка по кабинету</div>
+                  <p className="mt-3 text-sm leading-7 text-white/62">
+                    Проверки появляются после добавления аналитиком HEIMDALL. Новый запрос можно отправить во вкладке “Новый запрос”, а готовые материалы появятся во вкладке “Отчеты”.
+                  </p>
+                </div>
+                <Link href="/client-account-guide" className="inline-flex items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/10 px-5 py-3 text-sm font-semibold text-white hover:bg-white/15">
+                  Инструкция
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
               </div>
 
               <div className="grid gap-6 md:grid-cols-4">
