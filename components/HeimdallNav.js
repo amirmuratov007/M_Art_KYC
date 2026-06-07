@@ -32,6 +32,7 @@ const ruMenu = [
     href: '/business-support',
     items: [
       ['Комплексное сопровождение', '/business-support'],
+      ['Служба безопасности на аутсорсе', '/security-outsourcing'],
       ['Клиентское приложение', '/client-app'],
       ['Скачать приложение', '/app-download'],
       ['Демо-кабинет', '/demo-client-app'],
@@ -90,6 +91,7 @@ const enMenu = [
     href: '/business-support-en',
     items: [
       ['Business Support', '/business-support-en'],
+      ['Security Outsourcing', '/security-outsourcing-en'],
       ['Business Intelligence Support', '/business-intelligence-support-en'],
       ['Client Application', '/client-app-en'],
       ['Download App', '/app-download-en'],
@@ -128,6 +130,8 @@ const langMap = {
 
   '/business-support': '/business-support-en',
   '/business-support-en': '/business-support',
+  '/security-outsourcing': '/security-outsourcing-en',
+  '/security-outsourcing-en': '/security-outsourcing',
   '/business-intelligence-support-en': '/business-support',
   '/client-app': '/client-app-en',
   '/client-app-en': '/client-app',

@@ -7,7 +7,8 @@ const topicsRu = [
   'Проверка кандидата на чувствительную роль',
   'Проверка бенефициаров и скрытых связей',
   'Due Diligence / инвестиционная проверка',
-  'Постоянное сопровождение бизнеса'
+  'Постоянное сопровождение бизнеса',
+  'Служба безопасности на аутсорсе'
 ]
 
 const topicsEn = [
@@ -16,7 +17,8 @@ const topicsEn = [
   'Executive or sensitive role screening',
   'Beneficial ownership and hidden links',
   'Due diligence / investment review',
-  'Ongoing business risk support'
+  'Ongoing business risk support',
+  'Outsourced security department'
 ]
 
 export default function HeimdallConversionPanel({ language = 'ru' }) {
