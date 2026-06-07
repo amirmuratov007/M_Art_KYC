@@ -3,19 +3,14 @@ import Link from 'next/link'
 import HeimdallNav from '@/components/HeimdallNav'
 import HeimdallFooter from '@/components/HeimdallFooter'
 import PWAInstallButton from '@/components/PWAInstallButton'
-import { ArrowRight, Download, KeyRound, Smartphone } from 'lucide-react'
-
-const credentials = [
-  ['Email', 'demo@heimdall-group.ru'],
-  ['Password', 'HeimdallDemo2026!']
-]
+import { ArrowRight, Download } from 'lucide-react'
 
 export default function AppDownloadPage() {
   return (
     <>
       <Head>
         <title>Клиентское приложение | HEIMDALL</title>
-        <meta name="description" content="Установка клиентского web-приложения HEIMDALL на телефон и тестовый демо-доступ." />
+        <meta name="description" content="Клиентское приложение HEIMDALL." />
         <link rel="canonical" href="https://www.heimdall-group.ru/app-download" />
       </Head>
 
@@ -27,11 +22,11 @@ export default function AppDownloadPage() {
 
         <HeimdallNav language="ru" />
 
-        <section className="relative z-10 mx-auto grid max-w-7xl gap-10 px-4 py-16 sm:px-5 sm:py-24 lg:grid-cols-[1fr_0.8fr] lg:items-center">
+        <section className="relative z-10 mx-auto grid max-w-7xl gap-10 px-4 py-16 sm:px-5 sm:py-24 lg:grid-cols-[1fr_0.7fr] lg:items-center">
           <div>
             <div className="inline-flex items-center gap-3 rounded-full border border-[#D6A84F]/25 bg-[#D6A84F]/10 px-5 py-2 text-sm uppercase tracking-[0.24em] text-[#F7D784]">
               <Download className="h-4 w-4" />
-              HEIMDALL Client App
+              HEIMDALL App
             </div>
 
             <h1 className="mt-9 text-5xl font-semibold leading-[0.95] tracking-[-0.06em] md:text-8xl">
@@ -39,7 +34,7 @@ export default function AppDownloadPage() {
             </h1>
 
             <p className="mt-8 max-w-3xl text-lg leading-8 text-white/64 md:text-xl md:leading-9">
-              Сейчас доступна web-версия приложения. Она открывается на телефоне и ставится на экран Домой.
+              Откройте приложение или добавьте его на экран телефона.
             </p>
 
             <div className="mt-10 grid max-w-xl gap-4 sm:grid-cols-2">
@@ -59,43 +54,8 @@ export default function AppDownloadPage() {
 
           <div className="rounded-[42px] border border-white/10 bg-white/[0.045] p-6 backdrop-blur-2xl">
             <div className="rounded-[34px] border border-[#D6A84F]/20 bg-[#07101f]/90 p-7">
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <div className="text-xs uppercase tracking-[0.22em] text-[#F7D784]/80">Demo access</div>
-                  <div className="mt-2 text-2xl font-semibold">Тестовый доступ</div>
-                </div>
-                <KeyRound className="h-6 w-6 text-sky-300" />
-              </div>
-
-              <div className="mt-7 grid gap-3">
-                {credentials.map(([label, value]) => (
-                  <div key={label} className="rounded-2xl border border-white/10 bg-black/25 px-5 py-4">
-                    <div className="text-xs uppercase tracking-[0.18em] text-white/38">{label}</div>
-                    <div className="mt-2 select-all font-mono text-sm text-[#F7D784]">{value}</div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-6 rounded-2xl border border-sky-300/20 bg-sky-300/10 px-5 py-4 text-sm leading-6 text-sky-100">
-                Загруженный ZIP - это исходники, не установочный файл. Для установки нужен APK или TestFlight. Пока используем web-приложение.
-              </div>
+              <img src="/heimdall-logo-mark.png" alt="HEIMDALL" className="mx-auto w-full max-w-[360px]" />
             </div>
-          </div>
-        </section>
-
-        <section className="relative z-10 mx-auto max-w-7xl px-4 pb-28 sm:px-5">
-          <div className="grid gap-8 rounded-[42px] border border-[#D6A84F]/20 bg-[#D6A84F]/[0.07] p-8 backdrop-blur-2xl md:p-12 lg:grid-cols-[1fr_auto] lg:items-center">
-            <div>
-              <Smartphone className="mb-6 h-8 w-8 text-[#F7D784]" />
-              <h2 className="text-4xl font-semibold tracking-[-0.05em] md:text-6xl">Когда будет APK</h2>
-              <p className="mt-5 max-w-3xl text-base leading-8 text-white/64">
-                Пришли APK или ссылку TestFlight - я заменю эту страницу на прямое скачивание настоящего приложения.
-              </p>
-            </div>
-            <Link href="/client-app" className="inline-flex items-center justify-center gap-3 rounded-2xl bg-[#D6A84F] px-7 py-4 font-semibold text-[#050816]">
-              О приложении
-              <ArrowRight className="h-4 w-4" />
-            </Link>
           </div>
         </section>
 
