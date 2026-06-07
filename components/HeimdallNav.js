@@ -203,14 +203,14 @@ export default function HeimdallNav({ language }) {
                   <ChevronDown className="h-4 w-4 opacity-70" />
                 </Link>
 
-                <div className="absolute left-1/2 top-full z-[9999] h-4 w-80 -translate-x-1/2" />
-
-                <div className={`absolute left-1/2 top-[calc(100%+12px)] z-[9999] w-80 -translate-x-1/2 rounded-[26px] border border-white/15 bg-[#050816] p-3 shadow-[0_35px_100px_rgba(0,0,0,0.88)] ring-1 ring-sky-300/10 transition duration-200 ${activeDropdown === group.title ? 'pointer-events-auto translate-y-0 opacity-100' : 'pointer-events-none translate-y-3 opacity-0'}`}>
-                  {group.items.map(([label, itemHref]) => (
-                    <Link key={itemHref} href={itemHref} className="block rounded-2xl px-4 py-3 text-sm text-white/78 transition hover:bg-white/10 hover:text-[#F7D784]">
-                      {label}
-                    </Link>
-                  ))}
+                <div className={`absolute left-1/2 top-full z-[9999] w-80 -translate-x-1/2 pt-3 transition duration-200 ${activeDropdown === group.title ? 'pointer-events-auto translate-y-0 opacity-100' : 'pointer-events-none translate-y-3 opacity-0'}`}>
+                  <div className="rounded-[26px] border border-white/15 bg-[#050816] p-3 shadow-[0_35px_100px_rgba(0,0,0,0.88)] ring-1 ring-sky-300/10">
+                    {group.items.map(([label, itemHref]) => (
+                      <Link key={itemHref} href={itemHref} className="block rounded-2xl px-4 py-3 text-sm text-white/78 transition hover:bg-white/10 hover:text-[#F7D784]">
+                        {label}
+                      </Link>
+                    ))}
+                  </div>
                 </div>
               </div>
             ))}
