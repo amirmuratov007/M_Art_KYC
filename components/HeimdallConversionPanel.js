@@ -7,6 +7,7 @@ const topicsRu = [
   'Проверка кандидата на чувствительную роль',
   'Проверка бенефициаров и скрытых связей',
   'Due Diligence / инвестиционная проверка',
+  'Внутреннее расследование и профилактика нарушений',
   'Постоянное сопровождение бизнеса',
   'Служба безопасности на аутсорсе'
 ]
@@ -17,6 +18,7 @@ const topicsEn = [
   'Executive or sensitive role screening',
   'Beneficial ownership and hidden links',
   'Due diligence / investment review',
+  'Internal investigation and violation prevention',
   'Ongoing business risk support',
   'Outsourced security department'
 ]

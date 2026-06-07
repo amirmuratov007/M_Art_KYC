@@ -14,7 +14,8 @@ const ruMenu = [
       ['Проверка кандидатов', '/proverka-kandidatov'],
       ['Проверка бенефициаров', '/proverka-beneficiarov'],
       ['AML / KYC', '/aml-kyc-russia'],
-      ['Due Diligence', '/due-diligence-russia']
+      ['Due Diligence', '/due-diligence-russia'],
+      ['Внутренние расследования', '/internal-investigations']
     ]
   },
   {
@@ -33,6 +34,7 @@ const ruMenu = [
     items: [
       ['Комплексное сопровождение', '/business-support'],
       ['Служба безопасности на аутсорсе', '/security-outsourcing'],
+      ['Внутренние расследования', '/internal-investigations'],
       ['Прайс ИБ и аутсорсинг', '/security-outsourcing#pricing'],
       ['Клиентское приложение', '/client-app'],
       ['Скачать приложение', '/app-download'],
@@ -64,7 +66,8 @@ const enMenu = [
       ['Executive Background Check', '/executive-background-check-en'],
       ['CFO Screening', '/cfo-screening-en'],
       ['Procurement Risk Check', '/procurement-risk-check-en'],
-      ['Background Check', '/background-check']
+      ['Background Check', '/background-check'],
+      ['Internal Investigations', '/internal-investigations-en']
     ]
   },
   {
@@ -93,6 +96,7 @@ const enMenu = [
     items: [
       ['Business Support', '/business-support-en'],
       ['Security Outsourcing', '/security-outsourcing-en'],
+      ['Internal Investigations', '/internal-investigations-en'],
       ['InfoSec and Outsourcing Pricing', '/security-outsourcing-en#pricing'],
       ['Business Intelligence Support', '/business-intelligence-support-en'],
       ['Client Application', '/client-app-en'],
@@ -134,6 +138,8 @@ const langMap = {
   '/business-support-en': '/business-support',
   '/security-outsourcing': '/security-outsourcing-en',
   '/security-outsourcing-en': '/security-outsourcing',
+  '/internal-investigations': '/internal-investigations-en',
+  '/internal-investigations-en': '/internal-investigations',
   '/business-intelligence-support-en': '/business-support',
   '/client-app': '/client-app-en',
   '/client-app-en': '/client-app',

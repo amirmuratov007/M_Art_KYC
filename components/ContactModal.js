@@ -88,6 +88,7 @@ export default function ContactModal({ open, onClose, language = 'ru', defaultTo
                 <option>Проверка бенефициаров</option>
                 <option>AML / KYC</option>
                 <option>Due Diligence</option>
+                <option>Внутреннее расследование</option>
                 <option>Комплексное сопровождение</option>
                 <option>Клиентское приложение</option>
                 <option>Общий запрос</option>
@@ -99,6 +100,7 @@ export default function ContactModal({ open, onClose, language = 'ru', defaultTo
                 <option>Beneficial ownership review</option>
                 <option>AML / KYC</option>
                 <option>Due Diligence</option>
+                <option>Internal investigation</option>
                 <option>Business support</option>
                 <option>Client application</option>
                 <option>General request</option>
