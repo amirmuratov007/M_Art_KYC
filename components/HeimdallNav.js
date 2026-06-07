@@ -41,6 +41,7 @@ const ruMenu = [
       ['Клиентское приложение', '/client-app'],
       ['Как работает кабинет', '/client-account-guide'],
       ['Личный кабинет', '/account'],
+      ['Заказать услугу', '/account?tab=request'],
       ['Примеры отчетов', '/sample-reports']
     ]
   },
@@ -104,6 +105,7 @@ const enMenu = [
       ['Client Application', '/client-app-en'],
       ['How Account Works', '/client-account-guide-en'],
       ['Client Account', '/account'],
+      ['Request a service', '/account?tab=request'],
       ['Sample Reports', '/sample-reports-en']
     ]
   },

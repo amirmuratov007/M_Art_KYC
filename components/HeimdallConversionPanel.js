@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ArrowRight, CheckCircle2, LockKeyhole, ShieldCheck, Sparkles } from 'lucide-react'
+import { useHeimdallAuth } from '@/components/HeimdallAuthProvider'
 
 const topicsRu = [
   'Проверка контрагента перед сделкой',
@@ -26,6 +27,10 @@ const topicsEn = [
 export default function HeimdallConversionPanel({ language = 'ru' }) {
   const ru = language === 'ru'
   const topics = ru ? topicsRu : topicsEn
+  const { user, refreshSession } = useHeimdallAuth()
+  const displayName = user?.user_metadata?.full_name || user?.email || ''
+  const userCompany = user?.user_metadata?.company || ''
+  const isAuthenticated = Boolean(user)
   const [status, setStatus] = useState('idle')
   const [errorMessage, setErrorMessage] = useState('')
   const [form, setForm] = useState({
@@ -36,6 +41,17 @@ export default function HeimdallConversionPanel({ language = 'ru' }) {
     message: ''
   })
 
+  useEffect(() => {
+    if (!isAuthenticated) return
+
+    setForm((current) => ({
+      ...current,
+      name: current.name || displayName || user?.email || '',
+      company: current.company || userCompany,
+      contact: current.contact || user?.email || ''
+    }))
+  }, [isAuthenticated, displayName, userCompany, user?.email])
+
   const update = (key, value) => setForm((current) => ({ ...current, [key]: value }))
 
   const submit = async (event) => {
@@ -44,18 +60,48 @@ export default function HeimdallConversionPanel({ language = 'ru' }) {
     setErrorMessage('')
 
     try {
-      const response = await fetch('/api/contact-request', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...form,
-          language,
-          source: 'homepage_conversion_panel',
-          message: form.message || (ru
-            ? 'Прошу предложить формат проверки и следующий шаг.'
-            : 'Please suggest the review scope and next step.')
+      let response
+
+      if (isAuthenticated) {
+        const currentSession = await refreshSession()
+        const accessToken = currentSession?.access_token
+
+        if (!accessToken) {
+          throw new Error(ru ? 'Сессия истекла. Войдите в кабинет заново.' : 'Session expired. Please sign in again.')
+        }
+
+        response = await fetch('/api/client-request', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${accessToken}`
+          },
+          body: JSON.stringify({
+            service: form.topic || topics[0],
+            urgency: ru ? 'Обычная' : 'Normal',
+            subject: form.topic || topics[0],
+            details: form.message || (ru
+              ? 'Клиент оставил заявку с главной страницы как авторизованный пользователь.'
+              : 'The client submitted a homepage request as an authenticated user.'),
+            company: form.company || userCompany,
+            contact: form.contact || user?.email || '',
+            fullName: form.name || displayName || user?.email || ''
+          })
         })
-      })
+      } else {
+        response = await fetch('/api/contact-request', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ...form,
+            language,
+            source: 'homepage_conversion_panel',
+            message: form.message || (ru
+              ? 'Прошу предложить формат проверки и следующий шаг.'
+              : 'Please suggest the review scope and next step.')
+          })
+        })
+      }
 
       const data = await response.json().catch(() => ({}))
 
@@ -65,9 +111,9 @@ export default function HeimdallConversionPanel({ language = 'ru' }) {
 
       setStatus('success')
       setForm({
-        name: '',
-        company: '',
-        contact: '',
+        name: isAuthenticated ? (displayName || user?.email || '') : '',
+        company: isAuthenticated ? userCompany : '',
+        contact: isAuthenticated ? (user?.email || '') : '',
         topic: topics[0],
         message: ''
       })
@@ -89,9 +135,13 @@ export default function HeimdallConversionPanel({ language = 'ru' }) {
               {ru ? 'Получите формат проверки под вашу ситуацию' : 'Get the right review scope for your situation'}
             </h2>
             <p className="mt-6 text-base leading-8 text-white/64 sm:text-lg">
-              {ru
-                ? 'Не нужно готовить техническое задание. Напишите, кого нужно проверить и какой риск вы хотите закрыть. Мы ответим с понятным следующим шагом.'
-                : 'No formal brief is required. Tell us who needs to be reviewed and what risk you want to reduce. We will reply with a clear next step.'}
+              {isAuthenticated
+                ? (ru
+                  ? 'Вы уже вошли в кабинет. Заявка будет отправлена как клиентский запрос и привязана к вашему аккаунту.'
+                  : 'You are signed in. The request will be sent as a client request and linked to your account.')
+                : (ru
+                  ? 'Не нужно готовить техническое задание. Напишите, кого нужно проверить и какой риск вы хотите закрыть. Мы ответим с понятным следующим шагом.'
+                  : 'No formal brief is required. Tell us who needs to be reviewed and what risk you want to reduce. We will reply with a clear next step.')}
             </p>
           </div>
 
@@ -126,13 +176,23 @@ export default function HeimdallConversionPanel({ language = 'ru' }) {
             </div>
           </div>
 
+          {isAuthenticated && (
+            <div className="mt-7 rounded-2xl border border-[#D6A84F]/25 bg-[#D6A84F]/10 p-4 text-sm leading-6 text-[#F7D784]">
+              {ru ? 'Заявка будет отправлена от аккаунта:' : 'Request will be sent from account:'} <span className="break-all text-white/85">{displayName || user?.email}</span>
+            </div>
+          )}
+
           <div className="mt-7 grid gap-4 sm:grid-cols-2">
-            <input required value={form.name} onChange={(e) => update('name', e.target.value)} placeholder={ru ? 'Ваше имя' : 'Your name'} className="rounded-2xl border border-white/10 bg-black/25 px-5 py-4 text-white outline-none placeholder:text-white/35 focus:border-sky-300/40" />
+            {!isAuthenticated && (
+              <input required value={form.name} onChange={(e) => update('name', e.target.value)} placeholder={ru ? 'Ваше имя' : 'Your name'} className="rounded-2xl border border-white/10 bg-black/25 px-5 py-4 text-white outline-none placeholder:text-white/35 focus:border-sky-300/40" />
+            )}
             <input value={form.company} onChange={(e) => update('company', e.target.value)} placeholder={ru ? 'Компания' : 'Company'} className="rounded-2xl border border-white/10 bg-black/25 px-5 py-4 text-white outline-none placeholder:text-white/35 focus:border-sky-300/40" />
           </div>
 
           <div className="mt-4 grid gap-4">
-            <input required value={form.contact} onChange={(e) => update('contact', e.target.value)} placeholder={ru ? 'Телефон, Telegram или email' : 'Phone, Telegram or email'} className="rounded-2xl border border-white/10 bg-black/25 px-5 py-4 text-white outline-none placeholder:text-white/35 focus:border-sky-300/40" />
+            {!isAuthenticated && (
+              <input required value={form.contact} onChange={(e) => update('contact', e.target.value)} placeholder={ru ? 'Телефон, Telegram или email' : 'Phone, Telegram or email'} className="rounded-2xl border border-white/10 bg-black/25 px-5 py-4 text-white outline-none placeholder:text-white/35 focus:border-sky-300/40" />
+            )}
             <select value={form.topic} onChange={(e) => update('topic', e.target.value)} className="rounded-2xl border border-white/10 bg-[#050816] px-5 py-4 text-white outline-none focus:border-sky-300/40">
               {topics.map((topic) => <option key={topic}>{topic}</option>)}
             </select>
@@ -140,7 +200,7 @@ export default function HeimdallConversionPanel({ language = 'ru' }) {
           </div>
 
           <button type="submit" disabled={status === 'loading'} className="mt-5 inline-flex w-full items-center justify-center gap-3 rounded-2xl bg-[#D6A84F] px-7 py-4 font-semibold text-[#050816] shadow-[0_0_45px_rgba(214,168,79,0.24)] disabled:opacity-60">
-            {status === 'loading' ? (ru ? 'Отправляем...' : 'Sending...') : (ru ? 'Получить следующий шаг' : 'Get next step')}
+            {status === 'loading' ? (ru ? 'Отправляем...' : 'Sending...') : (isAuthenticated ? (ru ? 'Отправить из кабинета' : 'Send from account') : (ru ? 'Получить следующий шаг' : 'Get next step'))}
             <ArrowRight className="h-4 w-4" />
           </button>
 
@@ -155,7 +215,7 @@ export default function HeimdallConversionPanel({ language = 'ru' }) {
 
           {status === 'success' && (
             <div className="mt-5 rounded-2xl border border-emerald-300/20 bg-emerald-300/10 p-4 text-sm leading-6 text-emerald-100">
-              {ru ? 'Заявка отправлена. Мы свяжемся с вами.' : 'Request sent. We will contact you.'}
+              {isAuthenticated ? (ru ? 'Клиентский запрос отправлен. Мы получили его в кабинете.' : 'Client request sent. We received it in your account flow.') : (ru ? 'Заявка отправлена. Мы свяжемся с вами.' : 'Request sent. We will contact you.')}
             </div>
           )}
 

@@ -1,9 +1,14 @@
 import { useEffect, useState } from 'react'
-import { X, ArrowRight, CheckCircle2 } from 'lucide-react'
+import { X, ArrowRight, CheckCircle2, ShieldCheck } from 'lucide-react'
+import { useHeimdallAuth } from '@/components/HeimdallAuthProvider'
 
 export default function ContactModal({ open, onClose, language = 'ru', defaultTopic }) {
   const ru = language === 'ru'
   const fallbackTopic = ru ? 'Общий запрос' : 'General request'
+  const { user, refreshSession } = useHeimdallAuth()
+  const displayName = user?.user_metadata?.full_name || user?.email || ''
+  const userCompany = user?.user_metadata?.company || ''
+  const isAuthenticated = Boolean(user)
   const [status, setStatus] = useState('idle')
   const [errorMessage, setErrorMessage] = useState('')
   const [form, setForm] = useState({
@@ -20,9 +25,12 @@ export default function ContactModal({ open, onClose, language = 'ru', defaultTo
     setErrorMessage('')
     setForm((current) => ({
       ...current,
-      topic: defaultTopic || fallbackTopic
+      name: isAuthenticated ? (displayName || current.name) : current.name,
+      company: isAuthenticated ? (current.company || userCompany) : current.company,
+      contact: isAuthenticated ? (user?.email || current.contact) : current.contact,
+      topic: defaultTopic || current.topic || fallbackTopic
     }))
-  }, [open, defaultTopic, fallbackTopic])
+  }, [open, defaultTopic, fallbackTopic, isAuthenticated, displayName, userCompany, user?.email])
 
   if (!open) return null
 
@@ -34,11 +42,41 @@ export default function ContactModal({ open, onClose, language = 'ru', defaultTo
     setErrorMessage('')
 
     try {
-      const response = await fetch('/api/contact-request', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, language, source: 'contact_modal' })
-      })
+      let response
+
+      if (isAuthenticated) {
+        const currentSession = await refreshSession()
+        const accessToken = currentSession?.access_token
+
+        if (!accessToken) {
+          throw new Error(ru ? 'Сессия истекла. Войдите в кабинет заново.' : 'Session expired. Please sign in again.')
+        }
+
+        response = await fetch('/api/client-request', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${accessToken}`
+          },
+          body: JSON.stringify({
+            service: form.topic || fallbackTopic,
+            urgency: ru ? 'Обычная' : 'Normal',
+            subject: form.topic || fallbackTopic,
+            details: form.message || (ru
+              ? 'Клиент оставил заявку с сайта как авторизованный пользователь.'
+              : 'The client submitted a website request as an authenticated user.'),
+            company: form.company || userCompany,
+            contact: form.contact || user?.email || '',
+            fullName: form.name || displayName || user?.email || ''
+          })
+        })
+      } else {
+        response = await fetch('/api/contact-request', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...form, language, source: 'contact_modal' })
+        })
+      }
 
       const data = await response.json().catch(() => ({}))
 
@@ -48,9 +86,9 @@ export default function ContactModal({ open, onClose, language = 'ru', defaultTo
 
       setStatus('success')
       setForm({
-        name: '',
-        company: '',
-        contact: '',
+        name: isAuthenticated ? (displayName || user?.email || '') : '',
+        company: isAuthenticated ? userCompany : '',
+        contact: isAuthenticated ? (user?.email || '') : '',
         topic: defaultTopic || fallbackTopic,
         message: ''
       })
@@ -71,14 +109,30 @@ export default function ContactModal({ open, onClose, language = 'ru', defaultTo
           <div className="text-sm uppercase tracking-[0.25em] text-sky-300/80">{ru ? 'Связаться' : 'Contact'}</div>
           <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em]">{ru ? 'Оставить заявку HEIMDALL' : 'Send a HEIMDALL request'}</h2>
           <p className="mt-4 text-sm leading-7 text-white/60">
-            {ru ? 'Заполните форму. Заявка уйдёт в Telegram и сохранится в базе.' : 'Fill in the form. The request will be sent to Telegram and saved.'}
+            {isAuthenticated
+              ? (ru ? 'Вы уже вошли в кабинет. Заявка будет отправлена как клиентский запрос без повторного ввода имени.' : 'You are signed in. The request will be sent as a client request without asking for your name again.')
+              : (ru ? 'Заполните форму. Заявка уйдёт в Telegram и сохранится в базе.' : 'Fill in the form. The request will be sent to Telegram and saved.')}
           </p>
         </div>
 
+        {isAuthenticated && (
+          <div className="mt-6 flex items-start gap-3 rounded-2xl border border-[#D6A84F]/25 bg-[#D6A84F]/10 p-4 text-sm leading-6 text-[#F7D784]">
+            <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0" />
+            <div>
+              {ru ? 'Заявка будет привязана к вашему аккаунту:' : 'This request will be linked to your account:'}<br />
+              <span className="break-all text-white/80">{displayName || user?.email}</span>
+            </div>
+          </div>
+        )}
+
         <form onSubmit={submit} className="mt-7 grid gap-4">
-          <input required value={form.name} onChange={(e) => update('name', e.target.value)} placeholder={ru ? 'Ваше имя' : 'Your name'} className="rounded-2xl border border-white/10 bg-black/25 px-5 py-4 text-white outline-none placeholder:text-white/35 focus:border-sky-300/40" />
+          {!isAuthenticated && (
+            <input required value={form.name} onChange={(e) => update('name', e.target.value)} placeholder={ru ? 'Ваше имя' : 'Your name'} className="rounded-2xl border border-white/10 bg-black/25 px-5 py-4 text-white outline-none placeholder:text-white/35 focus:border-sky-300/40" />
+          )}
           <input value={form.company} onChange={(e) => update('company', e.target.value)} placeholder={ru ? 'Компания' : 'Company'} className="rounded-2xl border border-white/10 bg-black/25 px-5 py-4 text-white outline-none placeholder:text-white/35 focus:border-sky-300/40" />
-          <input required value={form.contact} onChange={(e) => update('contact', e.target.value)} placeholder={ru ? 'Телефон, Telegram или email' : 'Phone, Telegram or email'} className="rounded-2xl border border-white/10 bg-black/25 px-5 py-4 text-white outline-none placeholder:text-white/35 focus:border-sky-300/40" />
+          {!isAuthenticated && (
+            <input required value={form.contact} onChange={(e) => update('contact', e.target.value)} placeholder={ru ? 'Телефон, Telegram или email' : 'Phone, Telegram or email'} className="rounded-2xl border border-white/10 bg-black/25 px-5 py-4 text-white outline-none placeholder:text-white/35 focus:border-sky-300/40" />
+          )}
 
           <select value={form.topic} onChange={(e) => update('topic', e.target.value)} className="rounded-2xl border border-white/10 bg-[#050816] px-5 py-4 text-white outline-none focus:border-sky-300/40">
             {ru ? (
@@ -117,7 +171,7 @@ export default function ContactModal({ open, onClose, language = 'ru', defaultTo
           <textarea value={form.message} onChange={(e) => update('message', e.target.value)} placeholder={ru ? 'Коротко опишите задачу' : 'Briefly describe the task'} className="min-h-32 rounded-2xl border border-white/10 bg-black/25 px-5 py-4 text-white outline-none placeholder:text-white/35 focus:border-sky-300/40" />
 
           <button type="submit" disabled={status === 'loading'} className="inline-flex items-center justify-center gap-3 rounded-2xl bg-sky-500 px-7 py-4 font-semibold text-white shadow-[0_0_45px_rgba(56,189,248,0.30)] disabled:opacity-60">
-            {status === 'loading' ? (ru ? 'Отправляем...' : 'Sending...') : (ru ? 'Отправить заявку' : 'Send request')}
+            {status === 'loading' ? (ru ? 'Отправляем...' : 'Sending...') : (isAuthenticated ? (ru ? 'Отправить из кабинета' : 'Send from account') : (ru ? 'Отправить заявку' : 'Send request'))}
             <ArrowRight className="h-4 w-4" />
           </button>
 
@@ -131,7 +185,7 @@ export default function ContactModal({ open, onClose, language = 'ru', defaultTo
         {status === 'success' && (
           <div className="mt-5 flex items-start gap-3 rounded-2xl border border-emerald-300/20 bg-emerald-300/10 p-4 text-sm leading-6 text-emerald-100">
             <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0" />
-            {ru ? 'Заявка отправлена. Мы свяжемся с вами.' : 'Request sent. We will contact you.'}
+            {isAuthenticated ? (ru ? 'Клиентский запрос отправлен. Мы получили его в кабинете.' : 'Client request sent. We received it in your account flow.') : (ru ? 'Заявка отправлена. Мы свяжемся с вами.' : 'Request sent. We will contact you.')}
           </div>
         )}
 
