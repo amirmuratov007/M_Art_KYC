@@ -37,10 +37,7 @@ const ruMenu = [
       ['Служба безопасности на аутсорсе', '/security-outsourcing'],
       ['Внутренние расследования', '/internal-investigations'],
       ['Единый прайс', '/pricing'],
-      ['Прайс ИБ и аутсорсинг', '/security-outsourcing#pricing'],
       ['Клиентское приложение', '/client-app'],
-      ['Скачать приложение', '/app-download'],
-      ['Демо-кабинет', '/demo-client-app'],
       ['Личный кабинет', '/account'],
       ['Примеры отчетов', '/sample-reports']
     ]
@@ -101,11 +98,8 @@ const enMenu = [
       ['Security Outsourcing', '/security-outsourcing-en'],
       ['Internal Investigations', '/internal-investigations-en'],
       ['Pricing', '/pricing-en'],
-      ['InfoSec and Outsourcing Pricing', '/security-outsourcing-en#pricing'],
       ['Business Intelligence Support', '/business-intelligence-support-en'],
       ['Client Application', '/client-app-en'],
-      ['Download App', '/app-download-en'],
-      ['Demo Dashboard', '/demo-client-app-en'],
       ['Client Account', '/account'],
       ['Sample Reports', '/sample-reports-en']
     ]
