@@ -1,14 +1,17 @@
-async function loadHeimdallDashboardData(options = {}) {
-  const params = new URLSearchParams()
+async function loadHeimdallDashboardData() {
+  const token = window.HEIMDALL_CLIENT_TOKEN || new URLSearchParams(window.location.search).get('token') || ''
 
-  if (options.userId) params.set('user_id', options.userId)
-  if (options.contact) params.set('contact', options.contact)
+  if (!/^[a-f0-9]{64}$/i.test(token)) {
+    throw new Error('Client access token is required')
+  }
 
-  const url = params.toString()
-    ? `/api/client-dashboard?${params.toString()}`
-    : '/api/client-dashboard'
-
-  const response = await fetch(url)
+  const response = await fetch('/api/client-dashboard', {
+    cache: 'no-store',
+    headers: {
+      'Accept': 'application/json',
+      'Authorization': `Bearer ${token}`
+    }
+  })
   const data = await response.json()
 
   if (!response.ok || data.ok === false) {
