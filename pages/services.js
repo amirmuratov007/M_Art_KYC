@@ -4,7 +4,7 @@ import { useState } from 'react'
 import HeimdallNav from '@/components/HeimdallNav'
 import HeimdallFooter from '@/components/HeimdallFooter'
 import ContactModal from '@/components/ContactModal'
-import { ArrowRight, FileSearch, ShieldCheck, Network, UserSearch, Scale, Building2, CheckCircle2, AlertTriangle, LockKeyhole } from 'lucide-react'
+import { ArrowRight, FileSearch, ShieldCheck, Network, UserSearch, Scale, Building2, CheckCircle2, AlertTriangle, LockKeyhole, ClipboardCheck } from 'lucide-react'
 
 const services = [
   {
@@ -28,6 +28,13 @@ const services = [
     href: '/security-outsourcing',
     icon: LockKeyhole,
     bestFor: 'когда нужно заменить или усилить службу безопасности без найма отдела'
+  },
+  {
+    title: 'Внутренние расследования',
+    text: 'Выявление мошенничества, сговора, утечек, конфликта интересов и нарушений внутри компании в правовом поле.',
+    href: '/internal-investigations',
+    icon: ClipboardCheck,
+    bestFor: 'когда есть подозрение на внутреннюю схему, утечку, сговор или нарушение процессов'
   },
   {
     title: 'Проверка кандидатов',

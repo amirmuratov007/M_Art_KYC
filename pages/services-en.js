@@ -4,7 +4,7 @@ import { useState } from 'react'
 import HeimdallNav from '@/components/HeimdallNav'
 import HeimdallFooter from '@/components/HeimdallFooter'
 import ContactModal from '@/components/ContactModal'
-import { ArrowRight, FileSearch, ShieldCheck, Network, UserSearch, Scale, Building2, CheckCircle2, AlertTriangle, LockKeyhole } from 'lucide-react'
+import { ArrowRight, FileSearch, ShieldCheck, Network, UserSearch, Scale, Building2, CheckCircle2, AlertTriangle, LockKeyhole, ClipboardCheck } from 'lucide-react'
 
 const services = [
   {
@@ -28,6 +28,13 @@ const services = [
     href: '/security-outsourcing-en',
     icon: LockKeyhole,
     bestFor: 'when a company needs to replace or reinforce security without hiring a department'
+  },
+  {
+    title: 'Internal Investigations',
+    text: 'Corporate investigations for fraud, collusion, leaks, conflicts of interest and internal process violations within a lawful framework.',
+    href: '/internal-investigations-en',
+    icon: ClipboardCheck,
+    bestFor: 'when there is suspected internal fraud, leakage, collusion or process abuse'
   },
   {
     title: 'Background Check',
