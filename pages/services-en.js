@@ -4,7 +4,7 @@ import { useState } from 'react'
 import HeimdallNav from '@/components/HeimdallNav'
 import HeimdallFooter from '@/components/HeimdallFooter'
 import ContactModal from '@/components/ContactModal'
-import { ArrowRight, FileSearch, ShieldCheck, Network, UserSearch, Scale, Building2, CheckCircle2, AlertTriangle } from 'lucide-react'
+import { ArrowRight, FileSearch, ShieldCheck, Network, UserSearch, Scale, Building2, CheckCircle2, AlertTriangle, LockKeyhole } from 'lucide-react'
 
 const services = [
   {
@@ -20,6 +20,14 @@ const services = [
     href: '/china-supplier-verification',
     icon: Building2,
     bestFor: 'before advance payment, first shipment or supplier replacement'
+  },
+
+  {
+    title: 'Security Outsourcing',
+    text: 'External security perimeter for companies without an internal department: reviews, monitoring, confidential tasks and information security.',
+    href: '/security-outsourcing-en',
+    icon: LockKeyhole,
+    bestFor: 'when a company needs to replace or reinforce security without hiring a department'
   },
   {
     title: 'Background Check',

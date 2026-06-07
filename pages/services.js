@@ -4,7 +4,7 @@ import { useState } from 'react'
 import HeimdallNav from '@/components/HeimdallNav'
 import HeimdallFooter from '@/components/HeimdallFooter'
 import ContactModal from '@/components/ContactModal'
-import { ArrowRight, FileSearch, ShieldCheck, Network, UserSearch, Scale, Building2, CheckCircle2, AlertTriangle } from 'lucide-react'
+import { ArrowRight, FileSearch, ShieldCheck, Network, UserSearch, Scale, Building2, CheckCircle2, AlertTriangle, LockKeyhole } from 'lucide-react'
 
 const services = [
   {
@@ -20,6 +20,14 @@ const services = [
     href: '/proverka-postavshchika-iz-kitaya',
     icon: Building2,
     bestFor: 'перед авансом, первой поставкой или сменой поставщика'
+  },
+
+  {
+    title: 'Служба безопасности на аутсорсе',
+    text: 'Внешний контур безопасности для компаний без собственного отдела: проверки, мониторинг, закрытые задачи и информационная безопасность.',
+    href: '/security-outsourcing',
+    icon: LockKeyhole,
+    bestFor: 'когда нужно заменить или усилить службу безопасности без найма отдела'
   },
   {
     title: 'Проверка кандидатов',
