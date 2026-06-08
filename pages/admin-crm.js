@@ -29,8 +29,9 @@ const statusOptions = [
   ['in_work', 'В работе'],
   ['report_ready', 'Отчет готов'],
   ['support', 'Сопровождение'],
-  ['closed', 'Закрыто'],
-  ['lost', 'Отказ']
+  ['closed', 'Исполнено'],
+  ['lost', 'Отказ'],
+  ['archived', 'Архив']
 ]
 
 const priorityOptions = [
@@ -99,6 +100,7 @@ export default function AdminCrmPage() {
   const [source, setSource] = useState('')
   const [query, setQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
+  const [viewFilter, setViewFilter] = useState('active')
   const [leads, setLeads] = useState([])
   const [selectedLead, setSelectedLead] = useState(null)
   const [edit, setEdit] = useState(emptyEdit)
@@ -118,9 +120,18 @@ export default function AdminCrmPage() {
   }), [secret])
 
   const filteredLeads = useMemo(() => {
-    if (statusFilter === 'all') return leads
-    return leads.filter((lead) => lead._crm?.status === statusFilter)
-  }, [leads, statusFilter])
+    return leads.filter((lead) => {
+      const status = lead._crm?.status || 'new'
+      const isFinal = ['closed', 'lost', 'archived'].includes(status)
+
+      if (viewFilter === 'active' && isFinal) return false
+      if (viewFilter === 'archive' && status !== 'archived') return false
+      if (viewFilter === 'final' && !isFinal) return false
+      if (statusFilter !== 'all' && status !== statusFilter) return false
+
+      return true
+    })
+  }, [leads, statusFilter, viewFilter])
 
   const stats = useMemo(() => {
     const result = {
@@ -128,7 +139,8 @@ export default function AdminCrmPage() {
       new: 0,
       inWork: 0,
       money: 0,
-      closed: 0
+      closed: 0,
+      archived: 0
     }
 
     for (const lead of leads) {
@@ -137,6 +149,7 @@ export default function AdminCrmPage() {
       if (['contact', 'call', 'proposal', 'contract', 'invoice', 'paid', 'in_work', 'report_ready', 'support'].includes(status)) result.inWork += 1
       if (['proposal', 'contract', 'invoice', 'paid'].includes(status)) result.money += 1
       if (['closed', 'lost'].includes(status)) result.closed += 1
+      if (status === 'archived') result.archived += 1
     }
 
     return result
@@ -224,9 +237,7 @@ export default function AdminCrmPage() {
     setEdit((current) => ({ ...current, [key]: value }))
   }
 
-  async function saveLeadMeta(event) {
-    event.preventDefault()
-
+  async function persistLeadMeta(nextEdit, successMessage = 'CRM-карточка сохранена.') {
     if (!selectedLead) {
       setError('Сначала выбери заявку')
       return
@@ -239,7 +250,7 @@ export default function AdminCrmPage() {
     try {
       const result = await apiRequest('/api/admin-crm', {
         method: 'PATCH',
-        body: JSON.stringify(edit)
+        body: JSON.stringify(nextEdit)
       })
 
       const updatedMeta = result.meta
@@ -257,13 +268,36 @@ export default function AdminCrmPage() {
         return lead
       }))
       setSelectedLead((current) => current ? { ...current, _crm: { ...(current._crm || {}), ...updatedMeta } } : current)
+      setEdit((current) => ({ ...current, ...updatedMeta }))
       setMetaAvailable(true)
-      setMessage('CRM-карточка сохранена.')
+      setMessage(successMessage)
     } catch (error) {
       setError(error.message || 'Не удалось сохранить CRM-карточку')
     }
 
     setLoading(false)
+  }
+
+  async function saveLeadMeta(event) {
+    event.preventDefault()
+    await persistLeadMeta(edit)
+  }
+
+  async function quickSetStatus(status, successMessage, commentText = '') {
+    const nextComment = commentText
+      ? [edit.internal_comment, commentText].filter(Boolean).join('\n')
+      : edit.internal_comment
+
+    const nextEdit = {
+      ...edit,
+      status,
+      internal_comment: nextComment,
+      next_action: status === 'closed' ? '' : edit.next_action,
+      next_contact_at: status === 'closed' ? '' : edit.next_contact_at
+    }
+
+    setEdit(nextEdit)
+    await persistLeadMeta(nextEdit, successMessage)
   }
 
   const selectedEmail = selectedLead?.email || selectedLead?.contact || ''
@@ -287,7 +321,7 @@ export default function AdminCrmPage() {
           <div className="max-w-5xl">
             <div className="inline-flex items-center gap-3 rounded-full border border-[#D6A84F]/25 bg-[#D6A84F]/10 px-5 py-2 text-sm uppercase tracking-[0.24em] text-[#F7D784]">
               <LockKeyhole className="h-4 w-4" />
-              Закрытая CRM v1
+              Закрытая CRM v1.1
             </div>
 
             <h1 className="mt-9 text-5xl font-semibold leading-[0.95] tracking-[-0.06em] md:text-8xl">
@@ -295,7 +329,7 @@ export default function AdminCrmPage() {
             </h1>
 
             <p className="mt-8 max-w-3xl text-lg leading-8 text-white/64 md:text-xl md:leading-9">
-              Первая версия собственной CRM HEIMDALL: заявки с сайта, этапы обработки, приоритет, сумма, следующий шаг и внутренний комментарий.
+              Собственная CRM HEIMDALL: заявки с сайта, этапы обработки, быстрые действия, архив, приоритет, сумма, следующий шаг и внутренний комментарий.
             </p>
           </div>
         </section>
@@ -368,7 +402,8 @@ export default function AdminCrmPage() {
                 ['Новые', stats.new],
                 ['В работе', stats.inWork],
                 ['Деньги', stats.money],
-                ['Закрыто', stats.closed]
+                ['Закрыто', stats.closed],
+                ['Архив', stats.archived]
               ].map(([label, value]) => (
                 <div key={label} className="rounded-3xl border border-white/10 bg-white/[0.045] p-5">
                   <div className="text-3xl font-semibold tracking-[-0.04em]">{value}</div>
@@ -482,6 +517,40 @@ export default function AdminCrmPage() {
                   <div className="mt-2 whitespace-pre-wrap">{getLeadMessage(selectedLead)}</div>
                 </div>
 
+                <div className="mt-6 rounded-3xl border border-white/10 bg-black/20 p-4">
+                  <div className="text-sm font-semibold text-white/75">Быстрые действия</div>
+                  <div className="mt-3 flex flex-wrap gap-3">
+                    <button
+                      type="button"
+                      disabled={loading || !metaAvailable}
+                      onClick={() => quickSetStatus('closed', 'Заявка отмечена как исполненная.', 'Исполнено. Работа по заявке завершена.')}
+                      className="inline-flex items-center justify-center gap-2 rounded-2xl border border-emerald-300/20 bg-emerald-300/10 px-5 py-3 text-sm font-semibold text-emerald-100 disabled:opacity-60"
+                    >
+                      <CheckCircle2 className="h-4 w-4" />
+                      Исполнено
+                    </button>
+
+                    <button
+                      type="button"
+                      disabled={loading || !metaAvailable}
+                      onClick={() => quickSetStatus('lost', 'Заявка переведена в отказ.', 'Отказ. Клиент не подтвердил интерес или заявка нецелeвая.')}
+                      className="inline-flex items-center justify-center gap-2 rounded-2xl border border-red-300/20 bg-red-300/10 px-5 py-3 text-sm font-semibold text-red-100 disabled:opacity-60"
+                    >
+                      <AlertTriangle className="h-4 w-4" />
+                      В отказ
+                    </button>
+
+                    <button
+                      type="button"
+                      disabled={loading || !metaAvailable}
+                      onClick={() => quickSetStatus('archived', 'Заявка отправлена в архив.', 'Архив. Скрыто из активной воронки.')}
+                      className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/15 bg-white/10 px-5 py-3 text-sm font-semibold text-white/80 disabled:opacity-60"
+                    >
+                      В архив
+                    </button>
+                  </div>
+                </div>
+
                 <div className="mt-6 flex flex-wrap gap-3">
                   <button
                     type="submit"
@@ -519,10 +588,19 @@ export default function AdminCrmPage() {
                   <h3 className="mt-4 text-3xl font-semibold tracking-[-0.04em]">Список заявок</h3>
                 </div>
 
-                <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)} className="rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white outline-none">
-                  <option value="all">Все этапы</option>
-                  {statusOptions.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
-                </select>
+                <div className="flex flex-wrap gap-3">
+                  <select value={viewFilter} onChange={(event) => setViewFilter(event.target.value)} className="rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white outline-none">
+                    <option value="active">Только активные</option>
+                    <option value="final">Закрытые и отказ</option>
+                    <option value="archive">Архив</option>
+                    <option value="all">Все заявки</option>
+                  </select>
+
+                  <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)} className="rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white outline-none">
+                    <option value="all">Все этапы</option>
+                    {statusOptions.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+                  </select>
+                </div>
               </div>
 
               <div className="mt-7 grid gap-4">
@@ -606,7 +684,7 @@ export default function AdminCrmPage() {
                 <AlertTriangle className="h-4 w-4" />
                 Граница v1
               </div>
-              CRM v1 ведет заявки и этапы. Это еще не бухгалтерия, не документооборот и не файловое хранилище. Эти модули лучше добавлять отдельными патчами.
+              CRM v1.1 ведет заявки, этапы, быстрые закрытия и архив. Это еще не бухгалтерия, не документооборот и не файловое хранилище. Эти модули лучше добавлять отдельными патчами.
             </div>
           </div>
         </section>
