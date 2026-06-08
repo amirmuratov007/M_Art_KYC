@@ -63,6 +63,25 @@ function formatDate(value) {
   }
 }
 
+
+function getDateState(value) {
+  if (!value) return 'none'
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return 'none'
+
+  const now = new Date()
+  const startToday = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const startTomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1)
+
+  if (date < now) return 'overdue'
+  if (date >= startToday && date < startTomorrow) return 'today'
+  return 'future'
+}
+
+function isFinalStatus(status) {
+  return ['closed', 'lost', 'archived'].includes(status)
+}
+
 function getLeadTitle(lead) {
   return lead.company || lead.name || lead.contact || lead.email || lead.phone || `Заявка #${lead.id}`
 }
@@ -122,11 +141,16 @@ export default function AdminCrmPage() {
   const filteredLeads = useMemo(() => {
     return leads.filter((lead) => {
       const status = lead._crm?.status || 'new'
-      const isFinal = ['closed', 'lost', 'archived'].includes(status)
+      const final = isFinalStatus(status)
+      const dateState = getDateState(lead._crm?.next_contact_at)
+      const priority = lead._crm?.priority || 'normal'
 
-      if (viewFilter === 'active' && isFinal) return false
+      if (viewFilter === 'active' && final) return false
       if (viewFilter === 'archive' && status !== 'archived') return false
-      if (viewFilter === 'final' && !isFinal) return false
+      if (viewFilter === 'final' && !final) return false
+      if (viewFilter === 'today' && (final || dateState !== 'today')) return false
+      if (viewFilter === 'overdue' && (final || dateState !== 'overdue')) return false
+      if (viewFilter === 'urgent' && (final || priority !== 'urgent')) return false
       if (statusFilter !== 'all' && status !== statusFilter) return false
 
       return true
@@ -140,7 +164,10 @@ export default function AdminCrmPage() {
       inWork: 0,
       money: 0,
       closed: 0,
-      archived: 0
+      archived: 0,
+      today: 0,
+      overdue: 0,
+      urgent: 0
     }
 
     for (const lead of leads) {
@@ -150,6 +177,9 @@ export default function AdminCrmPage() {
       if (['proposal', 'contract', 'invoice', 'paid'].includes(status)) result.money += 1
       if (['closed', 'lost'].includes(status)) result.closed += 1
       if (status === 'archived') result.archived += 1
+      if (!isFinalStatus(status) && getDateState(lead._crm?.next_contact_at) === 'today') result.today += 1
+      if (!isFinalStatus(status) && getDateState(lead._crm?.next_contact_at) === 'overdue') result.overdue += 1
+      if (!isFinalStatus(status) && (lead._crm?.priority || 'normal') === 'urgent') result.urgent += 1
     }
 
     return result
@@ -254,6 +284,7 @@ export default function AdminCrmPage() {
       })
 
       const updatedMeta = result.meta
+      const telegramNote = result.telegram?.ok ? ' Telegram уведомлен.' : ''
       setLeads((current) => current.map((lead) => {
         const crm = lead._crm || {}
         if (String(crm.lead_source) === String(updatedMeta.lead_source) && String(crm.lead_id) === String(updatedMeta.lead_id)) {
@@ -270,7 +301,7 @@ export default function AdminCrmPage() {
       setSelectedLead((current) => current ? { ...current, _crm: { ...(current._crm || {}), ...updatedMeta } } : current)
       setEdit((current) => ({ ...current, ...updatedMeta }))
       setMetaAvailable(true)
-      setMessage(successMessage)
+      setMessage(`${successMessage}${telegramNote}`)
     } catch (error) {
       setError(error.message || 'Не удалось сохранить CRM-карточку')
     }
@@ -321,7 +352,7 @@ export default function AdminCrmPage() {
           <div className="max-w-5xl">
             <div className="inline-flex items-center gap-3 rounded-full border border-[#D6A84F]/25 bg-[#D6A84F]/10 px-5 py-2 text-sm uppercase tracking-[0.24em] text-[#F7D784]">
               <LockKeyhole className="h-4 w-4" />
-              Закрытая CRM v1.1
+              Закрытая CRM v1.2
             </div>
 
             <h1 className="mt-9 text-5xl font-semibold leading-[0.95] tracking-[-0.06em] md:text-8xl">
@@ -371,6 +402,10 @@ export default function AdminCrmPage() {
               <div className="mt-6 rounded-3xl border border-amber-300/15 bg-amber-300/10 p-5 text-sm leading-7 text-amber-100/85">
                 Страница закрыта ключом и не добавлена в меню. Для полной CRM-логики нужен служебный SQL-файл из патча.
               </div>
+
+              <div className="mt-4 rounded-3xl border border-sky-300/15 bg-sky-300/10 p-5 text-sm leading-7 text-sky-100/85">
+                Telegram-уведомления уходят только по важным событиям: смена этапа, срочный приоритет, сумма, следующий шаг или дата контакта. Комментарии без изменения этапа не спамят чат.
+              </div>
             </div>
 
             <form onSubmit={loadLeads} className="rounded-[42px] border border-white/10 bg-white/[0.045] p-7 backdrop-blur-2xl md:p-10">
@@ -402,6 +437,9 @@ export default function AdminCrmPage() {
                 ['Новые', stats.new],
                 ['В работе', stats.inWork],
                 ['Деньги', stats.money],
+                ['Связаться сегодня', stats.today],
+                ['Просрочено', stats.overdue],
+                ['Срочно', stats.urgent],
                 ['Закрыто', stats.closed],
                 ['Архив', stats.archived]
               ].map(([label, value]) => (
@@ -420,6 +458,29 @@ export default function AdminCrmPage() {
           </div>
 
           <div className="grid gap-8">
+            <div className="rounded-[42px] border border-white/10 bg-white/[0.045] p-7 backdrop-blur-2xl md:p-10">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-3 text-sm uppercase tracking-[0.24em] text-amber-200/80">
+                    <CalendarClock className="h-4 w-4" />
+                    Напоминания
+                  </div>
+                  <h3 className="mt-4 text-2xl font-semibold tracking-[-0.04em] md:text-4xl">Кого обработать сейчас</h3>
+                  <p className="mt-3 text-sm leading-7 text-white/55">
+                    Блок строится по полю “Когда вернуться”. Просроченные заявки не пропадают, пока ты не закроешь их или не перенесешь дату.
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-3">
+                  <button type="button" onClick={() => setViewFilter('overdue')} className="rounded-2xl border border-red-300/20 bg-red-300/10 px-4 py-3 text-sm font-semibold text-red-100">
+                    Просрочено: {stats.overdue}
+                  </button>
+                  <button type="button" onClick={() => setViewFilter('today')} className="rounded-2xl border border-amber-300/20 bg-amber-300/10 px-4 py-3 text-sm font-semibold text-amber-100">
+                    Сегодня: {stats.today}
+                  </button>
+                </div>
+              </div>
+            </div>
+
             {selectedLead && (
               <form onSubmit={saveLeadMeta} className="rounded-[42px] border border-[#D6A84F]/20 bg-[#D6A84F]/[0.06] p-7 backdrop-blur-2xl md:p-10">
                 <div className="flex flex-wrap items-start justify-between gap-4">
@@ -591,6 +652,9 @@ export default function AdminCrmPage() {
                 <div className="flex flex-wrap gap-3">
                   <select value={viewFilter} onChange={(event) => setViewFilter(event.target.value)} className="rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white outline-none">
                     <option value="active">Только активные</option>
+                    <option value="overdue">Просрочено</option>
+                    <option value="today">Связаться сегодня</option>
+                    <option value="urgent">Срочные</option>
                     <option value="final">Закрытые и отказ</option>
                     <option value="archive">Архив</option>
                     <option value="all">Все заявки</option>
@@ -659,9 +723,9 @@ export default function AdminCrmPage() {
                         )}
 
                         {crm.next_contact_at && (
-                          <div className="mt-3 flex items-center gap-2 text-sm text-amber-100/80">
+                          <div className={`mt-3 flex items-center gap-2 text-sm ${getDateState(crm.next_contact_at) === 'overdue' ? 'text-red-100' : getDateState(crm.next_contact_at) === 'today' ? 'text-amber-100' : 'text-white/55'}`}>
                             <CalendarClock className="h-4 w-4" />
-                            Вернуться: {formatDate(crm.next_contact_at)}
+                            Вернуться: {formatDate(crm.next_contact_at)}{getDateState(crm.next_contact_at) === 'overdue' ? ' · просрочено' : getDateState(crm.next_contact_at) === 'today' ? ' · сегодня' : ''}
                           </div>
                         )}
                       </button>
@@ -684,7 +748,7 @@ export default function AdminCrmPage() {
                 <AlertTriangle className="h-4 w-4" />
                 Граница v1
               </div>
-              CRM v1.1 ведет заявки, этапы, быстрые закрытия и архив. Это еще не бухгалтерия, не документооборот и не файловое хранилище. Эти модули лучше добавлять отдельными патчами.
+              CRM v1.2 ведет заявки, этапы, быстрые закрытия и архив. Это еще не бухгалтерия, не документооборот и не файловое хранилище. Эти модули лучше добавлять отдельными патчами.
             </div>
           </div>
         </section>
