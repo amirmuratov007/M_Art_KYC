@@ -2,6 +2,29 @@ import { getSupabaseAdmin } from '@/lib/supabaseAdmin'
 
 const CRM_META_TABLE = 'heimdall_crm_meta'
 
+const STATUS_LABELS = {
+  new: 'Новая заявка',
+  contact: 'Связаться',
+  call: 'Созвон',
+  proposal: 'КП отправлено',
+  contract: 'Договор / NDA',
+  invoice: 'Счет',
+  paid: 'Оплачено',
+  in_work: 'В работе',
+  report_ready: 'Отчет готов',
+  support: 'Сопровождение',
+  closed: 'Исполнено',
+  lost: 'Отказ',
+  archived: 'Архив'
+}
+
+const PRIORITY_LABELS = {
+  low: 'Низкий',
+  normal: 'Обычный',
+  high: 'Высокий',
+  urgent: 'Срочно'
+}
+
 function setNoStore(res) {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
   res.setHeader('Pragma', 'no-cache')
@@ -162,6 +185,123 @@ async function listLeads(req, res, supabase) {
   })
 }
 
+
+async function sendCrmTelegram(text) {
+  const token = process.env.TELEGRAM_BOT_TOKEN || process.env.TG_TOKEN
+  const chatId = process.env.TELEGRAM_CHAT_ID || process.env.TG_CHAT_ID
+
+  if (!token || !chatId) {
+    return { ok: false, skipped: true, error: 'Telegram credentials are not configured' }
+  }
+
+  try {
+    const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: chatId, text, disable_web_page_preview: true })
+    })
+
+    const data = await response.json().catch(() => ({}))
+    if (!response.ok || data.ok === false) {
+      return { ok: false, error: data.description || `Telegram API error ${response.status}` }
+    }
+
+    return { ok: true }
+  } catch (error) {
+    return { ok: false, error: error.message || 'Telegram request failed' }
+  }
+}
+
+function getLeadTitle(row = {}) {
+  return row.company || row.name || row.contact || row.email || row.phone || `Заявка #${row.id || row.lead_id || row.uuid || ''}`
+}
+
+function getLeadContact(row = {}) {
+  return row.contact || [row.email, row.phone].filter(Boolean).join(' · ') || 'Контакт не указан'
+}
+
+function getLeadTopic(row = {}) {
+  return row.topic || row.check_type || row.type || 'Общий запрос'
+}
+
+function formatDateForTelegram(value) {
+  if (!value) return ''
+  try {
+    return new Intl.DateTimeFormat('ru-RU', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: 'Europe/Moscow'
+    }).format(new Date(value))
+  } catch {
+    return String(value)
+  }
+}
+
+async function loadExistingMeta(supabase, sourceTable, leadId) {
+  const { data, error } = await supabase
+    .from(CRM_META_TABLE)
+    .select('*')
+    .eq('lead_source', sourceTable)
+    .eq('lead_id', leadId)
+    .maybeSingle()
+
+  if (error) return null
+  return data || null
+}
+
+async function loadLeadRow(supabase, sourceTable, leadId) {
+  const { data, error } = await supabase
+    .from(sourceTable)
+    .select('*')
+    .eq('id', leadId)
+    .maybeSingle()
+
+  if (error) return null
+  return data || null
+}
+
+function buildCrmNotification({ oldMeta, newMeta, lead }) {
+  const previousStatus = oldMeta?.status || 'new'
+  const nextStatus = newMeta.status || 'new'
+  const statusChanged = previousStatus !== nextStatus
+  const nextActionChanged = sanitize(oldMeta?.next_action, 1000) !== sanitize(newMeta.next_action, 1000) && Boolean(newMeta.next_action)
+  const nextContactChanged = String(oldMeta?.next_contact_at || '') !== String(newMeta.next_contact_at || '') && Boolean(newMeta.next_contact_at)
+  const priorityBecameUrgent = oldMeta?.priority !== 'urgent' && newMeta.priority === 'urgent'
+  const amountChanged = String(oldMeta?.amount ?? '') !== String(newMeta.amount ?? '') && newMeta.amount !== null
+
+  const importantStatus = ['contact', 'call', 'proposal', 'contract', 'invoice', 'paid', 'in_work', 'report_ready', 'support', 'closed', 'lost', 'archived'].includes(nextStatus)
+
+  if (!statusChanged && !nextActionChanged && !nextContactChanged && !priorityBecameUrgent && !amountChanged) {
+    return null
+  }
+
+  if (statusChanged && !importantStatus && !nextActionChanged && !nextContactChanged && !priorityBecameUrgent && !amountChanged) {
+    return null
+  }
+
+  const lines = [
+    '🧭 HEIMDALL CRM',
+    '',
+    `Заявка: ${getLeadTitle(lead)}`,
+    `Контакт: ${getLeadContact(lead)}`,
+    `Услуга: ${getLeadTopic(lead)}`,
+    `Этап: ${STATUS_LABELS[previousStatus] || previousStatus} → ${STATUS_LABELS[nextStatus] || nextStatus}`,
+    `Приоритет: ${PRIORITY_LABELS[newMeta.priority] || newMeta.priority || 'Обычный'}`
+  ]
+
+  if (newMeta.amount) lines.push(`Сумма: ${Number(newMeta.amount).toLocaleString('ru-RU')} ₽`)
+  if (newMeta.responsible) lines.push(`Ответственный: ${newMeta.responsible}`)
+  if (newMeta.next_action) lines.push(`Следующий шаг: ${newMeta.next_action}`)
+  if (newMeta.next_contact_at) lines.push(`Вернуться: ${formatDateForTelegram(newMeta.next_contact_at)}`)
+
+  lines.push('', `ID: ${newMeta.lead_source}/${newMeta.lead_id}`)
+
+  return lines.join('\n')
+}
+
 async function updateLeadMeta(req, res, supabase) {
   const body = req.body || {}
   const sourceTable = sanitizeTableName(body.lead_source || body.source)
@@ -184,6 +324,11 @@ async function updateLeadMeta(req, res, supabase) {
     updated_at: new Date().toISOString()
   }
 
+  const [oldMeta, leadRow] = await Promise.all([
+    loadExistingMeta(supabase, sourceTable, leadId),
+    loadLeadRow(supabase, sourceTable, leadId)
+  ])
+
   const { data, error } = await supabase
     .from(CRM_META_TABLE)
     .upsert(payload, { onConflict: 'lead_source,lead_id' })
@@ -201,7 +346,10 @@ async function updateLeadMeta(req, res, supabase) {
     })
   }
 
-  return res.status(200).json({ ok: true, meta: data })
+  const notificationText = buildCrmNotification({ oldMeta, newMeta: data, lead: leadRow || { id: leadId } })
+  const telegram = notificationText ? await sendCrmTelegram(notificationText) : { ok: false, skipped: true }
+
+  return res.status(200).json({ ok: true, meta: data, telegram })
 }
 
 export default async function handler(req, res) {
