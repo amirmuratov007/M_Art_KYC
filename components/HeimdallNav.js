@@ -50,6 +50,7 @@ const ruMenu = [
     href: '/journal',
     items: [
       ['Журнал', '/journal'],
+      ['Чек-лист поставщика', '/supplier-checklist'],
       ['Кейсы', '/cases'],
       ['Методология', '/methodology'],
       ['Центр доверия', '/trust-center'],
@@ -114,6 +115,7 @@ const enMenu = [
     href: '/journal-en',
     items: [
       ['Journal', '/journal-en'],
+      ['Supplier checklist', '/supplier-checklist-en'],
       ['Cases', '/cases-en'],
       ['Methodology', '/methodology-en'],
       ['Trust Center', '/trust-center-en'],
@@ -147,6 +149,8 @@ const langMap = {
   '/internal-investigations-en': '/internal-investigations',
   '/pricing': '/pricing-en',
   '/pricing-en': '/pricing',
+  '/supplier-checklist': '/supplier-checklist-en',
+  '/supplier-checklist-en': '/supplier-checklist',
   '/business-intelligence-support-en': '/business-support',
   '/client-app': '/client-app-en',
   '/client-app-en': '/client-app',
