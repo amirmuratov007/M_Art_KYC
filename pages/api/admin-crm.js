@@ -40,7 +40,7 @@ function sanitizeTableName(value) {
 }
 
 function normalizeStatus(value) {
-  const allowed = new Set(['new', 'contact', 'call', 'proposal', 'contract', 'invoice', 'paid', 'in_work', 'report_ready', 'support', 'closed', 'lost'])
+  const allowed = new Set(['new', 'contact', 'call', 'proposal', 'contract', 'invoice', 'paid', 'in_work', 'report_ready', 'support', 'closed', 'lost', 'archived'])
   const status = sanitize(value, 60) || 'new'
   return allowed.has(status) ? status : 'new'
 }
