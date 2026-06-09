@@ -5,6 +5,7 @@ import HeimdallNav from '@/components/HeimdallNav'
 import HeimdallFooter from '@/components/HeimdallFooter'
 import ContactModal from '@/components/ContactModal'
 import HeimdallConversionPanel from '@/components/HeimdallConversionPanel'
+import HeimdallRiskTest from '@/components/HeimdallRiskTest'
 import {
   ArrowRight,
   ShieldCheck,
@@ -174,6 +175,8 @@ export default function HomePageEn() {
           </div>
         </section>
 
+
+        <HeimdallRiskTest language="en" compact />
         <section className="relative z-10 mx-auto max-w-7xl px-4 pb-16 sm:px-5 sm:pb-24">
           <div className="grid gap-5 md:grid-cols-3">
             {trustProof.map(([title, text, href]) => (
