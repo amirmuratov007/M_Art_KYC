@@ -6,6 +6,7 @@ import HeimdallFooter from '@/components/HeimdallFooter'
 import ContactModal from '@/components/ContactModal'
 import HeimdallConversionPanel from '@/components/HeimdallConversionPanel'
 import HeimdallRiskTest from '@/components/HeimdallRiskTest'
+import HeimdallRiskFloatingPlugin from '@/components/HeimdallRiskFloatingPlugin'
 import {
   ArrowRight,
   ShieldCheck,
@@ -231,6 +232,7 @@ export default function HomePage() {
 
         <HeimdallConversionPanel language="ru" />
 
+        <HeimdallRiskFloatingPlugin language="ru" />
         <HeimdallFooter language="ru" />
       </main>
 
