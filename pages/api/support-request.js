@@ -1,5 +1,6 @@
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin'
 
+import { applyRateLimitHeaders, checkRateLimit, hasSpamHoneypot, isPayloadTooLarge } from '@/lib/rateLimit'
 async function sendTelegram(text) {
   const token = process.env.TELEGRAM_BOT_TOKEN
   const chatId = process.env.TELEGRAM_CHAT_ID
@@ -61,6 +62,24 @@ async function saveSupabase(payload) {
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ ok: false, error: 'Method not allowed' })
+  }
+
+  const rate = checkRateLimit(req, { scope: 'support-request', limit: 5, windowMs: 60 * 1000 })
+  applyRateLimitHeaders(res, rate)
+
+  if (!rate.ok) {
+    return res.status(429).json({
+      ok: false,
+      error: 'Слишком много запросов. Попробуйте еще раз через минуту.'
+    })
+  }
+
+  if (hasSpamHoneypot(req.body)) {
+    return res.status(200).json({ ok: true, blocked: true })
+  }
+
+  if (isPayloadTooLarge(req.body, 7000)) {
+    return res.status(413).json({ ok: false, error: 'Слишком большой текст заявки' })
   }
 
   const { name, company, contact, packageType, message, language } = req.body || {}

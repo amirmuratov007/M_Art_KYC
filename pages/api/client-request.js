@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin'
 
+import { applyRateLimitHeaders, checkRateLimit, getClientIp, hasSpamHoneypot, isPayloadTooLarge } from '@/lib/rateLimit'
 function getAnonClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
@@ -105,6 +106,24 @@ export default async function handler(req, res) {
     return res.status(405).json({ ok: false, error: 'Method not allowed' })
   }
 
+  const ipRate = checkRateLimit(req, { scope: 'client-request-ip', limit: 20, windowMs: 60 * 1000 })
+  applyRateLimitHeaders(res, ipRate)
+
+  if (!ipRate.ok) {
+    return res.status(429).json({
+      ok: false,
+      error: 'Слишком много запросов. Попробуйте еще раз через минуту.'
+    })
+  }
+
+  if (hasSpamHoneypot(req.body)) {
+    return res.status(200).json({ ok: true, blocked: true })
+  }
+
+  if (isPayloadTooLarge(req.body, 9000)) {
+    return res.status(413).json({ ok: false, error: 'Слишком большой текст заявки' })
+  }
+
   let auth
 
   try {
@@ -118,6 +137,22 @@ export default async function handler(req, res) {
   }
 
   const user = auth.user
+
+  const userRate = checkRateLimit(req, {
+    scope: 'client-request-user',
+    identifier: user.id || getClientIp(req),
+    limit: 10,
+    windowMs: 60 * 1000
+  })
+  applyRateLimitHeaders(res, userRate)
+
+  if (!userRate.ok) {
+    return res.status(429).json({
+      ok: false,
+      error: 'Слишком много запросов. Попробуйте еще раз через минуту.'
+    })
+  }
+
   const body = req.body || {}
 
   const service = sanitize(body.service, 160)
