@@ -146,45 +146,119 @@ async function loadMeta(supabase, sourceTable, ids) {
   return { ok: true, available: true, map }
 }
 
-async function listLeads(req, res, supabase) {
-  const sourceTable = sanitizeTableName(req.query?.source)
-  const limit = Math.min(300, Math.max(20, Number(req.query?.limit || 150)))
-  const query = buildSearchFilter(req.query?.q)
-
+async function fetchTableRows(supabase, sourceTable, limit, query) {
   let request = supabase
     .from(sourceTable)
     .select('*')
-    .order('created_at', { ascending: false })
     .limit(limit)
 
   if (query) {
-    request = request.or(`name.ilike.%${query}%,company.ilike.%${query}%,contact.ilike.%${query}%,topic.ilike.%${query}%,message.ilike.%${query}%`)
+    request = request.or(`name.ilike.%${query}%,company.ilike.%${query}%,contact.ilike.%${query}%,topic.ilike.%${query}%,message.ilike.%${query}%,email.ilike.%${query}%,phone.ilike.%${query}%,check_type.ilike.%${query}%,comment.ilike.%${query}%`)
   }
 
-  const { data, error } = await request
+  let result = await request.order('created_at', { ascending: false })
 
-  if (error) {
+  if (result.error) {
+    const message = String(result.error.message || '').toLowerCase()
+    const missingCreatedAt = message.includes('created_at') || message.includes('column')
+
+    if (missingCreatedAt) {
+      let fallback = supabase
+        .from(sourceTable)
+        .select('*')
+        .limit(limit)
+
+      if (query) {
+        fallback = fallback.or(`name.ilike.%${query}%,company.ilike.%${query}%,contact.ilike.%${query}%,topic.ilike.%${query}%,message.ilike.%${query}%,email.ilike.%${query}%,phone.ilike.%${query}%,check_type.ilike.%${query}%,comment.ilike.%${query}%`)
+      }
+
+      result = await fallback
+    }
+  }
+
+  if (result.error) {
+    return { ok: false, sourceTable, error: result.error }
+  }
+
+  const rows = (result.data || []).map((row) => ({
+    ...row,
+    _source_table: sourceTable
+  }))
+
+  return { ok: true, sourceTable, rows }
+}
+
+function getCandidateTables(requestedSource) {
+  const configured = sanitizeTableName(process.env.SUPABASE_LEADS_TABLE || 'heimdall_leads')
+  const requested = sanitize(requestedSource, 80)
+
+  if (requested) {
+    return [sanitizeTableName(requested)]
+  }
+
+  return Array.from(new Set([
+    configured,
+    'heimdall_leads',
+    'leads'
+  ].filter(Boolean)))
+}
+
+function getCreatedAtMs(row) {
+  const value = row.created_at || row.inserted_at || row.updated_at || row.date || ''
+  const time = value ? new Date(value).getTime() : 0
+  return Number.isFinite(time) ? time : 0
+}
+
+async function listLeads(req, res, supabase) {
+  const requestedSource = sanitize(req.query?.source, 80)
+  const sourceTables = getCandidateTables(requestedSource)
+  const limit = Math.min(300, Math.max(20, Number(req.query?.limit || 150)))
+  const query = buildSearchFilter(req.query?.q)
+
+  const results = await Promise.all(sourceTables.map((table) => fetchTableRows(supabase, table, limit, query)))
+  const successful = results.filter((item) => item.ok)
+  const failed = results.filter((item) => !item.ok)
+
+  if (!successful.length) {
+    const firstError = failed[0]?.error
     return res.status(500).json({
       ok: false,
-      error: error.message || `Unable to load leads from ${sourceTable}`,
-      sourceTable
+      error: firstError?.message || 'Unable to load leads. Checked tables: ' + sourceTables.join(', '),
+      checkedTables: sourceTables,
+      tableErrors: failed.map((item) => ({ table: item.sourceTable, error: item.error?.message || 'Unknown error' }))
     })
   }
 
-  const rows = data || []
-  const ids = rows.map((row) => String(row.id ?? row.lead_id ?? row.uuid ?? '')).filter(Boolean)
-  const metaResult = await loadMeta(supabase, sourceTable, ids)
-  const leads = rows.map((row) => normalizeLead(row, sourceTable, metaResult.map))
+  const normalizedGroups = await Promise.all(successful.map(async (result) => {
+    const ids = result.rows.map((row) => String(row.id ?? row.lead_id ?? row.uuid ?? '')).filter(Boolean)
+    const metaResult = await loadMeta(supabase, result.sourceTable, ids)
+    return {
+      sourceTable: result.sourceTable,
+      metaResult,
+      leads: result.rows.map((row) => normalizeLead(row, result.sourceTable, metaResult.map))
+    }
+  }))
+
+  const leads = normalizedGroups
+    .flatMap((group) => group.leads)
+    .sort((a, b) => getCreatedAtMs(b) - getCreatedAtMs(a))
+    .slice(0, limit)
+
+  const metaAvailable = normalizedGroups.every((group) => group.metaResult.available)
+  const metaErrors = normalizedGroups
+    .filter((group) => group.metaResult.available === false)
+    .map((group) => `${group.sourceTable}: ${group.metaResult.error || 'CRM meta table is not available'}`)
 
   return res.status(200).json({
     ok: true,
-    sourceTable,
-    metaAvailable: metaResult.available,
-    metaError: metaResult.available ? '' : metaResult.error || 'CRM meta table is not available',
+    sourceTable: requestedSource || 'all',
+    sourceTables: successful.map((item) => item.sourceTable),
+    skippedTables: failed.map((item) => ({ table: item.sourceTable, error: item.error?.message || 'Unknown error' })),
+    metaAvailable,
+    metaError: metaErrors.join(' | '),
     leads
   })
 }
-
 
 async function sendCrmTelegram(text) {
   const token = process.env.TELEGRAM_BOT_TOKEN || process.env.TG_TOKEN
