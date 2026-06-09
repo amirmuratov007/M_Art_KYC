@@ -50,6 +50,7 @@ const ruMenu = [
     href: '/journal',
     items: [
       ['Журнал', '/journal'],
+      ['Риск сделки за 60 секунд', '/risk-test'],
       ['Чек-лист поставщика', '/supplier-checklist'],
       ['Кейсы', '/cases'],
       ['Методология', '/methodology'],
@@ -115,6 +116,7 @@ const enMenu = [
     href: '/journal-en',
     items: [
       ['Journal', '/journal-en'],
+      ['Deal risk test', '/risk-test-en'],
       ['Supplier checklist', '/supplier-checklist-en'],
       ['Cases', '/cases-en'],
       ['Methodology', '/methodology-en'],
@@ -151,6 +153,8 @@ const langMap = {
   '/pricing-en': '/pricing',
   '/supplier-checklist': '/supplier-checklist-en',
   '/supplier-checklist-en': '/supplier-checklist',
+  '/risk-test': '/risk-test-en',
+  '/risk-test-en': '/risk-test',
   '/business-intelligence-support-en': '/business-support',
   '/client-app': '/client-app-en',
   '/client-app-en': '/client-app',
