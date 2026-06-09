@@ -50,7 +50,7 @@ const ruMenu = [
     href: '/journal',
     items: [
       ['Журнал', '/journal'],
-      ['Риск сделки за 60 секунд', '/risk-test'],
+      ['Риск-тесты', '/risk-test'],
       ['Чек-лист поставщика', '/supplier-checklist'],
       ['Кейсы', '/cases'],
       ['Методология', '/methodology'],
@@ -116,7 +116,7 @@ const enMenu = [
     href: '/journal-en',
     items: [
       ['Journal', '/journal-en'],
-      ['Deal risk test', '/risk-test-en'],
+      ['Risk tests', '/risk-test-en'],
       ['Supplier checklist', '/supplier-checklist-en'],
       ['Cases', '/cases-en'],
       ['Methodology', '/methodology-en'],
