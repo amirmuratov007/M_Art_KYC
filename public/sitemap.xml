@@ -788,4 +788,17 @@
     <priority>0.82</priority>
   </url>
 
+  <url>
+    <loc>https://www.heimdall-group.ru/risk-test</loc>
+    <lastmod>2026-06-09</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.88</priority>
+  </url>
+  <url>
+    <loc>https://www.heimdall-group.ru/risk-test-en</loc>
+    <lastmod>2026-06-09</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.84</priority>
+  </url>
+
 </urlset>
