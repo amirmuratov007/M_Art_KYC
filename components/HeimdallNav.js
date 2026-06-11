@@ -13,6 +13,7 @@ const ruMenu = [
     items: [
       ['Проверка контрагентов', '/proverka-kontragenta'],
       ['Проверка кандидатов', '/proverka-kandidatov'],
+      ['Проверка домашнего персонала', '/private-staff-check'],
       ['Проверка бенефициаров', '/proverka-beneficiarov'],
       ['AML / KYC', '/aml-kyc-russia'],
       ['Due Diligence', '/due-diligence-russia'],
@@ -68,6 +69,7 @@ const enMenu = [
     items: [
       ['Corporate Intelligence', '/corporate-intelligence'],
       ['Executive Background Check', '/executive-background-check-en'],
+      ['Household Staff Check', '/private-staff-check-en'],
       ['CFO Screening', '/cfo-screening-en'],
       ['Procurement Risk Check', '/procurement-risk-check-en'],
       ['Background Check', '/background-check'],
@@ -151,6 +153,8 @@ const langMap = {
   '/internal-investigations-en': '/internal-investigations',
   '/pricing': '/pricing-en',
   '/pricing-en': '/pricing',
+  '/private-staff-check': '/private-staff-check-en',
+  '/private-staff-check-en': '/private-staff-check',
   '/supplier-checklist': '/supplier-checklist-en',
   '/supplier-checklist-en': '/supplier-checklist',
   '/risk-test': '/risk-test-en',

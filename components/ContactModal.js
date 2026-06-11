@@ -139,6 +139,7 @@ export default function ContactModal({ open, onClose, language = 'ru', defaultTo
               <>
                 <option>Проверка контрагента</option>
                 <option>Проверка кандидата</option>
+                <option>Проверка домашнего персонала</option>
                 <option>Проверка бенефициаров</option>
                 <option>AML / KYC</option>
                 <option>Due Diligence</option>
@@ -154,6 +155,7 @@ export default function ContactModal({ open, onClose, language = 'ru', defaultTo
               <>
                 <option>Counterparty intelligence</option>
                 <option>Candidate screening</option>
+                <option>Household staff check</option>
                 <option>Beneficial ownership review</option>
                 <option>AML / KYC</option>
                 <option>Due Diligence</option>

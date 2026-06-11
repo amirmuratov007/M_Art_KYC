@@ -136,6 +136,40 @@ export const riskTestCatalog = [
       ]
     }
   },
+
+  {
+    id: 'private_staff',
+    ruTitle: 'Домашний персонал',
+    enTitle: 'Household staff',
+    ruShort: 'Для няни, сиделки, водителя, помощника, садовника, сторожа и домработницы.',
+    enShort: 'For a nanny, caregiver, driver, assistant, gardener, guard or housekeeper.',
+    ruService: 'Риск-тест домашнего персонала',
+    enService: 'Household staff risk test',
+    ruTag: 'Домашний персонал',
+    enTag: 'Household staff',
+    questions: {
+      ru: [
+        ['children', 'Будет ли человек оставаться с детьми или пожилыми родственниками без постоянного контроля?', [['Нет', 0], ['Иногда', 10], ['Да, регулярно', 20]]],
+        ['keys', 'Будет ли доступ к ключам, дому, автомобилю или отдельным помещениям?', [['Нет', 0], ['Ограниченный доступ', 8], ['Да, широкий доступ', 18]]],
+        ['documents', 'Будет ли доступ к документам, деньгам, банковским картам или личной информации семьи?', [['Нет', 0], ['Возможен косвенный доступ', 10], ['Да, доступ будет', 20]]],
+        ['references', 'Есть ли проверяемые рекомендации от прошлых работодателей?', [['Да, несколько проверяемых рекомендаций', 0], ['Есть, но не проверяли', 8], ['Нет или рекомендации неясные', 16]]],
+        ['identity', 'Совпадают ли документы, анкета, опыт и рассказ кандидата?', [['Да, все выглядит последовательно', 0], ['Есть вопросы', 8], ['Есть заметные несостыковки', 18]]],
+        ['agreement', 'Планируется ли договор, согласие на проверку и понятный испытательный период?', [['Да, все будет оформлено', 0], ['Частично', 8], ['Нет, договорились устно', 16]]],
+        ['routine', 'Будет ли человек знать распорядок семьи, поездки, адреса, привычки и график отсутствия дома?', [['Нет', 0], ['Частично', 7], ['Да, будет знать регулярно', 15]]],
+        ['urgency', 'Найм происходит срочно, без времени на проверку?', [['Нет, есть время проверить', 0], ['Есть умеренная срочность', 7], ['Да, нужно выпускать сразу', 15]]]
+      ],
+      en: [
+        ['children', 'Will the person stay with children or elderly relatives without constant supervision?', [['No', 0], ['Sometimes', 10], ['Yes, regularly', 20]]],
+        ['keys', 'Will the person have access to keys, home, vehicle or separate rooms?', [['No', 0], ['Limited access', 8], ['Yes, broad access', 18]]],
+        ['documents', 'Will there be access to documents, money, bank cards or family private information?', [['No', 0], ['Indirect access is possible', 10], ['Yes, access will exist', 20]]],
+        ['references', 'Are there verifiable references from previous employers?', [['Yes, several verifiable references', 0], ['There are references, not checked yet', 8], ['No or unclear references', 16]]],
+        ['identity', 'Do documents, questionnaire, experience and candidate story match?', [['Yes, everything looks consistent', 0], ['There are questions', 8], ['There are noticeable inconsistencies', 18]]],
+        ['agreement', 'Will there be an agreement, consent for review and a clear trial period?', [['Yes, everything will be formalized', 0], ['Partly', 8], ['No, verbal arrangement only', 16]]],
+        ['routine', 'Will the person know family routines, trips, addresses, habits and absence schedule?', [['No', 0], ['Partly', 7], ['Yes, regularly', 15]]],
+        ['urgency', 'Is the hire urgent, with no time for review?', [['No, there is time to check', 0], ['Moderate urgency', 7], ['Yes, needs to start immediately', 15]]]
+      ]
+    }
+  },
   {
     id: 'outsourcing',
     ruTitle: 'Нужна ли внешняя СБ',
