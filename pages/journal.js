@@ -13,12 +13,14 @@ export default function JournalPage() {
 
   const filteredPosts = useMemo(() => {
     const q = query.trim().toLowerCase()
-    return telegramPosts.filter((post) => {
-      const byCategory = category === 'Все' || post.category === category
-      const searchText = [post.title, post.text, post.category, ...(post.body || [])].join(' ').toLowerCase()
-      const byQuery = !q || searchText.includes(q)
-      return byCategory && byQuery
-    })
+    return telegramPosts
+      .filter((post) => {
+        const byCategory = category === 'Все' || post.category === category
+        const searchText = [post.title, post.text, post.category, ...(post.body || [])].join(' ').toLowerCase()
+        const byQuery = !q || searchText.includes(q)
+        return byCategory && byQuery
+      })
+      .sort((a, b) => new Date(b.date) - new Date(a.date))
   }, [query, category])
 
   return (
