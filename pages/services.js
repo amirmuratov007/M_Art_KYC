@@ -4,7 +4,7 @@ import { useState } from 'react'
 import HeimdallNav from '@/components/HeimdallNav'
 import HeimdallFooter from '@/components/HeimdallFooter'
 import ContactModal from '@/components/ContactModal'
-import { ArrowRight, FileSearch, ShieldCheck, Network, UserSearch, Scale, Building2, CheckCircle2, AlertTriangle, LockKeyhole, ClipboardCheck } from 'lucide-react'
+import { ArrowRight, FileSearch, ShieldCheck, Network, UserSearch, Scale, Building2, CheckCircle2, AlertTriangle, LockKeyhole, ClipboardCheck, Home } from 'lucide-react'
 
 const services = [
   {
@@ -35,6 +35,14 @@ const services = [
     href: '/internal-investigations',
     icon: ClipboardCheck,
     bestFor: 'когда есть подозрение на внутреннюю схему, утечку, сговор или нарушение процессов'
+  },
+
+  {
+    title: 'Проверка домашнего персонала',
+    text: 'Няни, сиделки, водители, домработницы, садовники, сторожа и помощники перед допуском к дому, детям и имуществу.',
+    href: '/private-staff-check',
+    icon: Home,
+    bestFor: 'когда частное лицо нанимает человека с доступом к дому, детям, ключам или личной информации'
   },
   {
     title: 'Проверка кандидатов',
@@ -111,7 +119,7 @@ export default function ServicesPage() {
     <>
       <Head>
         <title>Услуги | HEIMDALL</title>
-        <meta name="description" content="Услуги HEIMDALL: проверка контрагентов, поставщиков из Китая, кандидатов, бенефициаров, AML/KYC, due diligence и комплексное сопровождение бизнеса." />
+        <meta name="description" content="Услуги HEIMDALL: проверка контрагентов, поставщиков из Китая, кандидатов, домашнего персонала, бенефициаров, AML/KYC, due diligence и комплексное сопровождение бизнеса." />
         <link rel="canonical" href="https://www.heimdall-group.ru/services" />
       </Head>
 

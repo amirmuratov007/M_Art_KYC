@@ -4,7 +4,7 @@ import { useState } from 'react'
 import HeimdallNav from '@/components/HeimdallNav'
 import HeimdallFooter from '@/components/HeimdallFooter'
 import ContactModal from '@/components/ContactModal'
-import { ArrowRight, ShieldCheck, FileSearch, UserSearch, Building2, SearchCheck, Clock3, CheckCircle2, AlertTriangle, Scale, BriefcaseBusiness } from 'lucide-react'
+import { ArrowRight, ShieldCheck, FileSearch, UserSearch, Building2, SearchCheck, Clock3, CheckCircle2, AlertTriangle, Scale, BriefcaseBusiness, Home } from 'lucide-react'
 
 const oneTimeServices = [
   {
@@ -33,6 +33,16 @@ const oneTimeServices = [
     includes: ['biography, business reputation and public footprint review', 'conflicts of interest, links to counterparties and risk indicators', 'fit assessment for the role and access level', 'decision-ready summary for HR, owner or security team'],
     icon: UserSearch,
     href: '/executive-background-check-en'
+  },
+
+  {
+    title: 'Household Staff Check',
+    price: 'from 25,000 RUB',
+    term: 'typically 1-7 business days',
+    text: 'For hiring a nanny, caregiver, driver, housekeeper, gardener, guard or assistant with access to home, children, keys and property.',
+    includes: ['provided data and open risk indicators', 'public digital footprint, litigation and enforcement signals', 'references and biography inconsistencies when consent is available', 'family-facing conclusion: risks and recommended restrictions'],
+    icon: Home,
+    href: '/private-staff-check-en'
   },
   {
     title: 'Deal Due Diligence',

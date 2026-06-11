@@ -4,7 +4,7 @@ import { useState } from 'react'
 import HeimdallNav from '@/components/HeimdallNav'
 import HeimdallFooter from '@/components/HeimdallFooter'
 import ContactModal from '@/components/ContactModal'
-import { ArrowRight, ShieldCheck, FileSearch, UserSearch, Building2, LockKeyhole, SearchCheck, Clock3, CheckCircle2, AlertTriangle, Scale, BriefcaseBusiness } from 'lucide-react'
+import { ArrowRight, ShieldCheck, FileSearch, UserSearch, Building2, LockKeyhole, SearchCheck, Clock3, CheckCircle2, AlertTriangle, Scale, BriefcaseBusiness, Home } from 'lucide-react'
 
 const oneTimeServices = [
   {
@@ -33,6 +33,16 @@ const oneTimeServices = [
     includes: ['проверка биографии, деловой репутации и публичных следов', 'конфликт интересов, связи с контрагентами и признаки риска', 'оценка соответствия должности и уровню доступа', 'вывод для HR, собственника или службы безопасности'],
     icon: UserSearch,
     href: '/proverka-kandidatov'
+  },
+
+  {
+    title: 'Проверка домашнего персонала',
+    price: 'от 25 000 ₽',
+    term: 'обычно 1-7 рабочих дней',
+    text: 'Для найма няни, сиделки, водителя, домработницы, садовника, сторожа или помощника с доступом к дому, детям, ключам и имуществу.',
+    includes: ['проверка предоставленных данных и открытых признаков риска', 'публичный цифровой след, судебные и исполнительные сигналы', 'рекомендации и биографические несостыковки при наличии согласия', 'вывод для семьи: какие риски есть и какие ограничения нужны'],
+    icon: Home,
+    href: '/private-staff-check'
   },
   {
     title: 'Due Diligence сделки',
@@ -159,7 +169,7 @@ export default function PricingPage() {
     <>
       <Head>
         <title>Прайс HEIMDALL - проверки, ИБ, расследования и служба безопасности</title>
-        <meta name="description" content="Единый прайс HEIMDALL: проверки контрагентов, поставщиков и кандидатов, Due Diligence, информационная безопасность, внутренние расследования и служба безопасности на аутсорсе." />
+        <meta name="description" content="Единый прайс HEIMDALL: проверки контрагентов, поставщиков, кандидатов и домашнего персонала, Due Diligence, информационная безопасность, внутренние расследования и служба безопасности на аутсорсе." />
         <link rel="canonical" href="https://www.heimdall-group.ru/pricing" />
       </Head>
 

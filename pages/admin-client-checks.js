@@ -39,6 +39,7 @@ const typeOptions = [
   ['counterparty', 'Проверка контрагента'],
   ['supplier', 'Проверка поставщика'],
   ['candidate', 'Проверка кандидата'],
+  ['private_staff', 'Проверка домашнего персонала'],
   ['due_diligence', 'Due Diligence'],
   ['infosec', 'Информационная безопасность'],
   ['internal_investigation', 'Внутреннее расследование'],

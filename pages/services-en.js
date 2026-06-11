@@ -4,7 +4,7 @@ import { useState } from 'react'
 import HeimdallNav from '@/components/HeimdallNav'
 import HeimdallFooter from '@/components/HeimdallFooter'
 import ContactModal from '@/components/ContactModal'
-import { ArrowRight, FileSearch, ShieldCheck, Network, UserSearch, Scale, Building2, CheckCircle2, AlertTriangle, LockKeyhole, ClipboardCheck } from 'lucide-react'
+import { ArrowRight, FileSearch, ShieldCheck, Network, UserSearch, Scale, Building2, CheckCircle2, AlertTriangle, LockKeyhole, ClipboardCheck, Home } from 'lucide-react'
 
 const services = [
   {
@@ -35,6 +35,14 @@ const services = [
     href: '/internal-investigations-en',
     icon: ClipboardCheck,
     bestFor: 'when there is suspected internal fraud, leakage, collusion or process abuse'
+  },
+
+  {
+    title: 'Household Staff Check',
+    text: 'Nannies, caregivers, drivers, housekeepers, gardeners, guards and assistants before access to home, children and property.',
+    href: '/private-staff-check-en',
+    icon: Home,
+    bestFor: 'when a private client hires a person with access to home, children, keys or private information'
   },
   {
     title: 'Background Check',
@@ -111,7 +119,7 @@ export default function ServicesEnPage() {
     <>
       <Head>
         <title>Services | HEIMDALL</title>
-        <meta name="description" content="HEIMDALL services: corporate intelligence, China supplier verification, background checks, beneficial ownership review, AML/KYC, due diligence and business support." />
+        <meta name="description" content="HEIMDALL services: corporate intelligence, China supplier verification, household staff checks, background checks, beneficial ownership review, AML/KYC, due diligence and business support." />
         <link rel="canonical" href="https://www.heimdall-group.ru/services-en" />
       </Head>
 
