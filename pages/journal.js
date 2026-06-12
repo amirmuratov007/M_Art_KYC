@@ -2,7 +2,7 @@ import Head from 'next/head'
 import Link from 'next/link'
 import { useMemo, useState } from 'react'
 import HeimdallNav from '@/components/HeimdallNav'
-import telegramPosts from '@/data/telegramPosts'
+import telegramPosts from '../data/telegramPosts'
 import { Search, Send, ArrowRight } from 'lucide-react'
 
 const categories = ['Все', ...Array.from(new Set(telegramPosts.map((post) => post.category)))]
