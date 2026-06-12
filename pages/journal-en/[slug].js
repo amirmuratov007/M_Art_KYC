@@ -2,7 +2,7 @@ import Head from 'next/head'
 import Link from 'next/link'
 import HeimdallNav from '@/components/HeimdallNav'
 import HeimdallFooter from '@/components/HeimdallFooter'
-import telegramPosts from '@/data/telegramPostsEn'
+import telegramPosts from '../../data/telegramPostsEn'
 import { ArrowLeft, Send, ArrowRight } from 'lucide-react'
 
 export async function getStaticPaths() {
