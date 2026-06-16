@@ -15,6 +15,7 @@ import {
   Save,
   Search,
   ShieldCheck,
+  Trash2,
   UserRound
 } from 'lucide-react'
 
@@ -31,7 +32,8 @@ const statusOptions = [
   ['support', 'Сопровождение'],
   ['closed', 'Исполнено'],
   ['lost', 'Отказ'],
-  ['archived', 'Архив']
+  ['archived', 'Архив'],
+  ['deleted', 'Удалено']
 ]
 
 const priorityOptions = [
@@ -79,7 +81,7 @@ function getDateState(value) {
 }
 
 function isFinalStatus(status) {
-  return ['closed', 'lost', 'archived'].includes(status)
+  return ['closed', 'lost', 'archived', 'deleted'].includes(status)
 }
 
 function getLeadTitle(lead) {
@@ -147,6 +149,7 @@ export default function AdminCrmPage() {
 
       if (viewFilter === 'active' && final) return false
       if (viewFilter === 'archive' && status !== 'archived') return false
+      if (viewFilter === 'deleted' && status !== 'deleted') return false
       if (viewFilter === 'final' && !final) return false
       if (viewFilter === 'today' && (final || dateState !== 'today')) return false
       if (viewFilter === 'overdue' && (final || dateState !== 'overdue')) return false
@@ -165,6 +168,7 @@ export default function AdminCrmPage() {
       money: 0,
       closed: 0,
       archived: 0,
+      deleted: 0,
       today: 0,
       overdue: 0,
       urgent: 0
@@ -177,6 +181,7 @@ export default function AdminCrmPage() {
       if (['proposal', 'contract', 'invoice', 'paid'].includes(status)) result.money += 1
       if (['closed', 'lost'].includes(status)) result.closed += 1
       if (status === 'archived') result.archived += 1
+      if (status === 'deleted') result.deleted += 1
       if (!isFinalStatus(status) && getDateState(lead._crm?.next_contact_at) === 'today') result.today += 1
       if (!isFinalStatus(status) && getDateState(lead._crm?.next_contact_at) === 'overdue') result.overdue += 1
       if (!isFinalStatus(status) && (lead._crm?.priority || 'normal') === 'urgent') result.urgent += 1
@@ -352,7 +357,7 @@ export default function AdminCrmPage() {
           <div className="max-w-5xl">
             <div className="inline-flex items-center gap-3 rounded-full border border-[#D6A84F]/25 bg-[#D6A84F]/10 px-5 py-2 text-sm uppercase tracking-[0.24em] text-[#F7D784]">
               <LockKeyhole className="h-4 w-4" />
-              Закрытая CRM v1.2
+              Закрытая CRM v1.3
             </div>
 
             <h1 className="mt-9 text-5xl font-semibold leading-[0.95] tracking-[-0.06em] md:text-8xl">
@@ -441,7 +446,8 @@ export default function AdminCrmPage() {
                 ['Просрочено', stats.overdue],
                 ['Срочно', stats.urgent],
                 ['Закрыто', stats.closed],
-                ['Архив', stats.archived]
+                ['Архив', stats.archived],
+                ['Удалено', stats.deleted]
               ].map(([label, value]) => (
                 <div key={label} className="rounded-3xl border border-white/10 bg-white/[0.045] p-5">
                   <div className="text-3xl font-semibold tracking-[-0.04em]">{value}</div>
@@ -609,6 +615,20 @@ export default function AdminCrmPage() {
                     >
                       В архив
                     </button>
+
+                    <button
+                      type="button"
+                      disabled={loading || !metaAvailable}
+                      onClick={() => {
+                        if (window.confirm('Скрыть заявку из CRM? История останется в базе, но в активной воронке заявка больше не будет видна.')) {
+                          quickSetStatus('deleted', 'Заявка удалена из активной CRM.', 'Удалено из CRM. Заявка скрыта из рабочих списков.')
+                        }
+                      }}
+                      className="inline-flex items-center justify-center gap-2 rounded-2xl border border-red-400/25 bg-red-400/10 px-5 py-3 text-sm font-semibold text-red-100 disabled:opacity-60"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      Удалить из CRM
+                    </button>
                   </div>
                 </div>
 
@@ -657,6 +677,7 @@ export default function AdminCrmPage() {
                     <option value="urgent">Срочные</option>
                     <option value="final">Закрытые и отказ</option>
                     <option value="archive">Архив</option>
+                    <option value="deleted">Удаленные</option>
                     <option value="all">Все заявки</option>
                   </select>
 
@@ -748,7 +769,7 @@ export default function AdminCrmPage() {
                 <AlertTriangle className="h-4 w-4" />
                 Граница v1
               </div>
-              CRM v1.2 ведет заявки, этапы, быстрые закрытия и архив. Это еще не бухгалтерия, не документооборот и не файловое хранилище. Эти модули лучше добавлять отдельными патчами.
+              CRM v1.3 ведет заявки, этапы, быстрые закрытия и архив. Это еще не бухгалтерия, не документооборот и не файловое хранилище. Эти модули лучше добавлять отдельными патчами.
             </div>
           </div>
         </section>
