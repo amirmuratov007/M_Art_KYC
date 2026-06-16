@@ -14,6 +14,12 @@ create table if not exists public.heimdall_crm_meta (
   unique (lead_source, lead_id)
 );
 
+
+-- Миграция для ранних версий CRM: если lead_id был ошибочно создан как uuid,
+-- переводим его в text. Это нужно, потому что заявки могут иметь числовые id: 1, 2, 11 и т.д.
+alter table if exists public.heimdall_crm_meta
+alter column lead_id type text using lead_id::text;
+
 create index if not exists heimdall_crm_meta_lead_idx
 on public.heimdall_crm_meta(lead_source, lead_id);
 
