@@ -15,7 +15,8 @@ const STATUS_LABELS = {
   support: 'Сопровождение',
   closed: 'Исполнено',
   lost: 'Отказ',
-  archived: 'Архив'
+  archived: 'Архив',
+  deleted: 'Удалено из CRM'
 }
 
 const PRIORITY_LABELS = {
@@ -63,7 +64,7 @@ function sanitizeTableName(value) {
 }
 
 function normalizeStatus(value) {
-  const allowed = new Set(['new', 'contact', 'call', 'proposal', 'contract', 'invoice', 'paid', 'in_work', 'report_ready', 'support', 'closed', 'lost', 'archived'])
+  const allowed = new Set(['new', 'contact', 'call', 'proposal', 'contract', 'invoice', 'paid', 'in_work', 'report_ready', 'support', 'closed', 'lost', 'archived', 'deleted'])
   const status = sanitize(value, 60) || 'new'
   return allowed.has(status) ? status : 'new'
 }
@@ -129,12 +130,17 @@ async function loadMeta(supabase, sourceTable, ids) {
     .in('lead_id', ids)
 
   if (error) {
-    const missing = String(error.message || '').toLowerCase().includes('does not exist') || error.code === '42P01'
+    const message = String(error.message || '')
+    const lower = message.toLowerCase()
+    const missing = lower.includes('does not exist') || error.code === '42P01'
+    const invalidUuid = lower.includes('invalid input syntax for type uuid') || error.code === '22P02'
     return {
-      ok: !missing,
+      ok: !missing && !invalidUuid,
       available: false,
       map: new Map(),
-      error: error.message || 'CRM meta table unavailable'
+      error: invalidUuid
+        ? 'В таблице heimdall_crm_meta колонка lead_id имеет тип uuid. Нужно выполнить SQL-миграцию из supabase/heimdall_crm_schema.sql, чтобы lead_id стал text.'
+        : message || 'CRM meta table unavailable'
     }
   }
 
@@ -333,8 +339,16 @@ async function loadLeadRow(supabase, sourceTable, leadId) {
     .eq('id', leadId)
     .maybeSingle()
 
-  if (error) return null
-  return data || null
+  if (!error) return data || null
+
+  // Some legacy tables use uuid primary keys, while imported leads can have numeric ids.
+  // If Postgres rejects the id cast, do not fail the whole CRM update.
+  const lower = String(error.message || '').toLowerCase()
+  if (lower.includes('invalid input syntax for type uuid') || error.code === '22P02') {
+    return null
+  }
+
+  return null
 }
 
 function buildCrmNotification({ oldMeta, newMeta, lead }) {
@@ -346,7 +360,7 @@ function buildCrmNotification({ oldMeta, newMeta, lead }) {
   const priorityBecameUrgent = oldMeta?.priority !== 'urgent' && newMeta.priority === 'urgent'
   const amountChanged = String(oldMeta?.amount ?? '') !== String(newMeta.amount ?? '') && newMeta.amount !== null
 
-  const importantStatus = ['contact', 'call', 'proposal', 'contract', 'invoice', 'paid', 'in_work', 'report_ready', 'support', 'closed', 'lost', 'archived'].includes(nextStatus)
+  const importantStatus = ['contact', 'call', 'proposal', 'contract', 'invoice', 'paid', 'in_work', 'report_ready', 'support', 'closed', 'lost', 'archived', 'deleted'].includes(nextStatus)
 
   if (!statusChanged && !nextActionChanged && !nextContactChanged && !priorityBecameUrgent && !amountChanged) {
     return null
@@ -410,13 +424,17 @@ async function updateLeadMeta(req, res, supabase) {
     .single()
 
   if (error) {
-    const missing = String(error.message || '').toLowerCase().includes('does not exist') || error.code === '42P01'
-    return res.status(missing ? 409 : 500).json({
+    const lower = String(error.message || '').toLowerCase()
+    const missing = lower.includes('does not exist') || error.code === '42P01'
+    const invalidUuid = lower.includes('invalid input syntax for type uuid') || error.code === '22P02'
+    return res.status(missing || invalidUuid ? 409 : 500).json({
       ok: false,
-      sqlNeeded: missing,
+      sqlNeeded: missing || invalidUuid,
       error: missing
         ? 'CRM meta table is not created yet. Apply supabase/heimdall_crm_schema.sql in Supabase SQL Editor.'
-        : error.message || 'Unable to save CRM status'
+        : invalidUuid
+          ? 'CRM meta table has wrong lead_id type: uuid. Apply the updated supabase/heimdall_crm_schema.sql once in Supabase SQL Editor.'
+          : error.message || 'Unable to save CRM status'
     })
   }
 
