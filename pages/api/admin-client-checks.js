@@ -62,7 +62,7 @@ function normalizePayload(body = {}) {
 }
 
 function validatePayload(payload) {
-  if (!payload.user_id) return 'Укажите Supabase user_id клиента'
+  if (!payload.user_id) return 'Сначала найдите клиента по email. UUID вручную вводить не нужно.'
   if (!payload.title) return 'Укажите название проверки'
   return ''
 }
@@ -128,7 +128,7 @@ export default async function handler(req, res) {
     }
 
     if (!userId) {
-      return res.status(400).json({ ok: false, error: 'user_id or email is required' })
+      return res.status(400).json({ ok: false, error: 'Укажите email клиента. UUID вручную вводить не нужно.' })
     }
 
     const { data, error } = await supabase
