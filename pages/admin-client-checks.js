@@ -82,6 +82,21 @@ export default function AdminClientChecksPage() {
     if (emailFromQuery) setEmail(emailFromQuery)
   }, [router.query?.email])
 
+  useEffect(() => {
+    const emailFromQuery = typeof router.query?.email === 'string' ? router.query.email : ''
+    if (!emailFromQuery || !secret) return
+
+    const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailFromQuery)
+    if (!isEmail) return
+
+    const timer = window.setTimeout(() => {
+      const formEvent = { preventDefault() {} }
+      findUserByEmail(formEvent)
+    }, 150)
+
+    return () => window.clearTimeout(timer)
+  }, [router.query?.email, secret])
+
   const headers = useMemo(() => ({
     'Content-Type': 'application/json',
     'x-heimdall-admin-secret': secret
@@ -143,7 +158,7 @@ export default function AdminClientChecksPage() {
       const result = await apiRequest(`/api/admin-client-checks?email=${encodeURIComponent(email)}`)
       setUserInfo(result.user)
       setForm((current) => ({ ...current, user_id: result.user.id }))
-      setMessage(`Клиент найден: ${result.user.email}. user_id подставлен в форму.`)
+      setMessage(`Клиент найден: ${result.user.email}. Можно добавлять проверку в кабинет.`)
       await loadChecks(result.user.id, false)
     } catch (error) {
       setError(error.message || 'Клиент не найден')
@@ -159,7 +174,7 @@ export default function AdminClientChecksPage() {
     }
 
     if (!userId) {
-      setError('Укажите Supabase user_id клиента')
+      setError('Сначала найдите клиента по email. Клиент должен быть зарегистрирован в /account.')
       return
     }
 
@@ -319,7 +334,7 @@ export default function AdminClientChecksPage() {
               </div>
 
               <p className="mt-5 text-sm leading-7 text-white/58">
-                Введи email клиента из Supabase Auth. Если пользователь зарегистрирован в кабинете, система найдет его user_id и подставит в форму.
+                Введи email клиента, с которым он зарегистрировался в кабинете. UUID из Supabase больше вручную вводить не нужно.
               </p>
 
               <div className="mt-6 grid gap-3 sm:grid-cols-[1fr_auto]">
@@ -383,15 +398,17 @@ export default function AdminClientChecksPage() {
               </div>
 
               <div className="mt-8 grid gap-4">
-                <div>
-                  <label className="mb-2 block text-sm text-white/55">Supabase user_id клиента</label>
-                  <input
-                    required
-                    value={form.user_id}
-                    onChange={(event) => update('user_id', event.target.value)}
-                    placeholder="uuid клиента из Supabase Auth"
-                    className={inputClass('font-mono text-sm')}
-                  />
+                <input type="hidden" value={form.user_id} readOnly />
+
+                <div className="rounded-3xl border border-sky-300/15 bg-sky-300/10 p-5 text-sm leading-7 text-sky-50/85">
+                  <div className="font-semibold text-white">Клиент для кабинета</div>
+                  <div className="mt-2">
+                    {userInfo?.email ? (
+                      <>Найден клиент: <span className="font-semibold text-white">{userInfo.email}</span>. Проверка будет добавлена в его личный кабинет.</>
+                    ) : (
+                      <>Сначала найди клиента по email выше. Если клиент еще не зарегистрирован, попроси его войти или зарегистрироваться на /account.</>
+                    )}
+                  </div>
                 </div>
 
                 <div>
@@ -498,7 +515,7 @@ export default function AdminClientChecksPage() {
               <div className="mt-7 grid gap-4">
                 {checks.length === 0 ? (
                   <div className="rounded-[30px] border border-white/10 bg-black/25 p-8 text-white/58">
-                    Проверок пока нет или user_id еще не выбран.
+                    Проверок пока нет или клиент еще не выбран по email.
                   </div>
                 ) : (
                   checks.map((check) => (
@@ -565,7 +582,7 @@ export default function AdminClientChecksPage() {
                 <AlertTriangle className="h-4 w-4" />
                 Важно
               </div>
-              Эта панель управляет только карточками в таблице client_checks. Создание аккаунта клиента происходит через регистрацию на /account или через Supabase Auth.
+              Эта панель управляет только карточками в таблице client_checks. UUID вручную вводить не нужно: клиент находится по email. Аккаунт клиента создается через регистрацию на /account.
             </div>
           </div>
         </section>

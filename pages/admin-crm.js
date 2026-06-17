@@ -336,7 +336,10 @@ export default function AdminCrmPage() {
     await persistLeadMeta(nextEdit, successMessage)
   }
 
-  const selectedEmail = selectedLead?.email || selectedLead?.contact || ''
+  const selectedEmail = (() => {
+    const candidates = [selectedLead?.email, selectedLead?.contact, selectedLead?.phone]
+    return candidates.map((value) => String(value || '').trim()).find((value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) || ''
+  })()
 
   return (
     <>
