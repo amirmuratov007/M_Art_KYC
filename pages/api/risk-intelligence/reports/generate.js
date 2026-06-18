@@ -10,9 +10,10 @@ export default async function handler(req, res) {
     const objectId = req.body?.object_id || req.body?.id
     if (!objectId) return res.status(400).json({ ok: false, error: 'Missing object_id' })
 
-    const result = await generateRiskReport(objectId)
+    const language = req.body?.language || req.body?.locale || 'ru'
+    const result = await generateRiskReport(objectId, language)
     return res.status(result.ok ? 200 : 400).json(result)
   } catch (error) {
-    return res.status(200).json({ ok: true, mode: 'demo', report: { id: `demo-report-${Date.now()}`, report_text: 'Демо-отчет. Supabase временно недоступен.' }, error: error?.message || 'Fallback mode' })
+    return res.status(200).json({ ok: true, mode: 'demo', report: { id: `demo-report-${Date.now()}`, report_text: req.body?.language === 'en' ? 'Demo report. Supabase is temporarily unavailable.' : 'Демо-отчет. Supabase временно недоступен.' }, error: error?.message || 'Fallback mode' })
   }
 }
