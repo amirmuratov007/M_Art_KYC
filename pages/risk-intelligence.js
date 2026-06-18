@@ -18,7 +18,7 @@ const results = [
   'риск-профиль объекта проверки',
   'связи между людьми, компаниями, телефонами, доменами и документами',
   'красные флаги с уровнем значимости и уверенности',
-  'предварительный risk score для управленческого решения',
+  'предварительная оценка риска для управленческого решения',
   'структурированный отчет без обвинительных формулировок',
   'рекомендации: что уточнить, что проверить, какое решение отложить'
 ]
@@ -27,7 +27,7 @@ const steps = [
   ['1. Объект', 'Фиксируем, кого или что проверяем: кандидат, компания, подрядчик, домашний персонал, сотрудник или инцидент.'],
   ['2. Сигналы', 'Добавляем юридические, финансовые, репутационные, цифровые и поведенческие признаки риска.'],
   ['3. Связи', 'Собираем карту связей: люди, компании, телефоны, почты, домены, документы и упоминания.'],
-  ['4. Оценка', 'Система считает risk score и помогает аналитику быстро выделить приоритетные красные флаги.'],
+  ['4. Оценка', 'Система считает оценку риска и помогает аналитику быстро выделить приоритетные красные флаги.'],
   ['5. Отчет', 'HEIMDALL формирует аккуратный управленческий отчет: факты, признаки, гипотезы и рекомендации отдельно.']
 ]
 
@@ -36,7 +36,7 @@ export default function RiskIntelligencePage() {
     <>
       <Head>
         <title>Центр риск-аналитики | HEIMDALL</title>
-        <meta name="description" content="Центр риск-аналитики HEIMDALL: единая картина рисков, связи, красные флаги, risk score и отчеты для проверки кандидатов, сотрудников, подрядчиков, контрагентов и домашнего персонала." />
+        <meta name="description" content="Центр риск-аналитики HEIMDALL: единая картина рисков, связи, красные флаги, оценка риска и отчеты для проверки кандидатов, сотрудников, подрядчиков, контрагентов и домашнего персонала." />
         <link rel="canonical" href="https://www.heimdall-group.ru/risk-intelligence" />
       </Head>
 
@@ -51,7 +51,7 @@ export default function RiskIntelligencePage() {
         <section className="relative z-10 mx-auto grid max-w-7xl gap-10 px-5 py-20 md:py-24 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
           <div>
             <div className="inline-flex items-center gap-3 rounded-full border border-[#D6A84F]/25 bg-[#D6A84F]/10 px-5 py-2 text-sm uppercase tracking-[0.22em] text-[#F7D784]">
-              <BrainCircuit className="h-4 w-4" /> Heimdall Intelligence Core
+              <BrainCircuit className="h-4 w-4" /> Ядро аналитики HEIMDALL
             </div>
             <h1 className="mt-9 max-w-5xl text-5xl font-semibold leading-[0.95] tracking-[-0.06em] md:text-8xl">
               Центр риск-аналитики HEIMDALL
@@ -107,7 +107,7 @@ export default function RiskIntelligencePage() {
             <div className="grid gap-8 lg:grid-cols-[0.75fr_1.25fr]">
               <div>
                 <div className="inline-flex items-center gap-3 rounded-full border border-sky-300/25 bg-sky-300/10 px-5 py-2 text-sm uppercase tracking-[0.22em] text-sky-100">
-                  <Network className="h-4 w-4" /> Risk graph
+                  <Network className="h-4 w-4" /> Карта рисков
                 </div>
                 <h2 className="mt-7 text-4xl font-semibold leading-[0.98] tracking-[-0.055em] md:text-6xl">От фактов к связям и решению</h2>
                 <p className="mt-6 text-lg leading-8 text-white/64">HEIMDALL не складывает признаки в хаотичный список. Мы отделяем факты от гипотез, показываем связи и формируем понятную управленческую логику.</p>
@@ -128,7 +128,7 @@ export default function RiskIntelligencePage() {
           <div className="grid gap-5 md:grid-cols-3">
             {[
               [FileSearch, 'Законные источники', 'Работа строится на данных клиента, открытых источниках, документах и согласованных основаниях проверки.'],
-              [Gauge, 'Risk score', 'Оценка помогает расставить приоритеты, но не заменяет решение аналитика и юридическую проверку.'],
+              [Gauge, 'Оценка риска', 'Оценка помогает расставить приоритеты, но не заменяет решение аналитика и юридическую проверку.'],
               [ShieldCheck, 'Юридическая аккуратность', 'Отчеты не содержат обвинений. Мы разделяем факты, признаки, гипотезы и рекомендации.']
             ].map(([Icon, title, text]) => (
               <div key={title} className="rounded-[34px] border border-white/10 bg-white/[0.045] p-7">
