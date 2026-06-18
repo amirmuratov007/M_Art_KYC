@@ -25,10 +25,10 @@ export default function CaseDetailPage() {
 
       <div className="mb-8 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
         {[
-          ['Client', item.client],
-          ['Type', item.type],
-          ['Analyst', item.analyst],
-          ['Deadline', item.deadline]
+          ['Клиент', item.client],
+          ['Тип', item.type],
+          ['Аналитик', item.analyst],
+          ['Срок', item.deadline]
         ].map(([label, value]) => (
           <div key={label} className="rounded-[26px] border border-white/10 bg-white/[0.045] p-5">
             <div className="text-sm text-white/40">{label}</div>
@@ -38,19 +38,19 @@ export default function CaseDetailPage() {
       </div>
 
       <div className="mb-8 rounded-[30px] border border-white/10 bg-white/[0.045] p-6">
-        <div className="text-sm uppercase tracking-[0.22em] text-[#F7D784]/80">Case Status</div>
+        <div className="text-sm uppercase tracking-[0.22em] text-[#F7D784]/80">Статус проверки</div>
         <div className="mt-5 flex flex-col gap-4 md:flex-row">
           <select value={status} onChange={(event) => setStatus(event.target.value)} className="rounded-2xl border border-white/10 bg-[#07101f] p-4 text-white">
             {statuses.map((item) => <option key={item}>{item}</option>)}
           </select>
-          <button onClick={() => alert('AI draft generation will be connected in Stage 2')} className="rounded-2xl bg-sky-500 px-6 py-4 font-semibold text-white">Generate AI Draft</button>
+          <button onClick={() => alert('Черновик отчета будет подключен на следующем этапе')} className="rounded-2xl bg-sky-500 px-6 py-4 font-semibold text-white">Сформировать черновик ИИ</button>
         </div>
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[1fr_360px]">
         <div className="grid gap-6">
           <div className="rounded-[30px] border border-white/10 bg-white/[0.045] p-6">
-            <div className="mb-5 text-sm uppercase tracking-[0.22em] text-sky-300/80">Key Findings</div>
+            <div className="mb-5 text-sm uppercase tracking-[0.22em] text-sky-300/80">Ключевые признаки</div>
             <div className="grid gap-3">
               {item.findings.map((finding) => (
                 <div key={finding} className="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm leading-7 text-white/70">{finding}</div>
@@ -61,15 +61,15 @@ export default function CaseDetailPage() {
           <UploadBox />
 
           <div className="rounded-[30px] border border-white/10 bg-white/[0.045] p-6">
-            <div className="mb-5 text-sm uppercase tracking-[0.22em] text-sky-300/80">Documents</div>
+            <div className="mb-5 text-sm uppercase tracking-[0.22em] text-sky-300/80">Документы</div>
             <DocumentList documents={item.documents} />
           </div>
         </div>
 
         <div className="rounded-[30px] border border-white/10 bg-white/[0.045] p-6">
-          <div className="text-sm uppercase tracking-[0.22em] text-[#F7D784]/80">Analyst Notes</div>
+          <div className="text-sm uppercase tracking-[0.22em] text-[#F7D784]/80">Заметки аналитика</div>
           <textarea value={notes} onChange={(event) => setNotes(event.target.value)} className="mt-5 min-h-64 w-full rounded-2xl border border-white/10 bg-black/25 p-4 text-sm leading-7 text-white outline-none focus:border-sky-300/40" />
-          <button onClick={() => alert('Notes saved locally in mock mode')} className="mt-4 rounded-2xl bg-sky-500 px-5 py-3 text-sm font-semibold text-white">Save notes</button>
+          <button onClick={() => alert('Заметки сохранены локально в демонстрационном режиме')} className="mt-4 rounded-2xl bg-sky-500 px-5 py-3 text-sm font-semibold text-white">Сохранить заметки</button>
         </div>
       </div>
     </AnalystLayout>
