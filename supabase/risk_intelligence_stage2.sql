@@ -75,3 +75,10 @@ create index if not exists risk_intelligence_objects_updated_at_idx on public.ri
 create index if not exists risk_intelligence_signals_object_id_idx on public.risk_intelligence_signals(object_id);
 create index if not exists risk_intelligence_connections_object_id_idx on public.risk_intelligence_connections(object_id);
 create index if not exists risk_intelligence_reports_object_id_idx on public.risk_intelligence_reports(object_id);
+
+-- Stage 3: safe CRM request link for Risk Intelligence objects
+alter table public.risk_intelligence_objects
+  add column if not exists source_request_id text;
+
+create index if not exists risk_intelligence_objects_source_request_id_idx
+  on public.risk_intelligence_objects(source_request_id);
