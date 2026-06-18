@@ -20,7 +20,7 @@ export default function NewRiskObject() {
       return
     }
     const object = createLocalRiskObject(form)
-    router.push(`/analyst/risk-intelligence/${object.id}`)
+    router.push(`/analyst/risk-intelligence/object?id=${encodeURIComponent(object.id)}`)
   }
 
   return (
