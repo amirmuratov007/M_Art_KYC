@@ -157,6 +157,7 @@ export default function AdminCrmPage() {
   const [error, setError] = useState('')
   const [activeCrmTab, setActiveCrmTab] = useState('list')
   const [newClient, setNewClient] = useState(emptyNewClient)
+  const [riskObjectsByLead, setRiskObjectsByLead] = useState({})
 
   useEffect(() => {
     setSecret(window.localStorage.getItem('heimdall_admin_secret') || '')
@@ -412,6 +413,51 @@ export default function AdminCrmPage() {
       setMessage('Клиент добавлен в CRM. Карточка создана без ручного Supabase UUID.')
     } catch (error) {
       setError(error.message || 'Не удалось добавить клиента')
+    }
+
+    setLoading(false)
+  }
+
+
+  async function createRiskObjectFromSelectedLead() {
+    if (!selectedLead) {
+      setError('Сначала выбери заявку')
+      return
+    }
+
+    if (!secret) {
+      setError('Сначала укажи HEIMDALL_ADMIN_SECRET')
+      return
+    }
+
+    const leadId = getLeadId(selectedLead)
+    if (!leadId) {
+      setError('У выбранной заявки нет ID для связки с Центром риск-аналитики')
+      return
+    }
+
+    setLoading(true)
+    setError('')
+    setMessage('')
+
+    try {
+      const result = await apiRequest('/api/risk-intelligence/from-request', {
+        method: 'POST',
+        body: JSON.stringify({
+          source_request_id: leadId,
+          source_label: selectedLead._crm?.lead_source || selectedLead._source_table || source || 'CRM',
+          lead: selectedLead
+        })
+      })
+
+      if (result.object?.id) {
+        setRiskObjectsByLead((current) => ({ ...current, [leadId]: result.object }))
+        setMessage(result.created ? 'Объект проверки создан из заявки CRM.' : 'Объект проверки уже был создан ранее.')
+      } else {
+        setError('API не вернул объект проверки')
+      }
+    } catch (error) {
+      setError(error.message || 'Не удалось создать объект проверки')
     }
 
     setLoading(false)
@@ -841,11 +887,31 @@ export default function AdminCrmPage() {
                     Сохранить CRM-карточку
                   </button>
 
+                  <button
+                    type="button"
+                    disabled={loading || !selectedLead}
+                    onClick={createRiskObjectFromSelectedLead}
+                    className="inline-flex items-center justify-center gap-3 rounded-2xl border border-[#D6A84F]/30 bg-[#D6A84F]/10 px-7 py-4 font-semibold text-[#F7D784] disabled:opacity-60"
+                  >
+                    Создать объект проверки
+                    <ArrowRight className="h-4 w-4" />
+                  </button>
+
+                  {riskObjectsByLead[getLeadId(selectedLead)]?.id && (
+                    <a
+                      href={`/analyst/risk-intelligence/${riskObjectsByLead[getLeadId(selectedLead)].id}`}
+                      className="inline-flex items-center justify-center gap-3 rounded-2xl border border-emerald-300/25 bg-emerald-300/10 px-7 py-4 font-semibold text-emerald-100"
+                    >
+                      Открыть объект проверки
+                      <ArrowRight className="h-4 w-4" />
+                    </a>
+                  )}
+
                   <a
                     href={`/admin-client-checks${selectedEmail ? `?email=${encodeURIComponent(selectedEmail)}` : ''}`}
                     className="inline-flex items-center justify-center gap-3 rounded-2xl border border-sky-300/20 bg-sky-300/10 px-7 py-4 font-semibold text-sky-100"
                   >
-                    Создать проверку
+                    Создать клиентскую проверку
                     <ArrowRight className="h-4 w-4" />
                   </a>
                 </div>
@@ -960,7 +1026,7 @@ export default function AdminCrmPage() {
                 <CheckCircle2 className="h-4 w-4" />
                 Как использовать
               </div>
-              Загрузи заявки, выбери карточку, назначь этап и следующий шаг. Когда клиент оплатил или началась работа, создай ему проверку через кнопку “Создать проверку”.
+              Загрузи заявки, выбери карточку, назначь этап и следующий шаг. Когда клиент оплатил или началась работа, создай объект проверки в Центре риск-аналитики или клиентскую проверку через быстрые кнопки в карточке заявки.
             </div>
 
             <div className="rounded-[34px] border border-amber-300/15 bg-amber-300/10 p-6 text-sm leading-7 text-amber-100/85">
