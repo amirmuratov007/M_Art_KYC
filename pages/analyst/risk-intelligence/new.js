@@ -1,109 +1,45 @@
-import Head from 'next/head'
-import { useRouter } from 'next/router'
 import { useState } from 'react'
-import HeimdallNav from '@/components/HeimdallNav'
+import { useRouter } from 'next/router'
+import Link from 'next/link'
+import { AnalystLayout } from '@/components/analyst/AnalystUI'
+import { Field, SelectField } from '@/components/analyst/RiskIntelligenceUI'
+import { riskObjectTypes } from '@/data/riskIntelligenceMockData'
+import { createLocalRiskObject, getStorageModeLabel } from '@/lib/riskIntelligenceLocalStore'
+import { ArrowLeft, Save } from 'lucide-react'
 
-const initialForm = {
-  title: '',
-  object_type: 'candidate',
-  status: 'draft',
-  risk_level: 'unknown',
-  summary: ''
-}
-
-export default function NewRiskIntelligenceObject() {
+export default function NewRiskObject() {
   const router = useRouter()
-  const [form, setForm] = useState(initialForm)
-  const [saving, setSaving] = useState(false)
+  const [form, setForm] = useState({ object_type: 'candidate', name: '', description: '', source_request_id: '' })
   const [error, setError] = useState('')
+  const update = (key, value) => setForm((current) => ({ ...current, [key]: value }))
 
-  function updateField(name, value) {
-    setForm((current) => ({ ...current, [name]: value }))
-  }
-
-  async function createObject(event) {
+  const submit = (event) => {
     event.preventDefault()
-    setSaving(true)
-    setError('')
-
-    try {
-      const response = await fetch('/api/risk-intelligence/objects', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form)
-      })
-      const data = await response.json()
-      const id = data.object?.id
-      if (!id) throw new Error(data.error || 'Не удалось создать объект')
-      router.push(`/analyst/risk-intelligence/${id}`)
-    } catch (createError) {
-      setError(createError?.message || 'Ошибка создания объекта')
-    } finally {
-      setSaving(false)
+    if (!form.name.trim()) {
+      setError('Укажи название объекта проверки.')
+      return
     }
+    const object = createLocalRiskObject(form)
+    router.push(`/analyst/risk-intelligence/${object.id}`)
   }
 
   return (
-    <>
-      <Head>
-        <title>Новый объект - Risk Intelligence</title>
-        <meta name="robots" content="noindex, nofollow" />
-      </Head>
-      <main className="min-h-screen bg-[#05070d] text-white">
-        <HeimdallNav />
-        <section className="mx-auto max-w-4xl px-6 pb-20 pt-28">
-          <h1 className="text-4xl font-semibold">Добавить объект проверки</h1>
-          <p className="mt-4 text-white/60">Создайте карточку кандидата, компании, поставщика или связанного объекта.</p>
+    <AnalystLayout title="Новый объект проверки">
+      <Link href="/analyst/risk-intelligence" className="inline-flex items-center gap-2 text-sm font-semibold text-sky-200"><ArrowLeft className="h-4 w-4" /> Назад к центру</Link>
+      <div className="mt-8 max-w-4xl rounded-[34px] border border-white/10 bg-white/[0.045] p-7">
+        <div className="text-sm uppercase tracking-[0.25em] text-[#F7D784]/80">Автономное хранилище</div>
+        <h1 className="mt-4 text-4xl font-semibold tracking-[-0.05em]">Создать объект проверки</h1>
+        <p className="mt-4 text-sm leading-7 text-white/55">{getStorageModeLabel()}</p>
 
-          <form onSubmit={createObject} className="mt-8 rounded-3xl border border-white/10 bg-white/[0.04] p-6">
-            <div className="grid gap-5">
-              <label className="grid gap-2">
-                <span className="text-sm text-white/60">Название</span>
-                <input className="rounded-2xl border border-white/10 bg-black/30 px-4 py-3 outline-none focus:border-sky-300/50" value={form.title} onChange={(event) => updateField('title', event.target.value)} placeholder="Например: Кандидат Head of Sales" required />
-              </label>
-              <div className="grid gap-5 md:grid-cols-3">
-                <label className="grid gap-2">
-                  <span className="text-sm text-white/60">Тип</span>
-                  <select className="rounded-2xl border border-white/10 bg-black/30 px-4 py-3 outline-none" value={form.object_type} onChange={(event) => updateField('object_type', event.target.value)}>
-                    <option value="candidate">Кандидат</option>
-                    <option value="company">Компания</option>
-                    <option value="supplier">Поставщик</option>
-                    <option value="person">Физическое лицо</option>
-                    <option value="asset">Актив</option>
-                  </select>
-                </label>
-                <label className="grid gap-2">
-                  <span className="text-sm text-white/60">Статус</span>
-                  <select className="rounded-2xl border border-white/10 bg-black/30 px-4 py-3 outline-none" value={form.status} onChange={(event) => updateField('status', event.target.value)}>
-                    <option value="draft">Черновик</option>
-                    <option value="in_work">В работе</option>
-                    <option value="review">Проверка</option>
-                    <option value="report_ready">Отчет готов</option>
-                  </select>
-                </label>
-                <label className="grid gap-2">
-                  <span className="text-sm text-white/60">Уровень риска</span>
-                  <select className="rounded-2xl border border-white/10 bg-black/30 px-4 py-3 outline-none" value={form.risk_level} onChange={(event) => updateField('risk_level', event.target.value)}>
-                    <option value="unknown">Не указан</option>
-                    <option value="low">Низкий</option>
-                    <option value="medium">Средний</option>
-                    <option value="high">Высокий</option>
-                    <option value="critical">Критический</option>
-                  </select>
-                </label>
-              </div>
-              <label className="grid gap-2">
-                <span className="text-sm text-white/60">Краткое описание</span>
-                <textarea className="min-h-36 rounded-2xl border border-white/10 bg-black/30 px-4 py-3 outline-none focus:border-sky-300/50" value={form.summary} onChange={(event) => updateField('summary', event.target.value)} placeholder="Что проверяем, контекст, вводные, зона доступа" />
-              </label>
-              {error ? <div className="rounded-2xl border border-red-300/20 bg-red-500/10 p-4 text-red-100">{error}</div> : null}
-              <button disabled={saving} className="rounded-2xl bg-sky-300 px-6 py-4 font-semibold text-black disabled:opacity-60">
-                {saving ? 'Сохраняю...' : 'Создать объект'}
-              </button>
-            </div>
-          </form>
-        </section>
-      </main>
-    </>
+        <form onSubmit={submit} className="mt-7 grid gap-5">
+          <Field label="Тип объекта"><SelectField value={form.object_type} onChange={(value) => update('object_type', value)} options={riskObjectTypes} /></Field>
+          <Field label="Название"><input value={form.name} onChange={(event) => update('name', event.target.value)} className="rounded-2xl border border-white/10 bg-black/25 p-4 text-white outline-none focus:border-sky-300/40" placeholder="Например: кандидат на руководящую роль" /></Field>
+          <Field label="Описание"><textarea value={form.description} onChange={(event) => update('description', event.target.value)} className="min-h-32 rounded-2xl border border-white/10 bg-black/25 p-4 text-white outline-none focus:border-sky-300/40" placeholder="Контекст проверки, доступы, риски, ограничения" /></Field>
+          <Field label="Источник или номер заявки"><input value={form.source_request_id} onChange={(event) => update('source_request_id', event.target.value)} className="rounded-2xl border border-white/10 bg-black/25 p-4 text-white outline-none focus:border-sky-300/40" placeholder="Например: CRM-LEAD-001" /></Field>
+          {error && <div className="rounded-2xl border border-red-300/20 bg-red-300/10 p-4 text-sm text-red-100">{error}</div>}
+          <button type="submit" className="inline-flex w-fit items-center justify-center gap-3 rounded-2xl bg-[#D6A84F] px-6 py-4 font-semibold text-[#050816]"><Save className="h-4 w-4" /> Создать и открыть</button>
+        </form>
+      </div>
+    </AnalystLayout>
   )
 }

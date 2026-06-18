@@ -1,333 +1,151 @@
-import Head from 'next/head'
-import Link from 'next/link'
+import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/router'
-import { useEffect, useState } from 'react'
-import HeimdallNav from '@/components/HeimdallNav'
+import Link from 'next/link'
+import { AnalystLayout } from '@/components/analyst/AnalystUI'
+import { ConnectionForm, ConnectionsMap, getOptionLabel, ReportPreview, RiskLevelBadge, RiskStatusBadge, SignalForm, SignalsList } from '@/components/analyst/RiskIntelligenceUI'
+import { riskObjectTypes, riskStatuses } from '@/data/riskIntelligenceMockData'
+import { calculateRiskScore, getRiskLevel } from '@/lib/riskScoring'
+import { addLocalRiskConnection, addLocalRiskSignal, deleteLocalRiskConnection, deleteLocalRiskSignal, generateLocalRiskReport, getLocalRiskBundle, getStorageModeLabel, updateLocalRiskObjectStatus } from '@/lib/riskIntelligenceLocalStore'
+import { ArrowLeft, Copy, FileText, Printer, Save } from 'lucide-react'
 
-const emptySignal = { title: '', description: '', severity: 'medium', source: '' }
-const emptyConnection = { from_label: '', to_label: '', relation_type: '', description: '' }
-
-function inputClass(extra = '') {
-  return `rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none placeholder:text-white/35 focus:border-sky-300/50 ${extra}`
-}
-
-function label(value) {
-  const labels = {
-    draft: 'Черновик',
-    in_work: 'В работе',
-    review: 'Проверка',
-    report_ready: 'Отчет готов',
-    closed: 'Закрыто',
-    unknown: 'Не указан',
-    low: 'Низкий',
-    medium: 'Средний',
-    high: 'Высокий',
-    critical: 'Критический',
-    candidate: 'Кандидат',
-    company: 'Компания',
-    supplier: 'Поставщик',
-    person: 'Физическое лицо',
-    asset: 'Актив',
-    incident: 'Инцидент',
-    request: 'Заявка CRM'
-  }
-  return labels[value] || value || 'Не указано'
-}
-
-export default function RiskIntelligenceObjectCard() {
+export default function RiskObjectPage() {
   const router = useRouter()
   const { id } = router.query
-  const [object, setObject] = useState(null)
-  const [signals, setSignals] = useState([])
-  const [connections, setConnections] = useState([])
-  const [reports, setReports] = useState([])
-  const [mode, setMode] = useState('loading')
-  const [signalForm, setSignalForm] = useState(emptySignal)
-  const [connectionForm, setConnectionForm] = useState(emptyConnection)
-  const [reportText, setReportText] = useState('')
+  const [bundle, setBundle] = useState(null)
+  const [status, setStatus] = useState('new')
+  const [notes, setNotes] = useState('')
   const [message, setMessage] = useState('')
 
-  async function loadCard() {
+  const reload = () => {
     if (!id) return
-    setMessage('')
-    try {
-      const response = await fetch(`/api/risk-intelligence/objects/${id}`)
-      const data = await response.json()
-      if (!data.ok && !data.object) throw new Error(data.error || 'Не удалось загрузить объект')
-      setObject(data.object || { id, title: 'Демо-объект', status: 'draft', risk_level: 'unknown', summary: '' })
-      setSignals(Array.isArray(data.signals) ? data.signals : [])
-      setConnections(Array.isArray(data.connections) ? data.connections : [])
-      setReports(Array.isArray(data.reports) ? data.reports : [])
-      setMode(data.mode || 'supabase')
-      if (data.warning) setMessage(data.warning)
-    } catch (error) {
-      setObject({ id, title: 'Демо-объект', object_type: 'candidate', status: 'draft', risk_level: 'unknown', summary: 'Раздел открыт в fallback-режиме.' })
-      setMode('demo')
-      setMessage(error?.message || 'Fallback-режим')
-    }
+    const nextBundle = getLocalRiskBundle(id)
+    setBundle(nextBundle)
+    if (nextBundle.object) setStatus(nextBundle.object.status)
   }
 
   useEffect(() => {
-    loadCard()
+    reload()
   }, [id])
 
-  async function saveObject(patch) {
-    const nextObject = { ...object, ...patch }
-    setObject(nextObject)
-    try {
-      const response = await fetch(`/api/risk-intelligence/objects/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(patch)
-      })
-      const data = await response.json()
-      if (data.object) setObject(data.object)
-      setMode(data.mode || mode)
-      setMessage(data.warning || 'Сохранено')
-    } catch {
-      setMessage('Сохранено в демо-режиме')
-    }
+  const signals = bundle?.signals || []
+  const connections = bundle?.connections || []
+  const score = useMemo(() => calculateRiskScore(signals), [signals])
+  const level = useMemo(() => getRiskLevel(score), [score])
+  const riskObject = bundle?.object ? { ...bundle.object, status, risk_score: score, risk_level: level } : null
+  const report = bundle?.report || null
+
+  const addSignal = (signal) => {
+    addLocalRiskSignal(riskObject.id, signal)
+    setMessage('Сигнал сохранен в автономном хранилище браузера.')
+    reload()
   }
 
-  async function addSignal(event) {
-    event.preventDefault()
-    const payload = { ...signalForm, object_id: id }
-    try {
-      const response = await fetch('/api/risk-intelligence/signals', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      })
-      const data = await response.json()
-      setSignals((current) => [data.signal || { id: `local-${Date.now()}`, ...payload }, ...current])
-      setSignalForm(emptySignal)
-    } catch {
-      setSignals((current) => [{ id: `local-${Date.now()}`, ...payload }, ...current])
-    }
+  const removeSignal = (signalId) => {
+    deleteLocalRiskSignal(riskObject.id, signalId)
+    setMessage('Сигнал удален из автономного хранилища.')
+    reload()
   }
 
-  async function removeSignal(signalId) {
-    setSignals((current) => current.filter((signal) => signal.id !== signalId))
-    try {
-      await fetch(`/api/risk-intelligence/signals/${signalId}`, { method: 'DELETE' })
-    } catch {}
+  const addConnection = (connection) => {
+    addLocalRiskConnection(riskObject.id, connection)
+    setMessage('Связь сохранена в автономном хранилище браузера.')
+    reload()
   }
 
-  async function addConnection(event) {
-    event.preventDefault()
-    const payload = { ...connectionForm, object_id: id }
-    try {
-      const response = await fetch('/api/risk-intelligence/connections', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      })
-      const data = await response.json()
-      setConnections((current) => [data.connection || { id: `local-${Date.now()}`, ...payload }, ...current])
-      setConnectionForm(emptyConnection)
-    } catch {
-      setConnections((current) => [{ id: `local-${Date.now()}`, ...payload }, ...current])
-    }
+  const removeConnection = (connectionId) => {
+    deleteLocalRiskConnection(riskObject.id, connectionId)
+    setMessage('Связь удалена из автономного хранилища.')
+    reload()
   }
 
-  async function removeConnection(connectionId) {
-    setConnections((current) => current.filter((connection) => connection.id !== connectionId))
-    try {
-      await fetch(`/api/risk-intelligence/connections/${connectionId}`, { method: 'DELETE' })
-    } catch {}
+  const saveStatus = () => {
+    updateLocalRiskObjectStatus(riskObject.id, status)
+    setMessage('Статус сохранен в автономном хранилище браузера.')
+    reload()
   }
 
-  async function generateReport() {
-    try {
-      const response = await fetch('/api/risk-intelligence/reports/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ object_id: id })
-      })
-      const data = await response.json()
-      const report = data.report || { id: `local-report-${Date.now()}`, report_text: 'Не удалось сформировать отчет.' }
-      setReportText(report.report_text || '')
-      setReports((current) => [report, ...current])
-      setMode(data.mode || mode)
-      setMessage(data.warning || 'Черновик отчета сформирован')
-    } catch {
-      setReportText('Демо-отчет. API временно недоступен.')
-    }
+  const generateReport = () => {
+    generateLocalRiskReport({ riskObject, signals, connections, notes })
+    setMessage('Шаблонный отчет сформирован и сохранен локально.')
+    reload()
   }
 
-  async function copySummary() {
-    const text = [
-      `Объект проверки: ${object?.title || 'Без названия'}`,
-      `Тип объекта: ${label(object?.object_type)}`,
-      `Уровень риска: ${label(object?.risk_level)}`,
-      `Оценка риска: ${label(object?.risk_level)}`,
-      '',
-      object?.summary || 'Краткое резюме не заполнено.'
-    ].join('\n')
-    try {
-      await navigator.clipboard.writeText(text)
-      setMessage('Краткое резюме скопировано')
-    } catch {
-      setMessage('Не удалось скопировать автоматически. Выделите текст вручную.')
-    }
+  const copySummary = async () => {
+    const text = report?.executiveSummary || `${riskObject.name}: текущая оценка риска ${score}/100. Сигналов: ${signals.length}. Связей: ${connections.length}.`
+    await navigator.clipboard.writeText(text)
+    setMessage('Краткое резюме скопировано.')
   }
 
-  if (!object) {
+  if (!riskObject) {
     return (
-      <main className="min-h-screen bg-[#05070d] text-white">
-        <HeimdallNav />
-        <section className="mx-auto max-w-6xl px-6 pt-28">Загрузка...</section>
-      </main>
+      <AnalystLayout title="Объект проверки">
+        <div className="rounded-[30px] border border-white/10 bg-white/[0.045] p-8 text-white/65">Загрузка объекта проверки...</div>
+      </AnalystLayout>
     )
   }
 
   return (
-    <>
-      <Head>
-        <title>{object.title || 'Объект'} - Центр риск-аналитики</title>
-        <meta name="robots" content="noindex, nofollow" />
-      </Head>
-      <main className="min-h-screen bg-[#05070d] text-white">
-        <HeimdallNav />
-        <section className="mx-auto max-w-6xl px-6 pb-20 pt-28">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <Link href="/analyst/risk-intelligence" className="text-sm text-sky-200 hover:text-sky-100">← Назад к объектам</Link>
-            <div className="flex gap-3 text-sm">
-              <span className="text-sky-200">RU</span>
-              <span className="text-white/25">/</span>
-              <Link href={`/analyst/risk-intelligence-en/${id}`} className="text-white/45 hover:text-white">EN</Link>
-            </div>
+    <AnalystLayout title={riskObject.name}>
+      <div className="mb-8 flex flex-col justify-between gap-5 lg:flex-row lg:items-start">
+        <div>
+          <Link href="/analyst/risk-intelligence" className="inline-flex items-center gap-2 text-sm font-semibold text-sky-200"><ArrowLeft className="h-4 w-4" /> Назад к центру</Link>
+          <div className="mt-6 text-sm uppercase tracking-[0.25em] text-sky-300/80">{riskObject.source_request_id || riskObject.id}</div>
+          <h1 className="mt-4 text-5xl font-semibold tracking-[-0.06em] md:text-7xl">{riskObject.name}</h1>
+          <p className="mt-5 max-w-3xl text-lg leading-8 text-white/60">{riskObject.description}</p>
+        </div>
+        <div className="flex flex-wrap gap-3">
+          <RiskStatusBadge status={status} />
+          <RiskLevelBadge level={level} score={score} />
+        </div>
+      </div>
+
+      <div className="mb-8 rounded-[24px] border border-[#D6A84F]/25 bg-[#D6A84F]/10 p-5 text-sm leading-7 text-[#F7D784]">
+        {getStorageModeLabel()} Никаких обращений к Supabase из этой карточки нет.
+        {message && <div className="mt-2 text-white/85">{message}</div>}
+      </div>
+
+      <div className="mb-8 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+        {[
+          ['Тип объекта', getOptionLabel(riskObjectTypes, riskObject.object_type)],
+          ['Оценка риска', `${score}/100`],
+          ['Сигналы риска', signals.length],
+          ['Связи', connections.length]
+        ].map(([label, value]) => (
+          <div key={label} className="rounded-[26px] border border-white/10 bg-white/[0.045] p-5">
+            <div className="text-sm text-white/40">{label}</div>
+            <div className="mt-2 font-semibold text-white/85">{value}</div>
           </div>
+        ))}
+      </div>
 
-          <div className="mt-6 rounded-3xl border border-white/10 bg-white/[0.04] p-6">
-            <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-              <div className="flex-1">
-                <input className={inputClass('w-full text-3xl font-semibold')} value={object.title || ''} onChange={(event) => setObject({ ...object, title: event.target.value })} onBlur={(event) => saveObject({ title: event.target.value })} />
-                <textarea className={inputClass('mt-4 min-h-28 w-full')} value={object.summary || ''} onChange={(event) => setObject({ ...object, summary: event.target.value })} onBlur={(event) => saveObject({ summary: event.target.value })} placeholder="Краткое описание объекта" />
-              </div>
-              <div className="grid gap-3 md:w-64">
-                <select className={inputClass()} value={object.object_type || 'candidate'} onChange={(event) => saveObject({ object_type: event.target.value })}>
-                  <option value="candidate">Кандидат</option>
-                  <option value="company">Компания</option>
-                  <option value="supplier">Поставщик</option>
-                  <option value="person">Физическое лицо</option>
-                  <option value="asset">Актив</option>
-                  <option value="incident">Инцидент</option>
-                  <option value="request">Заявка CRM</option>
-                </select>
-                <select className={inputClass()} value={object.status || 'draft'} onChange={(event) => saveObject({ status: event.target.value })}>
-                  <option value="draft">Черновик</option>
-                  <option value="in_work">В работе</option>
-                  <option value="review">Проверка</option>
-                  <option value="report_ready">Отчет готов</option>
-                  <option value="closed">Закрыто</option>
-                </select>
-                <select className={inputClass()} value={object.risk_level || 'unknown'} onChange={(event) => saveObject({ risk_level: event.target.value })}>
-                  <option value="unknown">Риск не указан</option>
-                  <option value="low">Низкий риск</option>
-                  <option value="medium">Средний риск</option>
-                  <option value="high">Высокий риск</option>
-                  <option value="critical">Критический риск</option>
-                </select>
-              </div>
-            </div>
+      <div className="mb-8 rounded-[30px] border border-white/10 bg-white/[0.045] p-6">
+        <div className="text-sm uppercase tracking-[0.22em] text-[#F7D784]/80">Статус и отчет</div>
+        <div className="mt-5 flex flex-col gap-4 md:flex-row md:flex-wrap">
+          <select value={status} onChange={(event) => setStatus(event.target.value)} className="rounded-2xl border border-white/10 bg-[#07101f] p-4 text-white">
+            {riskStatuses.map(([key, label]) => <option key={key} value={key}>{label}</option>)}
+          </select>
+          <button type="button" onClick={saveStatus} className="inline-flex items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-6 py-4 font-semibold text-white"><Save className="h-4 w-4" /> Сохранить статус</button>
+          <button type="button" onClick={generateReport} className="inline-flex items-center justify-center gap-3 rounded-2xl bg-sky-500 px-6 py-4 font-semibold text-white"><FileText className="h-4 w-4" /> Сформировать отчет</button>
+          <button type="button" onClick={copySummary} className="inline-flex items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-6 py-4 font-semibold text-white"><Copy className="h-4 w-4" /> Скопировать резюме</button>
+          <button type="button" onClick={() => window.print()} className="inline-flex items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-6 py-4 font-semibold text-white"><Printer className="h-4 w-4" /> Печать</button>
+        </div>
+      </div>
 
-            <div className="mt-5 flex flex-wrap gap-3">
-              <Link href={`/analyst/risk-intelligence/${id}/client-report`} className="rounded-2xl border border-[#D6A84F]/30 bg-[#D6A84F]/10 px-5 py-3 font-semibold text-[#F7D784]">Открыть клиентский отчет</Link>
-              <button onClick={generateReport} className="rounded-2xl bg-white px-5 py-3 font-semibold text-black">Сформировать отчет</button>
-              <button onClick={copySummary} className="rounded-2xl border border-sky-300/20 bg-sky-300/10 px-5 py-3 font-semibold text-sky-100">Скопировать краткое резюме</button>
-              <button onClick={() => window.print()} className="rounded-2xl border border-white/15 bg-white/10 px-5 py-3 font-semibold text-white/80">Печать</button>
-            </div>
+      <div className="grid gap-6 xl:grid-cols-[1fr_380px]">
+        <div className="grid gap-6">
+          <SignalForm onAdd={addSignal} />
+          <div className="rounded-[30px] border border-white/10 bg-white/[0.045] p-6"><div className="mb-5 text-sm uppercase tracking-[0.22em] text-sky-300/80">Сигналы риска</div><SignalsList signals={signals} onRemove={removeSignal} /></div>
+          <ConnectionForm onAdd={addConnection} />
+          <div className="rounded-[30px] border border-white/10 bg-white/[0.045] p-6"><div className="mb-5 text-sm uppercase tracking-[0.22em] text-[#F7D784]/80">Карта связей</div><ConnectionsMap connections={connections} onRemove={removeConnection} /></div>
+          {report && <ReportPreview report={report} />}
+        </div>
 
-            <div className="mt-4 grid gap-2 text-sm text-white/55 md:grid-cols-2">
-              <div>Режим: <span className="text-sky-200">{mode === 'demo' ? 'демо / fallback' : mode}</span>. {message}</div>
-              <div>{object.source_request_id ? <>Создано из заявки: <span className="text-sky-200">{object.source_request_id}</span></> : 'Источник: ручное создание'}</div>
-            </div>
-            {mode === 'demo' ? <div className="mt-3 rounded-2xl border border-amber-300/20 bg-amber-300/10 p-4 text-sm text-amber-100">Сейчас включен демонстрационный режим. Для постоянного хранения данных выполните SQL-файл в Supabase.</div> : null}
-          </div>
-
-          <section className="mt-6 rounded-3xl border border-[#D6A84F]/20 bg-[#D6A84F]/10 p-6">
-            <h2 className="text-2xl font-semibold">Следующие действия аналитика</h2>
-            <ul className="mt-4 grid gap-2 text-white/70 md:grid-cols-2">
-              <li>уточнить источник риска;</li>
-              <li>проверить подтверждающие материалы;</li>
-              <li>запросить дополнительную информацию у клиента;</li>
-              <li>подготовить финальный вывод;</li>
-              <li>перевести объект в статус “на проверке” или “завершено”.</li>
-            </ul>
-          </section>
-
-          <div className="mt-6 grid gap-6 lg:grid-cols-2">
-            <section className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
-              <h2 className="text-2xl font-semibold">Сигналы риска</h2>
-              <form onSubmit={addSignal} className="mt-5 grid gap-3">
-                <input className={inputClass()} value={signalForm.title} onChange={(event) => setSignalForm({ ...signalForm, title: event.target.value })} placeholder="Название сигнала" required />
-                <textarea className={inputClass('min-h-24')} value={signalForm.description} onChange={(event) => setSignalForm({ ...signalForm, description: event.target.value })} placeholder="Описание" />
-                <div className="grid gap-3 md:grid-cols-2">
-                  <select className={inputClass()} value={signalForm.severity} onChange={(event) => setSignalForm({ ...signalForm, severity: event.target.value })}>
-                    <option value="low">Низкий</option>
-                    <option value="medium">Средний</option>
-                    <option value="high">Высокий</option>
-                    <option value="critical">Критический</option>
-                  </select>
-                  <input className={inputClass()} value={signalForm.source} onChange={(event) => setSignalForm({ ...signalForm, source: event.target.value })} placeholder="Источник" />
-                </div>
-                <button className="rounded-2xl bg-sky-300 px-5 py-3 font-semibold text-black">Добавить сигнал</button>
-              </form>
-              <div className="mt-5 grid gap-3">
-                {signals.map((signal) => (
-                  <div key={signal.id} className="rounded-2xl border border-white/10 bg-black/20 p-4">
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <div className="font-semibold">{signal.title}</div>
-                        <div className="mt-1 text-sm text-white/60">{signal.description}</div>
-                        <div className="mt-2 text-xs text-sky-200/70">Уровень: {label(signal.severity)}{signal.source ? ` · Источник: ${signal.source}` : ''}</div>
-                      </div>
-                      <button onClick={() => removeSignal(signal.id)} className="text-sm text-red-200">Удалить</button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
-
-            <section className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
-              <h2 className="text-2xl font-semibold">Связи</h2>
-              <form onSubmit={addConnection} className="mt-5 grid gap-3">
-                <input className={inputClass()} value={connectionForm.from_label} onChange={(event) => setConnectionForm({ ...connectionForm, from_label: event.target.value })} placeholder="От кого / от чего" required />
-                <input className={inputClass()} value={connectionForm.to_label} onChange={(event) => setConnectionForm({ ...connectionForm, to_label: event.target.value })} placeholder="С кем / с чем связь" required />
-                <input className={inputClass()} value={connectionForm.relation_type} onChange={(event) => setConnectionForm({ ...connectionForm, relation_type: event.target.value })} placeholder="Тип связи" />
-                <textarea className={inputClass('min-h-24')} value={connectionForm.description} onChange={(event) => setConnectionForm({ ...connectionForm, description: event.target.value })} placeholder="Описание связи" />
-                <button className="rounded-2xl bg-sky-300 px-5 py-3 font-semibold text-black">Добавить связь</button>
-              </form>
-              <div className="mt-5 grid gap-3">
-                {connections.map((connection) => (
-                  <div key={connection.id} className="rounded-2xl border border-white/10 bg-black/20 p-4">
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <div className="font-semibold">{connection.from_label} → {connection.to_label}</div>
-                        <div className="mt-1 text-sm text-white/60">{connection.relation_type} {connection.description ? `- ${connection.description}` : ''}</div>
-                      </div>
-                      <button onClick={() => removeConnection(connection.id)} className="text-sm text-red-200">Удалить</button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
-          </div>
-
-          <section className="mt-6 rounded-3xl border border-white/10 bg-white/[0.04] p-6">
-            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-              <div>
-                <h2 className="text-2xl font-semibold">Черновик отчета</h2>
-                <p className="mt-2 text-white/60">Формирует черновик по объекту, сигналам и связям.</p>
-              </div>
-              <button onClick={generateReport} className="rounded-2xl bg-white px-5 py-3 font-semibold text-black">Обновить черновик</button>
-            </div>
-            {reportText ? <pre className="mt-5 whitespace-pre-wrap rounded-2xl border border-white/10 bg-black/30 p-5 text-sm text-white/75">{reportText}</pre> : null}
-            {reports.length ? <div className="mt-4 text-sm text-white/50">Сохраненных отчетов: {reports.length}</div> : null}
-          </section>
-        </section>
-      </main>
-    </>
+        <div className="rounded-[30px] border border-white/10 bg-white/[0.045] p-6 xl:sticky xl:top-6 xl:h-fit">
+          <div className="text-sm uppercase tracking-[0.22em] text-[#F7D784]/80">Заметки аналитика</div>
+          <textarea value={notes} onChange={(event) => setNotes(event.target.value)} placeholder="Факты, вопросы клиенту, гипотезы и ограничения проверки..." className="mt-5 min-h-80 w-full rounded-2xl border border-white/10 bg-black/25 p-4 text-sm leading-7 text-white outline-none focus:border-sky-300/40" />
+          <div className="mt-4 rounded-2xl border border-white/10 bg-black/20 p-4 text-xs leading-6 text-white/50">Следующие действия аналитика: уточнить источник риска, проверить подтверждающие материалы, запросить дополнительную информацию у клиента, подготовить финальный вывод.</div>
+        </div>
+      </div>
+    </AnalystLayout>
   )
 }
