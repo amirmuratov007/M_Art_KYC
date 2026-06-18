@@ -19,12 +19,12 @@ export default function RiskIntelligenceConsolePage() {
   const avgRisk = Math.round(riskObjects.reduce((sum, item) => sum + item.risk_score, 0) / riskObjects.length)
 
   return (
-    <AnalystLayout title="Risk Intelligence">
+    <AnalystLayout title="Центр риск-аналитики">
       <div className="mb-8 flex flex-col justify-between gap-5 lg:flex-row lg:items-end">
         <div>
-          <div className="text-sm uppercase tracking-[0.25em] text-sky-300/80">Heimdall Intelligence Core</div>
+          <div className="text-sm uppercase tracking-[0.25em] text-sky-300/80">Ядро аналитики HEIMDALL</div>
           <h1 className="mt-4 text-5xl font-semibold tracking-[-0.06em] md:text-7xl">Центр риск-аналитики</h1>
-          <p className="mt-6 max-w-3xl text-lg leading-8 text-white/60">MVP: объекты проверки, сигналы риска, связи, risk score и шаблонный отчет без ИИ-ключа.</p>
+          <p className="mt-6 max-w-3xl text-lg leading-8 text-white/60">Безопасный первый этап: объекты проверки, сигналы риска, связи, оценка риска и шаблонный отчет без подключения ИИ-ключа.</p>
         </div>
         <Link href="/analyst/risk-intelligence/new" className="inline-flex items-center justify-center gap-3 rounded-2xl bg-sky-500 px-6 py-4 font-semibold text-white">
           <PlusCircle className="h-4 w-4" /> Создать объект
@@ -35,7 +35,7 @@ export default function RiskIntelligenceConsolePage() {
         {[
           ['Активные объекты', active],
           ['Высокий риск', highRisk],
-          ['Средний score', `${avgRisk}/100`]
+          ['Средняя оценка', `${avgRisk}/100`]
         ].map(([label, value]) => (
           <div key={label} className="rounded-[30px] border border-white/10 bg-white/[0.045] p-6">
             <div className="text-sm text-white/45">{label}</div>

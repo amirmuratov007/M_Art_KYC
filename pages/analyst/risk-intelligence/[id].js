@@ -51,7 +51,7 @@ export default function RiskObjectDetailPage() {
       <div className="mb-8 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
         {[
           ['Тип объекта', getOptionLabel(riskObjectTypes, riskObject.object_type)],
-          ['Risk score', `${score}/100`],
+          ['Оценка риска', `${score}/100`],
           ['Сигналы риска', signals.length],
           ['Связи', connections.length]
         ].map(([label, value]) => (
@@ -95,7 +95,7 @@ export default function RiskObjectDetailPage() {
           <div className="text-sm uppercase tracking-[0.22em] text-[#F7D784]/80">Заметки аналитика</div>
           <textarea value={notes} onChange={(event) => { setNotes(event.target.value); setReport(null) }} placeholder="Факты, вопросы клиенту, гипотезы и ограничения проверки..." className="mt-5 min-h-80 w-full rounded-2xl border border-white/10 bg-black/25 p-4 text-sm leading-7 text-white outline-none focus:border-sky-300/40" />
           <div className="mt-4 rounded-2xl border border-white/10 bg-black/20 p-4 text-xs leading-6 text-white/50">
-            Stage 1 работает локально: добавленные сигналы, связи и заметки не записываются в Supabase. Это безопасный каркас для проверки интерфейса и логики.
+            Первый этап работает локально: добавленные сигналы, связи и заметки не записываются в базу. Это безопасный каркас для проверки интерфейса и логики.
           </div>
         </div>
       </div>
