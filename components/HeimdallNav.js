@@ -97,7 +97,7 @@ const enMenu = [
     items: [
       ['Business Support', '/business-support-en'],
       ['Security Outsourcing', '/security-outsourcing-en'],
-      ['Risk Intelligence', '/risk-intelligence'],
+      ['Risk Intelligence', '/risk-intelligence-en'],
       ['Internal Investigations', '/internal-investigations-en'],
       ['Pricing', '/pricing-en'],
       ['Business Intelligence Support', '/business-intelligence-support-en'],
@@ -138,7 +138,8 @@ const langMap = {
   '/business-support-en': '/business-support',
   '/security-outsourcing': '/security-outsourcing-en',
   '/security-outsourcing-en': '/security-outsourcing',
-  '/risk-intelligence': '/risk-intelligence',
+  '/risk-intelligence': '/risk-intelligence-en',
+  '/risk-intelligence-en': '/risk-intelligence',
   '/internal-investigations': '/internal-investigations-en',
   '/internal-investigations-en': '/internal-investigations',
   '/pricing': '/pricing-en',
