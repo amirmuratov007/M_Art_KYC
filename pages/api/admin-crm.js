@@ -215,6 +215,103 @@ function getCreatedAtMs(row) {
   return Number.isFinite(time) ? time : 0
 }
 
+function buildManualLeadPayload(body = {}) {
+  const email = sanitize(body.email, 220)
+  const phone = sanitize(body.phone, 80)
+  const extraContact = sanitize(body.contact, 220)
+  const contact = [email, phone, extraContact].filter(Boolean).join(' · ')
+  const service = sanitize(body.service || body.topic || body.check_type, 260) || 'Новый клиент'
+  const source = sanitize(body.source, 260) || 'Ручное добавление / CRM'
+  const comment = sanitize(body.comment || body.message, 4000)
+
+  return {
+    type: 'manual_crm',
+    language: 'ru',
+    name: sanitize(body.name, 220),
+    company: sanitize(body.company, 220),
+    contact,
+    topic: service,
+    message: [
+      comment,
+      source ? `Источник: ${source}` : '',
+      email ? `Email: ${email}` : '',
+      phone ? `Телефон: ${phone}` : '',
+      extraContact ? `Доп. контакт: ${extraContact}` : ''
+    ].filter(Boolean).join('\n'),
+    created_at: new Date().toISOString()
+  }
+}
+
+function compactManualLeadForTelegram(row = {}) {
+  return [
+    '🧭 HEIMDALL CRM',
+    '',
+    'Новый клиент добавлен вручную',
+    `Имя: ${row.name || '—'}`,
+    `Компания: ${row.company || '—'}`,
+    `Контакт: ${row.contact || '—'}`,
+    `Услуга: ${row.topic || '—'}`,
+    '',
+    row.message || 'Без комментария'
+  ].join('\n')
+}
+
+async function createManualLead(req, res, supabase) {
+  const body = req.body || {}
+  const sourceTable = sanitizeTableName(body.lead_source || body.table || process.env.SUPABASE_LEADS_TABLE || 'heimdall_leads')
+  const payload = buildManualLeadPayload(body)
+
+  if (!payload.name || !payload.contact) {
+    return res.status(400).json({ ok: false, error: 'Укажи имя клиента и хотя бы один контакт: email, телефон или Telegram.' })
+  }
+
+  const { data, error } = await supabase
+    .from(sourceTable)
+    .insert([payload])
+    .select('*')
+    .single()
+
+  if (error) {
+    return res.status(500).json({
+      ok: false,
+      error: error.message || 'Не удалось добавить клиента в таблицу заявок',
+      table: sourceTable
+    })
+  }
+
+  const leadId = String(data.id ?? data.lead_id ?? data.uuid ?? '')
+  const metaPayload = {
+    lead_source: sourceTable,
+    lead_id: leadId,
+    status: 'contact',
+    priority: normalizePriority(body.priority || 'high'),
+    amount: null,
+    responsible: sanitize(body.responsible, 220),
+    next_action: sanitize(body.next_action, 1000) || 'Связаться с клиентом',
+    next_contact_at: toIsoOrNull(body.next_contact_at),
+    internal_comment: sanitize(body.comment, 5000),
+    updated_at: new Date().toISOString()
+  }
+
+  let savedMeta = metaPayload
+  if (leadId) {
+    const { data: meta, error: metaError } = await supabase
+      .from(CRM_META_TABLE)
+      .upsert(metaPayload, { onConflict: 'lead_source,lead_id' })
+      .select('*')
+      .single()
+
+    if (!metaError && meta) {
+      savedMeta = meta
+    }
+  }
+
+  const lead = normalizeLead(data, sourceTable, new Map([[leadId, savedMeta]]))
+  const telegram = await sendCrmTelegram(compactManualLeadForTelegram(data))
+
+  return res.status(200).json({ ok: true, lead, meta: savedMeta, telegram })
+}
+
 async function listLeads(req, res, supabase) {
   const requestedSource = sanitize(req.query?.source, 80)
   const sourceTables = getCandidateTables(requestedSource)
@@ -462,6 +559,14 @@ export default async function handler(req, res) {
 
   if (req.method === 'GET') {
     return listLeads(req, res, supabase)
+  }
+
+  if (req.method === 'POST') {
+    const action = sanitize(req.body?.action, 80)
+    if (action === 'create_manual_lead') {
+      return createManualLead(req, res, supabase)
+    }
+    return res.status(400).json({ ok: false, error: 'Unknown CRM action' })
   }
 
   if (req.method === 'PATCH') {
