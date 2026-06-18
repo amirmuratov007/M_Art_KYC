@@ -1,17 +1,21 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useRouter } from 'next/router'
 import Link from 'next/link'
 import { AnalystLayout } from '@/components/analyst/AnalystUI'
 import { RiskObjectCard } from '@/components/analyst/RiskIntelligenceUI'
 import { riskObjectTypes, riskStatuses } from '@/data/riskIntelligenceMockData'
 import { listLocalRiskObjects, resetRiskStore, getStorageModeLabel } from '@/lib/riskIntelligenceLocalStore'
-import { PlusCircle, RefreshCcw, Search } from 'lucide-react'
+import { PlusCircle, RefreshCcw, Search, ArrowLeft } from 'lucide-react'
+import RiskObjectPage from './[id]'
 
 export default function RiskIntelligenceIndex() {
   const [objects, setObjects] = useState([])
   const [query, setQuery] = useState('')
   const [riskLevel, setRiskLevel] = useState('all')
   const [status, setStatus] = useState('all')
+  const router = useRouter()
   const [objectType, setObjectType] = useState('all')
+  const [selectedObjectId, setSelectedObjectId] = useState('')
 
   const reload = () => setObjects(listLocalRiskObjects())
 
@@ -21,6 +25,22 @@ export default function RiskIntelligenceIndex() {
     window.addEventListener('heimdall-risk-store-updated', onUpdate)
     return () => window.removeEventListener('heimdall-risk-store-updated', onUpdate)
   }, [])
+
+  useEffect(() => {
+    const openId = typeof router.query.open === 'string' ? router.query.open : ''
+    if (openId) setSelectedObjectId(openId)
+  }, [router.query.open])
+
+  const openObject = (id) => {
+    setSelectedObjectId(id)
+    if (router?.replace) router.replace(`/analyst/risk-intelligence?open=${encodeURIComponent(id)}`, undefined, { shallow: true })
+  }
+
+  const closeObject = () => {
+    setSelectedObjectId('')
+    if (router?.replace) router.replace('/analyst/risk-intelligence', undefined, { shallow: true })
+    reload()
+  }
 
   const filteredObjects = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase()
@@ -43,6 +63,10 @@ export default function RiskIntelligenceIndex() {
   const resetDemo = () => {
     resetRiskStore()
     reload()
+  }
+
+  if (selectedObjectId) {
+    return <RiskObjectPage forcedId={selectedObjectId} onBack={closeObject} />
   }
 
   return (
@@ -88,7 +112,7 @@ export default function RiskIntelligenceIndex() {
       </div>
 
       <div className="grid gap-5 xl:grid-cols-3">
-        {filteredObjects.map((item) => <RiskObjectCard key={item.id} item={item} />)}
+        {filteredObjects.map((item) => <RiskObjectCard key={item.id} item={item} onOpen={openObject} />)}
       </div>
 
       {!filteredObjects.length && (

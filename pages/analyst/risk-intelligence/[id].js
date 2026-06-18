@@ -121,10 +121,10 @@ function AnalysisPanel({ analysis, onAcceptSignal, onAcceptAllSignals, onAcceptC
   )
 }
 
-export default function RiskObjectPage() {
+export default function RiskObjectPage({ forcedId = '', onBack = null } = {}) {
   const router = useRouter()
-  const rawId = router.query.id
-  const id = Array.isArray(rawId) ? rawId[0] : rawId
+  const routeId = router.query.id
+  const id = forcedId || routeId
   const [bundle, setBundle] = useState(null)
   const [status, setStatus] = useState('new')
   const [notes, setNotes] = useState('')
@@ -251,7 +251,11 @@ export default function RiskObjectPage() {
     <AnalystLayout title={riskObject.name}>
       <div className="mb-8 flex flex-col justify-between gap-5 lg:flex-row lg:items-start">
         <div>
-          <Link href="/analyst/risk-intelligence" className="inline-flex items-center gap-2 text-sm font-semibold text-sky-200"><ArrowLeft className="h-4 w-4" /> Назад к центру</Link>
+          {onBack ? (
+            <button type="button" onClick={onBack} className="inline-flex items-center gap-2 text-sm font-semibold text-sky-200"><ArrowLeft className="h-4 w-4" /> Назад к центру</button>
+          ) : (
+            <Link href="/analyst/risk-intelligence" className="inline-flex items-center gap-2 text-sm font-semibold text-sky-200"><ArrowLeft className="h-4 w-4" /> Назад к центру</Link>
+          )}
           <div className="mt-6 text-sm uppercase tracking-[0.25em] text-sky-300/80">{riskObject.source_request_id || riskObject.id}</div>
           <h1 className="mt-4 text-5xl font-semibold tracking-[-0.06em] md:text-7xl">{riskObject.name}</h1>
           <p className="mt-5 max-w-3xl text-lg leading-8 text-white/60">{riskObject.description}</p>
