@@ -1,24 +1,30 @@
-import { useState } from 'react'
+import Head from 'next/head'
 import { useRouter } from 'next/router'
-import { AnalystLayout } from '@/components/analyst/AnalystUI'
-import { Field, SelectField } from '@/components/analyst/RiskIntelligenceUI'
-import { riskObjectTypes } from '@/data/riskIntelligenceMockData'
+import { useState } from 'react'
+import HeimdallNav from '@/components/HeimdallNav'
 
-export default function NewRiskObjectPage() {
+const initialForm = {
+  title: '',
+  object_type: 'candidate',
+  status: 'draft',
+  risk_level: 'unknown',
+  summary: ''
+}
+
+export default function NewRiskIntelligenceObject() {
   const router = useRouter()
-  const [form, setForm] = useState({ name: '', object_type: 'candidate', description: '', source_request_id: '' })
+  const [form, setForm] = useState(initialForm)
   const [saving, setSaving] = useState(false)
-  const [message, setMessage] = useState('')
-  const update = (key, value) => setForm((current) => ({ ...current, [key]: value }))
+  const [error, setError] = useState('')
 
-  const createObject = async () => {
-    if (!form.name.trim()) {
-      setMessage('Укажите название объекта проверки.')
-      return
-    }
+  function updateField(name, value) {
+    setForm((current) => ({ ...current, [name]: value }))
+  }
 
+  async function createObject(event) {
+    event.preventDefault()
     setSaving(true)
-    setMessage('')
+    setError('')
 
     try {
       const response = await fetch('/api/risk-intelligence/objects', {
@@ -26,43 +32,78 @@ export default function NewRiskObjectPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form)
       })
-      const body = await response.json().catch(() => ({}))
-      if (!response.ok) throw new Error(body.error || 'Не удалось создать объект.')
-
-      if (body.mode === 'live') {
-        router.push(`/analyst/risk-intelligence/${body.data.id}`)
-      } else {
-        setMessage(body.warning || 'Supabase не настроен. Объект показан как демонстрационный и не записан в базу.')
-      }
-    } catch (error) {
-      setMessage(error.message || 'Ошибка сохранения.')
+      const data = await response.json()
+      const id = data.object?.id
+      if (!id) throw new Error(data.error || 'Не удалось создать объект')
+      router.push(`/analyst/risk-intelligence/${id}`)
+    } catch (createError) {
+      setError(createError?.message || 'Ошибка создания объекта')
     } finally {
       setSaving(false)
     }
   }
 
   return (
-    <AnalystLayout title="Создать объект риска">
-      <div className="mb-8">
-        <div className="text-sm uppercase tracking-[0.25em] text-sky-300/80">Новый объект</div>
-        <h1 className="mt-4 text-5xl font-semibold tracking-[-0.06em] md:text-7xl">Создать объект проверки</h1>
-        <p className="mt-6 max-w-3xl text-lg leading-8 text-white/60">Этап 2: форма записывает объект в Supabase, если таблицы созданы и env-переменные настроены. Если база недоступна, интерфейс не падает и показывает понятное предупреждение.</p>
-      </div>
+    <>
+      <Head>
+        <title>Новый объект - Risk Intelligence</title>
+        <meta name="robots" content="noindex, nofollow" />
+      </Head>
+      <main className="min-h-screen bg-[#05070d] text-white">
+        <HeimdallNav />
+        <section className="mx-auto max-w-4xl px-6 pb-20 pt-28">
+          <h1 className="text-4xl font-semibold">Добавить объект проверки</h1>
+          <p className="mt-4 text-white/60">Создайте карточку кандидата, компании, поставщика или связанного объекта.</p>
 
-      <div className="rounded-[34px] border border-white/10 bg-white/[0.045] p-6 md:p-8">
-        <div className="grid gap-5 md:grid-cols-2">
-          <Field label="Название объекта"><input value={form.name} onChange={(event) => update('name', event.target.value)} placeholder="Например: кандидат на руководящую роль" className="rounded-2xl border border-white/10 bg-black/25 p-4 text-white outline-none focus:border-sky-300/40" /></Field>
-          <Field label="Тип объекта"><SelectField value={form.object_type} onChange={(value) => update('object_type', value)} options={riskObjectTypes} /></Field>
-          <Field label="ID заявки CRM"><input value={form.source_request_id} onChange={(event) => update('source_request_id', event.target.value)} placeholder="CRM-LEAD-001" className="rounded-2xl border border-white/10 bg-black/25 p-4 text-white outline-none focus:border-sky-300/40" /></Field>
-          <Field label="Описание"><input value={form.description} onChange={(event) => update('description', event.target.value)} placeholder="Кратко: что проверяем и почему" className="rounded-2xl border border-white/10 bg-black/25 p-4 text-white outline-none focus:border-sky-300/40" /></Field>
-        </div>
-
-        {message && <div className="mt-8 rounded-2xl border border-[#D6A84F]/20 bg-[#D6A84F]/10 p-5 text-sm leading-7 text-[#F7D784]">{message}</div>}
-
-        <button type="button" onClick={createObject} disabled={saving} className="mt-6 rounded-2xl bg-sky-500 px-7 py-4 font-semibold text-white disabled:opacity-60">
-          {saving ? 'Сохраняю...' : 'Создать объект проверки'}
-        </button>
-      </div>
-    </AnalystLayout>
+          <form onSubmit={createObject} className="mt-8 rounded-3xl border border-white/10 bg-white/[0.04] p-6">
+            <div className="grid gap-5">
+              <label className="grid gap-2">
+                <span className="text-sm text-white/60">Название</span>
+                <input className="rounded-2xl border border-white/10 bg-black/30 px-4 py-3 outline-none focus:border-sky-300/50" value={form.title} onChange={(event) => updateField('title', event.target.value)} placeholder="Например: Кандидат Head of Sales" required />
+              </label>
+              <div className="grid gap-5 md:grid-cols-3">
+                <label className="grid gap-2">
+                  <span className="text-sm text-white/60">Тип</span>
+                  <select className="rounded-2xl border border-white/10 bg-black/30 px-4 py-3 outline-none" value={form.object_type} onChange={(event) => updateField('object_type', event.target.value)}>
+                    <option value="candidate">Кандидат</option>
+                    <option value="company">Компания</option>
+                    <option value="supplier">Поставщик</option>
+                    <option value="person">Физическое лицо</option>
+                    <option value="asset">Актив</option>
+                  </select>
+                </label>
+                <label className="grid gap-2">
+                  <span className="text-sm text-white/60">Статус</span>
+                  <select className="rounded-2xl border border-white/10 bg-black/30 px-4 py-3 outline-none" value={form.status} onChange={(event) => updateField('status', event.target.value)}>
+                    <option value="draft">Черновик</option>
+                    <option value="in_work">В работе</option>
+                    <option value="review">Проверка</option>
+                    <option value="report_ready">Отчет готов</option>
+                  </select>
+                </label>
+                <label className="grid gap-2">
+                  <span className="text-sm text-white/60">Уровень риска</span>
+                  <select className="rounded-2xl border border-white/10 bg-black/30 px-4 py-3 outline-none" value={form.risk_level} onChange={(event) => updateField('risk_level', event.target.value)}>
+                    <option value="unknown">Не указан</option>
+                    <option value="low">Низкий</option>
+                    <option value="medium">Средний</option>
+                    <option value="high">Высокий</option>
+                    <option value="critical">Критический</option>
+                  </select>
+                </label>
+              </div>
+              <label className="grid gap-2">
+                <span className="text-sm text-white/60">Краткое описание</span>
+                <textarea className="min-h-36 rounded-2xl border border-white/10 bg-black/30 px-4 py-3 outline-none focus:border-sky-300/50" value={form.summary} onChange={(event) => updateField('summary', event.target.value)} placeholder="Что проверяем, контекст, вводные, зона доступа" />
+              </label>
+              {error ? <div className="rounded-2xl border border-red-300/20 bg-red-500/10 p-4 text-red-100">{error}</div> : null}
+              <button disabled={saving} className="rounded-2xl bg-sky-300 px-6 py-4 font-semibold text-black disabled:opacity-60">
+                {saving ? 'Сохраняю...' : 'Создать объект'}
+              </button>
+            </div>
+          </form>
+        </section>
+      </main>
+    </>
   )
 }
