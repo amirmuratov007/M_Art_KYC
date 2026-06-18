@@ -11,6 +11,29 @@ function inputClass(extra = '') {
   return `rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none placeholder:text-white/35 focus:border-sky-300/50 ${extra}`
 }
 
+function label(value) {
+  const labels = {
+    draft: 'Черновик',
+    in_work: 'В работе',
+    review: 'Проверка',
+    report_ready: 'Отчет готов',
+    closed: 'Закрыто',
+    unknown: 'Не указан',
+    low: 'Низкий',
+    medium: 'Средний',
+    high: 'Высокий',
+    critical: 'Критический',
+    candidate: 'Кандидат',
+    company: 'Компания',
+    supplier: 'Поставщик',
+    person: 'Физическое лицо',
+    asset: 'Актив',
+    incident: 'Инцидент',
+    request: 'Заявка CRM'
+  }
+  return labels[value] || value || 'Не указано'
+}
+
 export default function RiskIntelligenceObjectCard() {
   const router = useRouter()
   const { id } = router.query
@@ -36,6 +59,7 @@ export default function RiskIntelligenceObjectCard() {
       setConnections(Array.isArray(data.connections) ? data.connections : [])
       setReports(Array.isArray(data.reports) ? data.reports : [])
       setMode(data.mode || 'supabase')
+      if (data.warning) setMessage(data.warning)
     } catch (error) {
       setObject({ id, title: 'Демо-объект', object_type: 'candidate', status: 'draft', risk_level: 'unknown', summary: 'Раздел открыт в fallback-режиме.' })
       setMode('demo')
@@ -59,7 +83,7 @@ export default function RiskIntelligenceObjectCard() {
       const data = await response.json()
       if (data.object) setObject(data.object)
       setMode(data.mode || mode)
-      setMessage('Сохранено')
+      setMessage(data.warning || 'Сохранено')
     } catch {
       setMessage('Сохранено в демо-режиме')
     }
@@ -125,8 +149,26 @@ export default function RiskIntelligenceObjectCard() {
       setReportText(report.report_text || '')
       setReports((current) => [report, ...current])
       setMode(data.mode || mode)
+      setMessage(data.warning || 'Черновик отчета сформирован')
     } catch {
       setReportText('Демо-отчет. API временно недоступен.')
+    }
+  }
+
+  async function copySummary() {
+    const text = [
+      `Объект проверки: ${object?.title || 'Без названия'}`,
+      `Тип объекта: ${label(object?.object_type)}`,
+      `Уровень риска: ${label(object?.risk_level)}`,
+      `Оценка риска: ${label(object?.risk_level)}`,
+      '',
+      object?.summary || 'Краткое резюме не заполнено.'
+    ].join('\n')
+    try {
+      await navigator.clipboard.writeText(text)
+      setMessage('Краткое резюме скопировано')
+    } catch {
+      setMessage('Не удалось скопировать автоматически. Выделите текст вручную.')
     }
   }
 
@@ -142,13 +184,20 @@ export default function RiskIntelligenceObjectCard() {
   return (
     <>
       <Head>
-        <title>{object.title || 'Объект'} - Risk Intelligence</title>
+        <title>{object.title || 'Объект'} - Центр риск-аналитики</title>
         <meta name="robots" content="noindex, nofollow" />
       </Head>
       <main className="min-h-screen bg-[#05070d] text-white">
         <HeimdallNav />
         <section className="mx-auto max-w-6xl px-6 pb-20 pt-28">
-          <Link href="/analyst/risk-intelligence" className="text-sm text-sky-200 hover:text-sky-100">← Назад к объектам</Link>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <Link href="/analyst/risk-intelligence" className="text-sm text-sky-200 hover:text-sky-100">← Назад к объектам</Link>
+            <div className="flex gap-3 text-sm">
+              <span className="text-sky-200">RU</span>
+              <span className="text-white/25">/</span>
+              <Link href={`/analyst/risk-intelligence-en/${id}`} className="text-white/45 hover:text-white">EN</Link>
+            </div>
+          </div>
 
           <div className="mt-6 rounded-3xl border border-white/10 bg-white/[0.04] p-6">
             <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
@@ -157,6 +206,15 @@ export default function RiskIntelligenceObjectCard() {
                 <textarea className={inputClass('mt-4 min-h-28 w-full')} value={object.summary || ''} onChange={(event) => setObject({ ...object, summary: event.target.value })} onBlur={(event) => saveObject({ summary: event.target.value })} placeholder="Краткое описание объекта" />
               </div>
               <div className="grid gap-3 md:w-64">
+                <select className={inputClass()} value={object.object_type || 'candidate'} onChange={(event) => saveObject({ object_type: event.target.value })}>
+                  <option value="candidate">Кандидат</option>
+                  <option value="company">Компания</option>
+                  <option value="supplier">Поставщик</option>
+                  <option value="person">Физическое лицо</option>
+                  <option value="asset">Актив</option>
+                  <option value="incident">Инцидент</option>
+                  <option value="request">Заявка CRM</option>
+                </select>
                 <select className={inputClass()} value={object.status || 'draft'} onChange={(event) => saveObject({ status: event.target.value })}>
                   <option value="draft">Черновик</option>
                   <option value="in_work">В работе</option>
@@ -173,8 +231,31 @@ export default function RiskIntelligenceObjectCard() {
                 </select>
               </div>
             </div>
-            <div className="mt-4 text-sm text-white/50">Режим: {mode === 'demo' ? 'демо / fallback' : mode}. {message}</div>
+
+            <div className="mt-5 flex flex-wrap gap-3">
+              <Link href={`/analyst/risk-intelligence/${id}/client-report`} className="rounded-2xl border border-[#D6A84F]/30 bg-[#D6A84F]/10 px-5 py-3 font-semibold text-[#F7D784]">Открыть клиентский отчет</Link>
+              <button onClick={generateReport} className="rounded-2xl bg-white px-5 py-3 font-semibold text-black">Сформировать отчет</button>
+              <button onClick={copySummary} className="rounded-2xl border border-sky-300/20 bg-sky-300/10 px-5 py-3 font-semibold text-sky-100">Скопировать краткое резюме</button>
+              <button onClick={() => window.print()} className="rounded-2xl border border-white/15 bg-white/10 px-5 py-3 font-semibold text-white/80">Печать</button>
+            </div>
+
+            <div className="mt-4 grid gap-2 text-sm text-white/55 md:grid-cols-2">
+              <div>Режим: <span className="text-sky-200">{mode === 'demo' ? 'демо / fallback' : mode}</span>. {message}</div>
+              <div>{object.source_request_id ? <>Создано из заявки: <span className="text-sky-200">{object.source_request_id}</span></> : 'Источник: ручное создание'}</div>
+            </div>
+            {mode === 'demo' ? <div className="mt-3 rounded-2xl border border-amber-300/20 bg-amber-300/10 p-4 text-sm text-amber-100">Сейчас включен демонстрационный режим. Для постоянного хранения данных выполните SQL-файл в Supabase.</div> : null}
           </div>
+
+          <section className="mt-6 rounded-3xl border border-[#D6A84F]/20 bg-[#D6A84F]/10 p-6">
+            <h2 className="text-2xl font-semibold">Следующие действия аналитика</h2>
+            <ul className="mt-4 grid gap-2 text-white/70 md:grid-cols-2">
+              <li>уточнить источник риска;</li>
+              <li>проверить подтверждающие материалы;</li>
+              <li>запросить дополнительную информацию у клиента;</li>
+              <li>подготовить финальный вывод;</li>
+              <li>перевести объект в статус “на проверке” или “завершено”.</li>
+            </ul>
+          </section>
 
           <div className="mt-6 grid gap-6 lg:grid-cols-2">
             <section className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
@@ -200,6 +281,7 @@ export default function RiskIntelligenceObjectCard() {
                       <div>
                         <div className="font-semibold">{signal.title}</div>
                         <div className="mt-1 text-sm text-white/60">{signal.description}</div>
+                        <div className="mt-2 text-xs text-sky-200/70">Уровень: {label(signal.severity)}{signal.source ? ` · Источник: ${signal.source}` : ''}</div>
                       </div>
                       <button onClick={() => removeSignal(signal.id)} className="text-sm text-red-200">Удалить</button>
                     </div>
@@ -236,10 +318,10 @@ export default function RiskIntelligenceObjectCard() {
           <section className="mt-6 rounded-3xl border border-white/10 bg-white/[0.04] p-6">
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
               <div>
-                <h2 className="text-2xl font-semibold">Шаблонный отчет</h2>
+                <h2 className="text-2xl font-semibold">Черновик отчета</h2>
                 <p className="mt-2 text-white/60">Формирует черновик по объекту, сигналам и связям.</p>
               </div>
-              <button onClick={generateReport} className="rounded-2xl bg-white px-5 py-3 font-semibold text-black">Сформировать отчет</button>
+              <button onClick={generateReport} className="rounded-2xl bg-white px-5 py-3 font-semibold text-black">Обновить черновик</button>
             </div>
             {reportText ? <pre className="mt-5 whitespace-pre-wrap rounded-2xl border border-white/10 bg-black/30 p-5 text-sm text-white/75">{reportText}</pre> : null}
             {reports.length ? <div className="mt-4 text-sm text-white/50">Сохраненных отчетов: {reports.length}</div> : null}
