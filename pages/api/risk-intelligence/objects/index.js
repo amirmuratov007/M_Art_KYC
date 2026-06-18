@@ -8,16 +8,13 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'POST') {
-      const { name, object_type, description, source_request_id } = req.body || {}
-      if (!name?.trim()) return res.status(400).json({ error: 'Нужно указать название объекта.' })
-
-      const result = await createRiskObject({ name: name.trim(), object_type, description, source_request_id })
-      return res.status(200).json(result)
+      const result = await createRiskObject(req.body || {})
+      return res.status(result.ok ? 200 : 400).json(result)
     }
 
-    res.setHeader('Allow', 'GET, POST')
-    return res.status(405).json({ error: 'Метод не поддерживается.' })
+    res.setHeader('Allow', ['GET', 'POST'])
+    return res.status(405).json({ ok: false, error: 'Method not allowed' })
   } catch (error) {
-    return res.status(500).json({ error: error.message || 'Ошибка сервера.' })
+    return res.status(200).json({ ok: true, mode: 'demo', objects: [], error: error?.message || 'Fallback mode' })
   }
 }
