@@ -46,6 +46,32 @@ const priorityOptions = [
 const statusLabels = Object.fromEntries(statusOptions)
 const priorityLabels = Object.fromEntries(priorityOptions)
 
+const serviceOptions = [
+  'Проверка кандидата на чувствительную позицию',
+  'Проверка домашнего персонала',
+  'Проверка контрагента',
+  'Проверка поставщика перед авансом',
+  'Due Diligence',
+  'Информационная безопасность',
+  'Аутсорсинг службы безопасности',
+  'Внутреннее расследование',
+  'Реклама / партнерство',
+  'Другой запрос'
+]
+
+const emptyNewClient = {
+  name: '',
+  company: '',
+  email: '',
+  phone: '',
+  contact: '',
+  service: 'Проверка кандидата на чувствительную позицию',
+  source: 'Ручное добавление / CRM',
+  comment: '',
+  priority: 'high',
+  next_action: 'Связаться с клиентом'
+}
+
 function inputClass(extra = '') {
   return `w-full rounded-2xl border border-white/10 bg-black/25 px-5 py-4 text-white outline-none placeholder:text-white/35 focus:border-sky-300/50 ${extra}`
 }
@@ -129,6 +155,8 @@ export default function AdminCrmPage() {
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
+  const [activeCrmTab, setActiveCrmTab] = useState('list')
+  const [newClient, setNewClient] = useState(emptyNewClient)
 
   useEffect(() => {
     setSecret(window.localStorage.getItem('heimdall_admin_secret') || '')
@@ -336,6 +364,59 @@ export default function AdminCrmPage() {
     await persistLeadMeta(nextEdit, successMessage)
   }
 
+  function updateNewClient(key, value) {
+    setNewClient((current) => ({ ...current, [key]: value }))
+  }
+
+  async function createNewClient(event) {
+    event.preventDefault()
+
+    if (!secret) {
+      setError('Сначала укажи HEIMDALL_ADMIN_SECRET')
+      return
+    }
+
+    const hasContact = [newClient.email, newClient.phone, newClient.contact].some((value) => String(value || '').trim())
+
+    if (!String(newClient.name || '').trim() || !hasContact) {
+      setError('Заполни имя клиента и хотя бы один контакт: email, телефон или Telegram.')
+      return
+    }
+
+    setLoading(true)
+    setError('')
+    setMessage('')
+
+    try {
+      const result = await apiRequest('/api/admin-crm', {
+        method: 'POST',
+        body: JSON.stringify({
+          action: 'create_manual_lead',
+          ...newClient
+        })
+      })
+
+      const createdLead = result.lead
+      if (createdLead) {
+        setLeads((current) => [createdLead, ...current.filter((lead) => {
+          const currentKey = `${lead._crm?.lead_source || source || 'heimdall_leads'}:${getLeadId(lead)}`
+          const createdKey = `${createdLead._crm?.lead_source}:${createdLead._crm?.lead_id}`
+          return currentKey !== createdKey
+        })])
+        selectLead(createdLead)
+      }
+
+      setNewClient(emptyNewClient)
+      setActiveCrmTab('list')
+      setMetaAvailable(true)
+      setMessage('Клиент добавлен в CRM. Карточка создана без ручного Supabase UUID.')
+    } catch (error) {
+      setError(error.message || 'Не удалось добавить клиента')
+    }
+
+    setLoading(false)
+  }
+
   const selectedEmail = (() => {
     const candidates = [selectedLead?.email, selectedLead?.contact, selectedLead?.phone]
     return candidates.map((value) => String(value || '').trim()).find((value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) || ''
@@ -416,28 +497,143 @@ export default function AdminCrmPage() {
               </div>
             </div>
 
-            <form onSubmit={loadLeads} className="rounded-[42px] border border-white/10 bg-white/[0.045] p-7 backdrop-blur-2xl md:p-10">
-              <div className="flex items-center gap-3 text-sm uppercase tracking-[0.24em] text-sky-300/80">
-                <Search className="h-4 w-4" />
-                Поиск
+            <div className="rounded-[42px] border border-white/10 bg-white/[0.045] p-7 backdrop-blur-2xl md:p-10">
+              <div className="grid grid-cols-2 gap-3 rounded-3xl border border-white/10 bg-black/20 p-2">
+                <button
+                  type="button"
+                  onClick={() => setActiveCrmTab('list')}
+                  className={`rounded-2xl px-4 py-3 text-sm font-semibold transition ${activeCrmTab === 'list' ? 'bg-sky-500 text-white' : 'text-white/62 hover:bg-white/10'}`}
+                >
+                  Заявки
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveCrmTab('add')}
+                  className={`rounded-2xl px-4 py-3 text-sm font-semibold transition ${activeCrmTab === 'add' ? 'bg-[#D6A84F] text-black' : 'text-white/62 hover:bg-white/10'}`}
+                >
+                  Добавить нового клиента
+                </button>
               </div>
 
-              <input
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder="Имя, компания, контакт, тема"
-                className={`mt-6 ${inputClass()}`}
-              />
+              {activeCrmTab === 'list' ? (
+                <form onSubmit={loadLeads} className="mt-7">
+                  <div className="flex items-center gap-3 text-sm uppercase tracking-[0.24em] text-sky-300/80">
+                    <Search className="h-4 w-4" />
+                    Поиск
+                  </div>
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-sky-500 px-5 py-4 font-semibold text-white disabled:opacity-60"
-              >
-                <RefreshCw className="h-4 w-4" />
-                {loading ? 'Загрузка...' : 'Загрузить заявки'}
-              </button>
-            </form>
+                  <input
+                    value={query}
+                    onChange={(event) => setQuery(event.target.value)}
+                    placeholder="Имя, компания, контакт, тема"
+                    className={`mt-6 ${inputClass()}`}
+                  />
+
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-sky-500 px-5 py-4 font-semibold text-white disabled:opacity-60"
+                  >
+                    <RefreshCw className="h-4 w-4" />
+                    {loading ? 'Загрузка...' : 'Загрузить заявки'}
+                  </button>
+                </form>
+              ) : (
+                <form onSubmit={createNewClient} className="mt-7">
+                  <div className="flex items-center gap-3 text-sm uppercase tracking-[0.24em] text-[#F7D784]">
+                    <UserRound className="h-4 w-4" />
+                    Новый клиент
+                  </div>
+
+                  <p className="mt-4 text-sm leading-7 text-white/55">
+                    Здесь можно вручную добавить клиента или лид. Supabase UUID искать не нужно. Заполни контакт, услугу и следующий шаг.
+                  </p>
+
+                  <div className="mt-6 grid gap-4 md:grid-cols-2">
+                    <input
+                      value={newClient.name}
+                      onChange={(event) => updateNewClient('name', event.target.value)}
+                      placeholder="Имя клиента *"
+                      className={inputClass()}
+                    />
+                    <input
+                      value={newClient.company}
+                      onChange={(event) => updateNewClient('company', event.target.value)}
+                      placeholder="Компания / агентство"
+                      className={inputClass()}
+                    />
+                    <input
+                      type="email"
+                      value={newClient.email}
+                      onChange={(event) => updateNewClient('email', event.target.value)}
+                      placeholder="Email"
+                      className={inputClass()}
+                    />
+                    <input
+                      value={newClient.phone}
+                      onChange={(event) => updateNewClient('phone', event.target.value)}
+                      placeholder="Телефон"
+                      className={inputClass()}
+                    />
+                  </div>
+
+                  <input
+                    value={newClient.contact}
+                    onChange={(event) => updateNewClient('contact', event.target.value)}
+                    placeholder="Telegram / другой контакт"
+                    className={`mt-4 ${inputClass()}`}
+                  />
+
+                  <div className="mt-4 grid gap-4 md:grid-cols-2">
+                    <select
+                      value={newClient.service}
+                      onChange={(event) => updateNewClient('service', event.target.value)}
+                      className={inputClass()}
+                    >
+                      {serviceOptions.map((item) => <option key={item} value={item}>{item}</option>)}
+                    </select>
+                    <select
+                      value={newClient.priority}
+                      onChange={(event) => updateNewClient('priority', event.target.value)}
+                      className={inputClass()}
+                    >
+                      {priorityOptions.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+                    </select>
+                  </div>
+
+                  <input
+                    value={newClient.source}
+                    onChange={(event) => updateNewClient('source', event.target.value)}
+                    placeholder="Источник: Telegram / HR / Милена / канал"
+                    className={`mt-4 ${inputClass()}`}
+                  />
+
+                  <input
+                    value={newClient.next_action}
+                    onChange={(event) => updateNewClient('next_action', event.target.value)}
+                    placeholder="Следующий шаг"
+                    className={`mt-4 ${inputClass()}`}
+                  />
+
+                  <textarea
+                    rows={5}
+                    value={newClient.comment}
+                    onChange={(event) => updateNewClient('comment', event.target.value)}
+                    placeholder="Комментарий: что обещали, что спросил клиент, что важно не забыть"
+                    className={`mt-4 ${inputClass('resize-y leading-7')}`}
+                  />
+
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#D6A84F] px-5 py-4 font-semibold text-black disabled:opacity-60"
+                  >
+                    <Save className="h-4 w-4" />
+                    {loading ? 'Добавляю...' : 'Добавить клиента в CRM'}
+                  </button>
+                </form>
+              )}
+            </div>
 
             <div className="grid grid-cols-2 gap-3">
               {[
