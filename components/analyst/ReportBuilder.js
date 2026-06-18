@@ -7,7 +7,7 @@ export default function ReportBuilder({ caseId = 'HMD-2026-001' }) {
   const draft = reportDrafts[caseId] || reportDrafts['HMD-2026-001']
   const [sections, setSections] = useState(draft.sections)
   const [checked, setChecked] = useState({})
-  const [status, setStatus] = useState('Draft')
+  const [status, setStatus] = useState('Черновик')
 
   const allChecked = draft.checklist.every((item) => checked[item])
 
@@ -24,7 +24,7 @@ export default function ReportBuilder({ caseId = 'HMD-2026-001' }) {
       <section className="rounded-[34px] border border-[#D6A84F]/20 bg-[#D6A84F]/[0.07] p-7">
         <div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-start">
           <div>
-            <div className="text-sm uppercase tracking-[0.24em] text-[#F7D784]/80">Report Builder</div>
+            <div className="text-sm uppercase tracking-[0.24em] text-[#F7D784]/80">Сборка отчета</div>
             <h2 className="mt-4 text-4xl font-semibold tracking-[-0.05em]">{draft.title}</h2>
             <p className="mt-4 text-white/60">{draft.subject} · {draft.client}</p>
           </div>
@@ -60,7 +60,7 @@ export default function ReportBuilder({ caseId = 'HMD-2026-001' }) {
 
         <aside className="grid h-fit gap-5 xl:sticky xl:top-6">
           <section className="rounded-[30px] border border-white/10 bg-white/[0.045] p-6">
-            <div className="text-sm uppercase tracking-[0.22em] text-sky-300/80">Analyst Checklist</div>
+            <div className="text-sm uppercase tracking-[0.22em] text-sky-300/80">Чек-лист аналитика</div>
 
             <div className="mt-5 grid gap-3">
               {draft.checklist.map((item) => (
@@ -82,32 +82,32 @@ export default function ReportBuilder({ caseId = 'HMD-2026-001' }) {
           </section>
 
           <section className="rounded-[30px] border border-white/10 bg-white/[0.045] p-6">
-            <div className="text-sm uppercase tracking-[0.22em] text-[#F7D784]/80">Actions</div>
+            <div className="text-sm uppercase tracking-[0.22em] text-[#F7D784]/80">Действия</div>
 
             <div className="mt-5 grid gap-3">
-              <button onClick={() => alert('PDF export will be connected in the next stage')} className="inline-flex items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/10 px-5 py-4 font-semibold text-white">
+              <button onClick={() => alert('Экспорт отчета будет подключен на следующем этапе')} className="inline-flex items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/10 px-5 py-4 font-semibold text-white">
                 <Download className="h-4 w-4" />
-                Export PDF
+                Экспортировать отчет
               </button>
 
-              <button disabled={!allChecked} onClick={() => setStatus('Approved')} className="inline-flex items-center justify-center gap-3 rounded-2xl bg-sky-500 px-5 py-4 font-semibold text-white disabled:opacity-45">
+              <button disabled={!allChecked} onClick={() => setStatus('Согласовано')} className="inline-flex items-center justify-center gap-3 rounded-2xl bg-sky-500 px-5 py-4 font-semibold text-white disabled:opacity-45">
                 <CheckCircle2 className="h-4 w-4" />
-                Approve report
+                Согласовать отчет
               </button>
 
-              <button disabled={status !== 'Approved'} onClick={() => setStatus('Client Ready')} className="inline-flex items-center justify-center gap-3 rounded-2xl bg-[#D6A84F] px-5 py-4 font-semibold text-[#050816] disabled:opacity-45">
+              <button disabled={status !== 'Согласовано'} onClick={() => setStatus('Готово для клиента')} className="inline-flex items-center justify-center gap-3 rounded-2xl bg-[#D6A84F] px-5 py-4 font-semibold text-[#050816] disabled:opacity-45">
                 <Send className="h-4 w-4" />
-                Mark Client Ready
+                Отметить готовым для клиента
               </button>
 
               <Link href={`/analyst/ai/${draft.caseId}`} className="rounded-2xl border border-white/10 bg-black/20 px-5 py-4 text-center text-sm font-semibold text-white/75">
-                Back to AI Draft
+                Назад к черновику ИИ
               </Link>
             </div>
 
             {!allChecked && (
               <p className="mt-4 text-xs leading-6 text-white/45">
-                Complete the checklist before approving the report.
+                Заполните чек-лист перед согласованием отчета.
               </p>
             )}
           </section>

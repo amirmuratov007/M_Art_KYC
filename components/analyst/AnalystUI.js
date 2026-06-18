@@ -7,7 +7,7 @@ export function AnalystLayout({ title, children }) {
   return (
     <>
       <Head>
-        <title>{title} | HEIMDALL Analyst Console</title>
+        <title>{title} | HEIMDALL - консоль аналитика</title>
         <meta name="robots" content="noindex,nofollow" />
       </Head>
 
@@ -20,23 +20,23 @@ export function AnalystLayout({ title, children }) {
           <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5">
             <HeimdallLogo />
             <div className="hidden items-center gap-3 md:flex">
-              <Link href="/analyst" className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm">Dashboard</Link>
-              <Link href="/analyst/cases" className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm">Cases</Link>
-              <Link href="/analyst/risk-intelligence" className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm">Risk Intelligence</Link>
-              <Link href="/analyst/new-case" className="rounded-full bg-sky-500 px-4 py-2 text-sm font-semibold">New Case</Link>
+              <Link href="/analyst" className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm">Панель</Link>
+              <Link href="/analyst/cases" className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm">Проверки</Link>
+              <Link href="/analyst/risk-intelligence" className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm">Центр риск-аналитики</Link>
+              <Link href="/analyst/new-case" className="rounded-full bg-sky-500 px-4 py-2 text-sm font-semibold">Новая проверка</Link>
             </div>
           </div>
         </header>
 
         <div className="relative z-10 mx-auto grid max-w-7xl gap-6 px-5 py-8 lg:grid-cols-[260px_1fr]">
           <aside className="rounded-[30px] border border-white/10 bg-white/[0.045] p-4 backdrop-blur-2xl lg:sticky lg:top-6 lg:h-fit">
-            <div className="mb-4 px-3 text-xs uppercase tracking-[0.22em] text-[#F7D784]/80">Analyst Console</div>
+            <div className="mb-4 px-3 text-xs uppercase tracking-[0.22em] text-[#F7D784]/80">Консоль аналитика</div>
             <nav className="grid gap-2">
               {[
-                ['Dashboard', '/analyst', LayoutDashboard],
-                ['Cases', '/analyst/cases', FolderKanban],
-                ['Risk Intelligence', '/analyst/risk-intelligence', Network],
-                ['New Case', '/analyst/new-case', PlusCircle]
+                ['Панель', '/analyst', LayoutDashboard],
+                ['Проверки', '/analyst/cases', FolderKanban],
+                ['Центр риск-аналитики', '/analyst/risk-intelligence', Network],
+                ['Новая проверка', '/analyst/new-case', PlusCircle]
               ].map(([name, href, Icon]) => (
                 <Link key={href} href={href} className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm text-white/70 transition hover:bg-white/7 hover:text-[#F7D784]">
                   <Icon className="h-4 w-4" />
@@ -54,11 +54,11 @@ export function AnalystLayout({ title, children }) {
 }
 
 export function StatusBadge({ status }) {
-  const cls = status === 'Analyst Review'
+  const cls = status === 'Проверка аналитиком'
     ? 'border-[#D6A84F]/30 bg-[#D6A84F]/10 text-[#F7D784]'
-    : status === 'Completed' || status === 'Approved'
+    : status === 'Исполнено' || status === 'Согласовано' || status === 'Готово для клиента'
       ? 'border-emerald-300/25 bg-emerald-300/10 text-emerald-200'
-      : status === 'In Progress'
+      : status === 'В работе'
         ? 'border-sky-300/20 bg-sky-300/10 text-sky-200'
         : 'border-white/10 bg-white/5 text-white/70'
 
@@ -66,7 +66,7 @@ export function StatusBadge({ status }) {
 }
 
 export function RiskBadge({ score }) {
-  const level = score >= 80 ? 'High' : score >= 55 ? 'Medium' : 'Low'
+  const level = score >= 80 ? 'Высокий' : score >= 55 ? 'Средний' : 'Низкий'
   const cls = score >= 80
     ? 'border-red-300/25 bg-red-300/10 text-red-200'
     : score >= 55
@@ -88,12 +88,12 @@ export function CaseCard({ item }) {
       <p className="mt-3 text-sm text-sky-200/70">{item.type}</p>
       <p className="mt-4 text-sm leading-7 text-white/58">{item.summary}</p>
       <div className="mt-6 grid gap-2 text-sm text-white/50">
-        <div>Client: <span className="text-white/75">{item.client}</span></div>
-        <div>Analyst: <span className="text-white/75">{item.analyst}</span></div>
-        <div>Deadline: <span className="text-white/75">{item.deadline}</span></div>
+        <div>Клиент: <span className="text-white/75">{item.client}</span></div>
+        <div>Аналитик: <span className="text-white/75">{item.analyst}</span></div>
+        <div>Срок: <span className="text-white/75">{item.deadline}</span></div>
       </div>
       <div className="mt-7 inline-flex items-center gap-2 text-sm font-semibold text-sky-200">
-        Open case
+        Открыть проверку
         <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
       </div>
     </Link>
@@ -109,10 +109,10 @@ export function DocumentList({ documents = [] }) {
             <FileText className="h-5 w-5 text-sky-300" />
             <div>
               <div className="font-medium text-white/85">{name}</div>
-              <div className="mt-1 text-xs text-white/40">Mock document · upload storage pending</div>
+              <div className="mt-1 text-xs text-white/40">Демонстрационный документ - хранилище будет подключено отдельно</div>
             </div>
           </div>
-          <button className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/70">Open</button>
+          <button className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/70">Открыть</button>
         </div>
       ))}
     </div>
@@ -123,9 +123,9 @@ export function UploadBox() {
   return (
     <div className="rounded-[30px] border border-dashed border-sky-300/25 bg-sky-300/5 p-8 text-center">
       <UploadCloud className="mx-auto h-9 w-9 text-sky-300" />
-      <div className="mt-4 text-xl font-semibold">Upload documents</div>
-      <p className="mx-auto mt-3 max-w-xl text-sm leading-7 text-white/55">PDF, Excel, Word, TXT, screenshots and archives. Upload is mock in this MVP.</p>
-      <button onClick={() => alert('File upload will be connected to storage in the next stage')} className="mt-5 rounded-2xl border border-white/10 bg-white/10 px-5 py-3 text-sm font-semibold text-white">Select files</button>
+      <div className="mt-4 text-xl font-semibold">Загрузить документы</div>
+      <p className="mx-auto mt-3 max-w-xl text-sm leading-7 text-white/55">Документы, таблицы, текстовые файлы, скриншоты и архивы. На этом этапе загрузка работает как демонстрационный блок.</p>
+      <button onClick={() => alert('Загрузка файлов будет подключена к хранилищу на следующем этапе')} className="mt-5 rounded-2xl border border-white/10 bg-white/10 px-5 py-3 text-sm font-semibold text-white">Выбрать файлы</button>
     </div>
   )
 }
