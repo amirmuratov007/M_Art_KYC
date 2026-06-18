@@ -9,22 +9,22 @@ export default function AIDraftPage() {
   const id = router.query.id || 'HMD-2026-001'
 
   return (
-    <AnalystLayout title="AI Draft">
+    <AnalystLayout title="Черновик ИИ-отчета">
       <div className="mb-8 flex flex-col justify-between gap-5 lg:flex-row lg:items-end">
         <div>
           <Link href={`/analyst/cases/${id}`} className="inline-flex items-center gap-2 text-sm font-semibold text-sky-200">
             <ArrowLeft className="h-4 w-4" />
-            Back to case
+            Назад к проверке
           </Link>
-          <h1 className="mt-5 text-5xl font-semibold tracking-[-0.06em] md:text-7xl">AI Report Draft</h1>
+          <h1 className="mt-5 text-5xl font-semibold tracking-[-0.06em] md:text-7xl">Черновик ИИ-отчета</h1>
           <p className="mt-5 max-w-3xl text-lg leading-8 text-white/60">
-            Review the structured AI draft, then move it to Report Builder for analyst approval.
+            Проверьте структурированный черновик, затем перенесите его в сборку отчета для согласования аналитиком.
           </p>
         </div>
 
         <Link href={`/analyst/report/${id}`} className="inline-flex items-center justify-center gap-3 rounded-2xl bg-[#D6A84F] px-6 py-4 font-semibold text-[#050816]">
           <FileText className="h-4 w-4" />
-          Open Report Builder
+          Открыть сборку отчета
         </Link>
       </div>
 
