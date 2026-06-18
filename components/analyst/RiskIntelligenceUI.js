@@ -34,7 +34,7 @@ export function RiskStatusBadge({ status }) {
 
 export function RiskObjectCard({ item }) {
   return (
-    <Link href={`/analyst/risk-intelligence/${item.id}`} className="group block rounded-[32px] border border-white/10 bg-white/[0.045] p-6 backdrop-blur-2xl transition hover:-translate-y-1 hover:border-sky-300/30">
+    <Link href={`/analyst/risk-intelligence/object?id=${encodeURIComponent(item.id)}`} className="group block rounded-[32px] border border-white/10 bg-white/[0.045] p-6 backdrop-blur-2xl transition hover:-translate-y-1 hover:border-sky-300/30">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <RiskStatusBadge status={item.status} />
         <RiskLevelBadge level={item.risk_level} score={item.risk_score} />
