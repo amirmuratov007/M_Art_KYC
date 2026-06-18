@@ -1,71 +1,71 @@
 export const aiDrafts = {
   'HMD-2026-001': {
-    subject: 'Northbridge Supply LLC',
-    reportType: 'Counterparty Intelligence',
+    subject: 'Поставщик оборудования',
+    reportType: 'Проверка контрагента',
     riskScore: 82,
-    riskLevel: 'High',
+    riskLevel: 'Высокий',
     executiveSummary: [
-      'Northbridge Supply LLC demonstrates elevated operational and compliance risk.',
-      'Key concerns include undisclosed intermediaries, litigation and indirect sanctions exposure.',
-      'HEIMDALL recommends enhanced due diligence before long-term onboarding.'
+      'По поставщику выявлен повышенный операционный и комплаенс-риск.',
+      'Ключевые вопросы связаны с нераскрытыми посредниками, судебной нагрузкой и косвенным санкционным контуром.',
+      'HEIMDALL рекомендует расширенную проверку до долгосрочного сотрудничества.'
     ],
     entities: [
-      { type: 'Company', name: 'Northbridge Supply LLC', confidence: 0.96 },
-      { type: 'Company', name: 'Baltic Freight Partners', confidence: 0.81 }
+      { type: 'Компания', name: 'Поставщик оборудования', confidence: 0.96 },
+      { type: 'Компания', name: 'Логистический партнер', confidence: 0.81 }
     ],
     findings: [
       {
-        severity: 'High',
-        category: 'Supply chain',
-        title: 'Undisclosed intermediary structure',
-        description: 'The declared supplier chain does not fully match the logistics and invoice trail.',
-        source: 'corporate_registry_extract.pdf',
-        recommendation: 'Request full supplier chain disclosure.'
+        severity: 'Высокий',
+        category: 'Цепочка поставки',
+        title: 'Нераскрытая структура посредников',
+        description: 'Заявленная цепочка поставки не полностью совпадает с логистическим и платежным маршрутом.',
+        source: 'Выписка_из_реестра.pdf',
+        recommendation: 'Запросить полное раскрытие цепочки поставки.'
       },
       {
-        severity: 'Medium',
-        category: 'Sanctions',
-        title: 'Possible indirect exposure',
-        description: 'A logistics partner appears connected to a higher-risk trade network.',
-        source: 'sanctions_screening_export.xlsx',
-        recommendation: 'Perform enhanced sanctions review.'
+        severity: 'Средний',
+        category: 'Санкционный контур',
+        title: 'Возможная косвенная связанность',
+        description: 'Логистический партнер требует дополнительной проверки из-за связей с более рискованной торговой сетью.',
+        source: 'Санкционная_сводка.xlsx',
+        recommendation: 'Провести расширенную санкционную проверку.'
       }
     ],
     timeline: [
-      ['2019', 'Company appears in commercial supply chain records'],
-      ['2023', 'Arbitration disputes increase'],
-      ['2026', 'Client onboarding request submitted']
+      ['2019', 'Компания появляется в коммерческих цепочках поставки'],
+      ['2023', 'Увеличивается количество арбитражных споров'],
+      ['2026', 'Поступила заявка клиента на проверку']
     ],
-    finalRecommendation: 'Proceed only after enhanced due diligence and protective contract controls.'
+    finalRecommendation: 'Продолжать сотрудничество только после расширенной проверки и защитных условий в договоре.'
   },
   'HMD-2026-002': {
-    subject: 'Ilya Sorokin',
-    reportType: 'Candidate Screening',
+    subject: 'Кандидат на закупочную роль',
+    reportType: 'Проверка кандидата',
     riskScore: 74,
-    riskLevel: 'Medium',
+    riskLevel: 'Средний',
     executiveSummary: [
-      'The candidate is professionally relevant but contains risk indicators.',
-      'Key concerns include possible conflict of interest and financial pressure.',
-      'HEIMDALL recommends additional HR review before sensitive access.'
+      'Кандидат профессионально релевантен, но профиль содержит признаки риска.',
+      'Ключевые вопросы связаны с возможным конфликтом интересов и финансовым давлением.',
+      'HEIMDALL рекомендует дополнительную проверку до предоставления чувствительного доступа.'
     ],
     entities: [
-      { type: 'Person', name: 'Ilya Sorokin', confidence: 0.98 },
-      { type: 'Company', name: 'Vector Processing JSC', confidence: 0.84 }
+      { type: 'Человек', name: 'Кандидат', confidence: 0.98 },
+      { type: 'Компания', name: 'Поставщик', confidence: 0.84 }
     ],
     findings: [
       {
-        severity: 'High',
-        category: 'Conflict of interest',
-        title: 'Undisclosed supplier connection',
-        description: 'The candidate appears indirectly connected to a supplier-side manager.',
-        source: 'background_screening_summary.docx',
-        recommendation: 'Request written disclosure.'
+        severity: 'Высокий',
+        category: 'Конфликт интересов',
+        title: 'Нераскрытая связь с поставщиком',
+        description: 'Кандидат может быть косвенно связан с менеджером на стороне поставщика.',
+        source: 'Сводка_проверки.docx',
+        recommendation: 'Запросить письменное раскрытие возможных связей.'
       }
     ],
     timeline: [
-      ['2018', 'Procurement career track begins'],
-      ['2026', 'Candidate submitted for sensitive role']
+      ['2018', 'Начало карьеры в закупках'],
+      ['2026', 'Кандидат представлен на чувствительную роль']
     ],
-    finalRecommendation: 'Do not approve for sensitive procurement access before additional review.'
+    finalRecommendation: 'Не предоставлять доступ к закупочным процессам до дополнительной проверки.'
   }
 }

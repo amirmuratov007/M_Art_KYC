@@ -1,34 +1,34 @@
 export const reportDrafts = {
   'HMD-2026-001': {
     caseId: 'HMD-2026-001',
-    title: 'Counterparty Intelligence Report',
-    subject: 'Northbridge Supply LLC',
-    client: 'Meridian Capital Group',
-    status: 'Draft',
+    title: 'Отчет по проверке контрагента',
+    subject: 'Поставщик оборудования',
+    client: 'Меридиан Капитал',
+    status: 'Черновик',
     riskScore: 82,
-    riskLevel: 'High',
+    riskLevel: 'Высокий',
     sections: [
-      ['Executive Summary', 'Northbridge Supply LLC demonstrates elevated operational and compliance risk before long-term supplier onboarding. The strongest concerns are undisclosed intermediaries in the supply chain, recurring arbitration disputes and indirect sanctions exposure.'],
-      ['Subject Profile', 'The company is presented as a supplier of industrial equipment with regional and cross-border logistics activity. The provided documents do not fully explain the actual supply chain and payment route.'],
-      ['Key Risks', 'Key risks include undisclosed intermediaries, repeated delivery-related disputes, possible sanctions exposure through logistics partners and weak transparency of the supplier chain.'],
-      ['HEIMDALL Recommendation', 'Proceed only after enhanced due diligence, full chain disclosure, sanctions review of all logistics participants and protective contractual controls.']
+      ['Краткое резюме', 'По поставщику выявлен повышенный операционный и комплаенс-риск до долгосрочного сотрудничества. Основные вопросы связаны с посредниками в цепочке поставки, повторяющимися судебными спорами и косвенным санкционным контуром.'],
+      ['Профиль объекта', 'Компания заявлена как поставщик промышленного оборудования с региональной и трансграничной логистикой. Предоставленные документы не полностью объясняют фактическую цепочку поставки и платежный маршрут.'],
+      ['Ключевые риски', 'Ключевые риски включают нераскрытых посредников, повторяющиеся споры по поставкам, возможную санкционную связанность через логистических партнеров и недостаточную прозрачность цепочки.'],
+      ['Рекомендация HEIMDALL', 'Продолжать процесс только после расширенной проверки, раскрытия полной цепочки, проверки логистических участников и защитных условий в договоре.']
     ],
-    checklist: ['Source references checked', 'No unsupported claims', 'Risk score reviewed', 'Recommendation approved', 'Client-ready language checked']
+    checklist: ['Источники проверены', 'Неподтвержденных утверждений нет', 'Оценка риска пересмотрена', 'Рекомендация согласована', 'Формулировки готовы для клиента']
   },
   'HMD-2026-002': {
     caseId: 'HMD-2026-002',
-    title: 'Candidate Screening Report',
-    subject: 'Ilya Sorokin',
-    client: 'Meridian Capital Group',
-    status: 'Draft',
+    title: 'Отчет по проверке кандидата',
+    subject: 'Кандидат на закупочную роль',
+    client: 'Меридиан Капитал',
+    status: 'Черновик',
     riskScore: 74,
-    riskLevel: 'Medium',
+    riskLevel: 'Средний',
     sections: [
-      ['Executive Summary', 'The candidate is professionally relevant for a procurement role, but the profile contains risk indicators requiring clarification before access to sensitive procurement processes.'],
-      ['Candidate Profile', 'The candidate is linked to a procurement background and has experience relevant to the proposed role. Several biography and relationship signals require additional review.'],
-      ['Key Risks', 'Key concerns include a possible conflict of interest with a supplier-side contact, financial pressure indicators and inconsistencies in the career timeline.'],
-      ['HEIMDALL Recommendation', 'Do not approve for sensitive procurement access before additional interview, written disclosure of supplier relationships and HR review.']
+      ['Краткое резюме', 'Кандидат профессионально релевантен для закупочной роли, но профиль содержит признаки риска, которые требуют уточнения до предоставления чувствительного доступа.'],
+      ['Профиль кандидата', 'Кандидат имеет опыт, релевантный предлагаемой роли. Несколько биографических и связевых признаков требуют дополнительной проверки.'],
+      ['Ключевые риски', 'Ключевые вопросы включают возможный конфликт интересов с контактом на стороне поставщика, признаки финансового давления и несостыковки в карьерной хронологии.'],
+      ['Рекомендация HEIMDALL', 'Не предоставлять доступ к чувствительным закупочным процессам до дополнительного интервью, письменного раскрытия связей и проверки со стороны HR.']
     ],
-    checklist: ['Identity verified', 'Conflict of interest reviewed', 'Financial pressure checked', 'Recommendation approved', 'Client-ready language checked']
+    checklist: ['Личность проверена', 'Конфликт интересов проверен', 'Финансовое давление оценено', 'Рекомендация согласована', 'Формулировки готовы для клиента']
   }
 }
