@@ -254,10 +254,7 @@ export default function RiskIntelligenceObjectCardEn() {
                 <h2 className="text-2xl font-semibold">Draft report</h2>
                 <p className="mt-2 text-white/60">Generates a draft based on the object, risk signals and connections.</p>
               </div>
-              <div className="flex flex-wrap gap-3">
-                <Link href={`/analyst/risk-intelligence/${id}/client-report-en`} className="rounded-2xl border border-[#D6A84F]/30 bg-[#D6A84F]/10 px-5 py-3 font-semibold text-[#F7D784]">Open client report</Link>
-                <button onClick={generateReport} className="rounded-2xl bg-white px-5 py-3 font-semibold text-black">Generate report</button>
-              </div>
+              <button onClick={generateReport} className="rounded-2xl bg-white px-5 py-3 font-semibold text-black">Generate report</button>
             </div>
             {reportText ? <pre className="mt-5 whitespace-pre-wrap rounded-2xl border border-white/10 bg-black/30 p-5 text-sm text-white/75">{reportText}</pre> : null}
             {reports.length ? <div className="mt-4 text-sm text-white/50">Saved reports: {reports.length}</div> : null}
