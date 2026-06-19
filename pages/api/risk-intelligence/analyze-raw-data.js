@@ -1,4 +1,5 @@
 export const config = {
+  maxDuration: 60,
   api: {
     bodyParser: {
       sizeLimit: '50mb'
@@ -7,9 +8,9 @@ export const config = {
   }
 }
 
-const DEFAULT_MODEL = process.env.OPENAI_MODEL || 'gpt-4.1'
+const DEFAULT_MODEL = process.env.OPENAI_MODEL || 'gpt-4.1-mini'
 const OPENAI_URL = 'https://api.openai.com/v1/chat/completions'
-const CHUNK_SIZE = 70000
+const CHUNK_SIZE = 45000
 
 function safeText(value) {
   return typeof value === 'string' ? value : value == null ? '' : String(value)
@@ -108,7 +109,7 @@ async function callOpenAI(messages, maxTokens = 10000) {
   if (!key) throw new Error('OPENAI_API_KEY не задан в Vercel')
 
   const controller = new AbortController()
-  const timeout = setTimeout(() => controller.abort(), 110000)
+  const timeout = setTimeout(() => controller.abort(), 55000)
   try {
     const response = await fetch(OPENAI_URL, {
       method: 'POST',
@@ -141,7 +142,7 @@ async function analyzeChunk({ object, text, index, total }) {
   const content = await callOpenAI([
     { role: 'system', content: systemPrompt() },
     { role: 'user', content: `Объект проверки: ${JSON.stringify(object || {})}\n\nЭто часть ${index + 1} из ${total}. Разбери только этот фрагмент. Не делай финальный отчет по всему делу, только структурированный разбор фрагмента.\n\nСырой массив данных:\n${text}` }
-  ], 8000)
+  ], 5000)
   return parseJson(content)
 }
 
@@ -149,7 +150,7 @@ async function finalMerge({ object, partials, rawLength }) {
   const content = await callOpenAI([
     { role: 'system', content: systemPrompt() },
     { role: 'user', content: `Объект проверки: ${JSON.stringify(object || {})}\n\nНиже частичные разборы большого массива данных. Объедини их в единый аналитический результат. Убери дубли. Не добавляй факты, которых нет в частичных разборах. Сделай итоговый riskAssessment и клиентский отчет.\n\nОбъем исходного массива: ${rawLength} знаков.\n\nЧастичные разборы:\n${JSON.stringify(partials).slice(0, 900000)}` }
-  ], 12000)
+  ], 7000)
   return parseJson(content)
 }
 
