@@ -265,6 +265,62 @@ function buildReport({ objectName, score, level, risks, connections, contradicti
   ].join('\n')
 }
 
+
+function cleanReportText(value) {
+  const text = typeof value === 'string' ? value.trim() : ''
+  if (!text) return ''
+  if (text.startsWith('{') || text.startsWith('[') || text.includes('"summary"') || text.includes('"riskSignals"')) return ''
+  return text
+}
+
+function shortText(value, limit = 900) {
+  const text = typeof value === 'string' ? value : value == null ? '' : String(value)
+  return text.replace(/\s+/g, ' ').trim().slice(0, limit)
+}
+
+function buildClientReadyReport({ objectName, score, level, risks = [], facts = [], connections = [], contradictions = [], questions = [], recommendations = [], summary = '' }) {
+  const strongFacts = facts.slice(0, 8).map((fact, index) => `${index + 1}. ${shortText(fact.description || fact.title || fact)}`)
+  const materialRisks = risks
+    .filter((risk) => !['documents'].includes(risk.category) || ['high', 'critical'].includes(risk.severity))
+    .slice(0, 8)
+    .map((risk, index) => `${index + 1}. ${risk.title || 'Сигнал'} - ${shortText(risk.description || '')} Уровень: ${riskLabel(risk.severity === 'critical' ? 'critical' : risk.severity === 'high' ? 'high' : risk.severity === 'medium' ? 'medium' : 'low')}, достоверность: ${risk.confidence || 'medium'}.`)
+  const topConnections = connections.slice(0, 6).map((connection, index) => `${index + 1}. ${connection.target_name || 'Связь'} - ${shortText(connection.description || '')}`)
+  const unclear = contradictions.slice(0, 6).map((item, index) => `${index + 1}. ${shortText(item)}`)
+  const nextQuestions = (questions.length ? questions : recommendations).slice(0, 7).map((item, index) => `${index + 1}. ${shortText(item)}`)
+
+  return [
+    'Предварительный аналитический отчет HEIMDALL',
+    '',
+    `Объект проверки: ${objectName || 'Не указан'}`,
+    `Дата формирования: ${nowDate()}`,
+    `Предварительный уровень риска: ${riskLabel(level)} (${score}/100)`,
+    '',
+    '1. Краткий вывод',
+    shortText(summary, 1400) || 'По предоставленному массиву выполнена первичная риск-аналитическая обработка. Выводы требуют проверки аналитиком.',
+    '',
+    '2. Идентификация объекта',
+    'В массиве присутствуют идентификационные сведения по объекту проверки и связанные источники. Детальные персональные данные, документы, адреса и медицинские сведения не выводятся в клиентский отчет и должны использоваться только при наличии законного основания.',
+    '',
+    '3. Подтвержденные факты',
+    ...(strongFacts.length ? strongFacts : ['Существенные подтвержденные факты не выделены или требуют ручной проверки.']),
+    '',
+    '4. Значимые сигналы риска',
+    ...(materialRisks.length ? materialRisks : ['Значимые деловые, юридические, финансовые или репутационные сигналы риска по предоставленному массиву не подтверждены.']),
+    '',
+    '5. Связи и контекст',
+    ...(topConnections.length ? topConnections : ['Существенные деловые связи не выделены или требуют подтверждения.']),
+    '',
+    '6. Противоречия и зоны неопределенности',
+    ...(unclear.length ? unclear : ['Критичных противоречий по предоставленному массиву не выделено. Отдельные совпадения требуют подтверждения по дополнительным идентификаторам.']),
+    '',
+    '7. Что проверить дополнительно',
+    ...(nextQuestions.length ? nextQuestions : ['Проверить источники ключевых совпадений, актуальность данных и отсутствие однофамильцев.']),
+    '',
+    '8. Предварительное заключение',
+    'Отчет является предварительным аналитическим документом. Он не содержит утверждений о виновности, нарушении закона или недобросовестности объекта проверки. Финальный вывод должен быть утвержден аналитиком после проверки источников и релевантности выявленных признаков.'
+  ].join('\n')
+}
+
 function Badge({ children, tone = 'default' }) {
   const cls = tone === 'red' ? 'border-red-300/25 bg-red-300/10 text-red-100' : tone === 'gold' ? 'border-[#D6A84F]/30 bg-[#D6A84F]/10 text-[#F7D784]' : tone === 'sky' ? 'border-sky-300/25 bg-sky-300/10 text-sky-100' : 'border-white/10 bg-white/5 text-white/70'
   return <span className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${cls}`}>{children}</span>
@@ -390,7 +446,7 @@ export default function RiskIntelligenceWorkspace({ initialObjectId = null }) {
     const score = Math.max(0, Math.min(100, Number(safe?.riskAssessment?.score ?? safe.score ?? calculateScore(risks))))
     const level = safe?.riskAssessment?.level || safe.level || (score >= 75 ? 'critical' : score >= 50 ? 'high' : score >= 25 ? 'medium' : 'low')
     const summary = safe.summary || safe.executiveSummary || `ИИ разобрал массив данных по объекту “${active?.name || 'без названия'}”. Проверьте выводы аналитиком.`
-    const report = safe.clientReportDraft || safe.report || buildReport({ objectName: active?.name, score, level, risks, connections, contradictions, questions, summary })
+    const report = cleanReportText(safe.clientReportDraft) || cleanReportText(safe.report) || buildClientReadyReport({ objectName: active?.name, score, level, risks, facts, connections, contradictions, questions, recommendations, summary })
 
     return {
       entities: safe.entities || {},
@@ -442,7 +498,7 @@ export default function RiskIntelligenceWorkspace({ initialObjectId = null }) {
     const timeout = setTimeout(() => controller.abort(), 120000)
 
     try {
-      setAiStatus('2/4 Запрос ушел на сервер HEIMDALL. Жду ответ OpenAI...')
+      setAiStatus('2/4 Запрос ушел на сервер HEIMDALL. жду ответ Claude / DeepSeek...')
       const response = await fetch('/api/risk-intelligence/analyze-raw-data', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -474,7 +530,7 @@ export default function RiskIntelligenceWorkspace({ initialObjectId = null }) {
         status: 'review'
       })
       setMessage('ИИ-разбор выполнен. Проверьте факты, риски, связи и отчет.')
-      setAiStatus(`4/4 Готово. Модель: ${payload.model || 'OpenAI'}. Частей: ${payload.chunks || 1}. Результат записан в отчет.`)
+      setAiStatus(`4/4 Готово. Модель: ${payload.model || payload.provider || 'Claude / DeepSeek'}. Частей: ${payload.chunks || 1}. Результат записан в отчет.`)
     } catch (error) {
       const text = error?.name === 'AbortError'
         ? 'Превышено время ожидания. Vercel или OpenAI не успели ответить. Попробуйте сократить массив или повторить запрос.'
