@@ -69,24 +69,19 @@ export default function App({ Component, pageProps }) {
         </Script>
       )}
 
-      <Script id="heimdall-disable-service-worker" strategy="afterInteractive">
+      <Script id="heimdall-service-worker-cleanup" strategy="afterInteractive">
         {`
-          // HEIMDALL: service worker disabled because it cached old internal routes
-          // and could open / instead of /analyst/risk-intelligence/* pages.
           if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.getRegistrations()
-              .then(function (registrations) {
-                registrations.forEach(function (registration) { registration.unregister(); });
-              })
-              .catch(function () {});
+            navigator.serviceWorker.getRegistrations().then(function (registrations) {
+              registrations.forEach(function (registration) { registration.unregister(); });
+            }).catch(function () {});
           }
-
           if ('caches' in window) {
-            caches.keys()
-              .then(function (keys) {
-                return Promise.all(keys.filter(function (key) { return key.indexOf('heimdall') !== -1; }).map(function (key) { return caches.delete(key); }));
-              })
-              .catch(function () {});
+            caches.keys().then(function (keys) {
+              keys.forEach(function (key) {
+                if (key.indexOf('heimdall') === 0) caches.delete(key);
+              });
+            }).catch(function () {});
           }
         `}
       </Script>
