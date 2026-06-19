@@ -1,60 +1,43 @@
 import { NextResponse } from 'next/server'
+import { COOKIE_NAME, getAuthSecret, verifyAnalystSession } from './lib/analystSession'
 
-function isLocalOrInternalHost(hostname) {
-  return (
-    !hostname ||
-    hostname === 'localhost' ||
-    hostname === '127.0.0.1' ||
-    hostname === '0.0.0.0' ||
-    hostname.endsWith('.local') ||
-    hostname.startsWith('localhost:') ||
-    hostname.startsWith('127.0.0.1:') ||
-    hostname.startsWith('0.0.0.0:')
-  )
+const PUBLIC_ANALYST_PATHS = ['/analyst/login', '/analyst/logout']
+
+function isPublicAnalystPath(pathname) {
+  return PUBLIC_ANALYST_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`))
 }
 
-function getHostWithoutPort(value = '') {
-  return value.split(',')[0].trim().replace(/^https?:\/\//, '').split('/')[0].split(':')[0]
+function isAnalystApi(pathname) {
+  return pathname.startsWith('/api/risk-intelligence')
 }
 
-export function middleware(request) {
-  const proto = request.headers.get('x-forwarded-proto')
-  const forwardedHost = request.headers.get('x-forwarded-host')
-  const host = request.headers.get('host') || ''
-  const effectiveHost = getHostWithoutPort(forwardedHost || host)
-  const rawHost = getHostWithoutPort(host)
-  const url = request.nextUrl.clone()
+export async function middleware(request) {
+  const { pathname, search } = request.nextUrl
 
-  const isProduction = process.env.NODE_ENV === 'production'
-  const isPublicRequest = !isLocalOrInternalHost(effectiveHost)
-  const isOnlyInternalHost = isLocalOrInternalHost(rawHost) && !forwardedHost
-
-  // Beget/Passenger can pass requests to Next.js as localhost:3000.
-  // Never redirect to https://localhost:3000. Only canonicalize real public hosts.
-  if (isProduction && isPublicRequest && !isOnlyInternalHost) {
-    if (proto === 'http') {
-      url.protocol = 'https:'
-      url.host = forwardedHost || host
-      return NextResponse.redirect(url, 308)
-    }
-
-    if (effectiveHost === 'heimdall-group.ru') {
-      url.protocol = 'https:'
-      url.host = 'www.heimdall-group.ru'
-      return NextResponse.redirect(url, 308)
-    }
+  if (isPublicAnalystPath(pathname)) {
+    return NextResponse.next()
   }
 
-  const response = NextResponse.next()
+  const secret = getAuthSecret(process.env)
+  const token = request.cookies.get(COOKIE_NAME)?.value || ''
+  const session = await verifyAnalystSession(token, secret)
 
-  response.headers.set('X-HEIMDALL-Security', 'enabled')
-  response.headers.set('X-DNS-Prefetch-Control', 'on')
+  if (session) {
+    const response = NextResponse.next()
+    response.headers.set('x-robots-tag', 'noindex, nofollow, noarchive')
+    return response
+  }
 
-  return response
+  if (isAnalystApi(pathname)) {
+    return NextResponse.json({ ok: false, error: 'Требуется вход в аналитическую зону HEIMDALL.' }, { status: 401 })
+  }
+
+  const loginUrl = request.nextUrl.clone()
+  loginUrl.pathname = '/analyst/login'
+  loginUrl.searchParams.set('next', `${pathname}${search || ''}`)
+  return NextResponse.redirect(loginUrl)
 }
 
 export const config = {
-  matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|favicon-16x16.png|favicon-32x32.png|apple-touch-icon.png|android-chrome-192x192.png|android-chrome-512x512.png).*)'
-  ]
+  matcher: ['/analyst/:path*', '/api/risk-intelligence/:path*'],
 }
