@@ -420,7 +420,7 @@ export default function RiskIntelligenceWorkspace({ initialObjectId = null }) {
       summary,
       report,
       created_at: nowDate(),
-      provider: safe.provider || 'openai'
+      provider: safe.provider || 'ai'
     }
   }
 
@@ -569,7 +569,7 @@ export default function RiskIntelligenceWorkspace({ initialObjectId = null }) {
               <div className="rounded-[32px] border border-sky-300/15 bg-sky-300/[0.045] p-6">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div><div className="text-sm uppercase tracking-[0.22em] text-sky-300/80">Сырой массив данных</div><p className="mt-2 text-sm text-white/55">Вставляйте любые объемы текста. Искусственного ограничения поля нет. Для очень больших массивов браузеру может потребоваться больше времени.</p></div>
-                  <div className="flex flex-wrap gap-3"><button onClick={saveRaw} className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm">Сохранить массив</button><button onClick={runAiAnalysis} disabled={aiLoading} className="rounded-full bg-[#D6A84F] px-5 py-2 text-sm font-semibold text-[#050816] disabled:cursor-not-allowed disabled:opacity-50">{aiLoading ? 'ИИ анализирует...' : 'Разобрать через ИИ'}</button><button onClick={runAnalysis} disabled={aiLoading} className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/70 disabled:opacity-50">Локальный разбор</button></div>
+                  <div className="flex flex-wrap gap-3"><button onClick={saveRaw} className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm">Сохранить массив</button><button onClick={runAiAnalysis} disabled={aiLoading} className="rounded-full bg-[#D6A84F] px-5 py-2 text-sm font-semibold text-[#050816] disabled:cursor-not-allowed disabled:opacity-50">{aiLoading ? 'ИИ анализирует...' : 'Разобрать через Claude / DeepSeek'}</button><button onClick={runAnalysis} disabled={aiLoading} className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/70 disabled:opacity-50">Локальный разбор</button></div>
                 </div>
                 <textarea value={rawText} onChange={(e) => setRawText(e.target.value)} placeholder="Вставьте сюда весь поток данных из источников: ФИО, телефоны, почты, компании, выписки, заметки, ссылки, комментарии клиента, найденные материалы..." className="mt-5 min-h-[360px] w-full rounded-[24px] border border-white/10 bg-black/30 p-5 text-sm leading-7 text-white outline-none focus:border-sky-300/40" />
                 {aiStatus && (
