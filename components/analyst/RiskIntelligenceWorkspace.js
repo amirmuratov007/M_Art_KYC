@@ -284,6 +284,7 @@ export default function RiskIntelligenceWorkspace({ initialObjectId = null }) {
   const [activeId, setActiveId] = useState(initialObjectId || null)
   const [rawText, setRawText] = useState('')
   const [message, setMessage] = useState('')
+  const [aiLoading, setAiLoading] = useState(false)
   const [query, setQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [riskFilter, setRiskFilter] = useState('all')
@@ -376,6 +377,84 @@ export default function RiskIntelligenceWorkspace({ initialObjectId = null }) {
     setMessage('Данные разобраны. Проверьте сигналы, связи и отчет.')
   }
 
+
+  const normalizeAiResult = (result) => {
+    const safe = result || {}
+    const risks = Array.isArray(safe.riskSignals) ? safe.riskSignals : Array.isArray(safe.risks) ? safe.risks : []
+    const connections = Array.isArray(safe.connections) ? safe.connections : []
+    const facts = Array.isArray(safe.facts) ? safe.facts : []
+    const contradictions = Array.isArray(safe.contradictions) ? safe.contradictions : []
+    const questions = Array.isArray(safe.questions) ? safe.questions : []
+    const recommendations = Array.isArray(safe.recommendations) ? safe.recommendations : []
+    const score = Math.max(0, Math.min(100, Number(safe?.riskAssessment?.score ?? safe.score ?? calculateScore(risks))))
+    const level = safe?.riskAssessment?.level || safe.level || (score >= 75 ? 'critical' : score >= 50 ? 'high' : score >= 25 ? 'medium' : 'low')
+    const summary = safe.summary || safe.executiveSummary || `ИИ разобрал массив данных по объекту “${active?.name || 'без названия'}”. Проверьте выводы аналитиком.`
+    const report = safe.clientReportDraft || safe.report || buildReport({ objectName: active?.name, score, level, risks, connections, contradictions, questions, summary })
+
+    return {
+      entities: safe.entities || {},
+      facts: facts.map((item, index) => typeof item === 'string' ? { id: `ai-fact-${index}`, title: `Факт ${index + 1}`, description: item } : { id: item.id || `ai-fact-${index}`, title: item.title || `Факт ${index + 1}`, description: item.description || item.text || JSON.stringify(item) }),
+      risks: risks.map((item, index) => ({
+        id: item.id || `ai-signal-${Date.now()}-${index}`,
+        category: item.category || 'other',
+        title: item.title || `Сигнал риска ${index + 1}`,
+        description: item.description || item.reason || item.evidence || '',
+        severity: ['low', 'medium', 'high', 'critical'].includes(item.severity) ? item.severity : 'medium',
+        confidence: ['low', 'medium', 'high'].includes(item.confidence) ? item.confidence : 'medium',
+        source: item.source || 'ИИ-разбор сырого массива'
+      })),
+      connections: connections.map((item, index) => ({
+        id: item.id || `ai-conn-${Date.now()}-${index}`,
+        target_name: item.target_name || item.targetName || item.name || `Связь ${index + 1}`,
+        target_type: item.target_type || item.targetType || 'other',
+        relation_type: item.relation_type || item.relationType || 'mentioned_together',
+        strength: ['weak', 'medium', 'strong'].includes(item.strength) ? item.strength : 'medium',
+        description: item.description || item.reason || ''
+      })),
+      contradictions: contradictions.map((item) => typeof item === 'string' ? item : item.description || item.text || JSON.stringify(item)),
+      questions: questions.map((item) => typeof item === 'string' ? item : item.question || item.description || JSON.stringify(item)),
+      recommendations: recommendations.map((item) => typeof item === 'string' ? item : item.recommendation || item.description || JSON.stringify(item)),
+      score,
+      level,
+      summary,
+      report,
+      created_at: nowDate(),
+      provider: safe.provider || 'openai'
+    }
+  }
+
+  const runAiAnalysis = async () => {
+    if (!active || aiLoading) return
+    await writeRaw(active.id, rawText)
+    if (!rawText.trim()) {
+      setMessage('Сначала вставьте сырой массив данных.')
+      return
+    }
+
+    setAiLoading(true)
+    setMessage('ИИ анализирует массив данных. Большие массивы могут обрабатываться дольше.')
+    try {
+      const response = await fetch('/api/risk-intelligence/analyze-raw-data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ object: active, rawText })
+      })
+      const payload = await response.json().catch(() => ({}))
+      if (!response.ok || !payload?.ok) {
+        throw new Error(payload?.error || 'ИИ-анализ не выполнен')
+      }
+      const result = normalizeAiResult(payload.analysis)
+      updateActive({ analysis: result, report: result.report, risk_score: result.score, risk_level: result.level, signals: result.risks, connections: result.connections, status: 'review' })
+      setMessage(payload.usedFallback ? 'OpenAI недоступен, выполнен локальный разбор.' : 'ИИ-разбор выполнен. Проверьте факты, риски, связи и отчет.')
+    } catch (error) {
+      const fallback = analyzeText(rawText, active.name)
+      updateActive({ analysis: fallback, report: fallback.report, risk_score: fallback.score, risk_level: fallback.level, signals: fallback.risks, connections: fallback.connections, status: 'review' })
+      setMessage(`ИИ-разбор не выполнен: ${error.message}. Включен локальный разбор, чтобы работа не остановилась.`)
+    } finally {
+      setAiLoading(false)
+    }
+  }
+
   const copyReport = async () => {
     if (!active?.report) return
     try {
@@ -458,7 +537,7 @@ export default function RiskIntelligenceWorkspace({ initialObjectId = null }) {
               <div className="rounded-[32px] border border-sky-300/15 bg-sky-300/[0.045] p-6">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div><div className="text-sm uppercase tracking-[0.22em] text-sky-300/80">Сырой массив данных</div><p className="mt-2 text-sm text-white/55">Вставляйте любые объемы текста. Искусственного ограничения поля нет. Для очень больших массивов браузеру может потребоваться больше времени.</p></div>
-                  <div className="flex flex-wrap gap-3"><button onClick={saveRaw} className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm">Сохранить массив</button><button onClick={runAnalysis} className="rounded-full bg-sky-500 px-4 py-2 text-sm font-semibold">Разобрать данные</button></div>
+                  <div className="flex flex-wrap gap-3"><button onClick={saveRaw} className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm">Сохранить массив</button><button onClick={runAnalysis} className="rounded-full border border-sky-300/30 bg-sky-300/10 px-4 py-2 text-sm font-semibold text-sky-100">Локальный разбор</button><button onClick={runAiAnalysis} disabled={aiLoading} className="rounded-full bg-sky-500 px-4 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-50">{aiLoading ? 'ИИ анализирует...' : 'Разобрать через ИИ'}</button></div>
                 </div>
                 <textarea value={rawText} onChange={(e) => setRawText(e.target.value)} placeholder="Вставьте сюда весь поток данных из источников: ФИО, телефоны, почты, компании, выписки, заметки, ссылки, комментарии клиента, найденные материалы..." className="mt-5 min-h-[360px] w-full rounded-[24px] border border-white/10 bg-black/30 p-5 text-sm leading-7 text-white outline-none focus:border-sky-300/40" />
               </div>
