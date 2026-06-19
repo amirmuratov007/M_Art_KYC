@@ -285,6 +285,7 @@ export default function RiskIntelligenceWorkspace({ initialObjectId = null }) {
   const [rawText, setRawText] = useState('')
   const [message, setMessage] = useState('')
   const [aiLoading, setAiLoading] = useState(false)
+  const [aiStatus, setAiStatus] = useState('')
   const [query, setQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [riskFilter, setRiskFilter] = useState('all')
@@ -425,32 +426,63 @@ export default function RiskIntelligenceWorkspace({ initialObjectId = null }) {
 
   const runAiAnalysis = async () => {
     if (!active || aiLoading) return
-    await writeRaw(active.id, rawText)
+
     if (!rawText.trim()) {
       setMessage('Сначала вставьте сырой массив данных.')
+      setAiStatus('ИИ не запущен: поле с данными пустое.')
       return
     }
 
+    await writeRaw(active.id, rawText)
     setAiLoading(true)
-    setMessage('ИИ анализирует массив данных. Большие массивы могут обрабатываться дольше.')
+    setMessage('ИИ-анализ запущен.')
+    setAiStatus(`1/4 Данные сохранены. Отправляю в ИИ ${rawText.length.toLocaleString('ru-RU')} знаков...`)
+
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 120000)
+
     try {
+      setAiStatus('2/4 Запрос ушел на сервер HEIMDALL. Жду ответ OpenAI...')
       const response = await fetch('/api/risk-intelligence/analyze-raw-data', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ object: active, rawText })
+        body: JSON.stringify({ object: active, rawText }),
+        signal: controller.signal
       })
-      const payload = await response.json().catch(() => ({}))
-      if (!response.ok || !payload?.ok) {
-        throw new Error(payload?.error || 'ИИ-анализ не выполнен')
+
+      setAiStatus(`3/4 Сервер ответил: HTTP ${response.status}. Разбираю результат...`)
+      const responseText = await response.text()
+      let payload = {}
+      try {
+        payload = responseText ? JSON.parse(responseText) : {}
+      } catch (parseError) {
+        throw new Error(`Сервер вернул не JSON: ${responseText.slice(0, 500)}`)
       }
+
+      if (!response.ok || !payload?.ok) {
+        throw new Error(payload?.error || `ИИ-анализ не выполнен. HTTP ${response.status}`)
+      }
+
       const result = normalizeAiResult(payload.analysis)
-      updateActive({ analysis: result, report: result.report, risk_score: result.score, risk_level: result.level, signals: result.risks, connections: result.connections, status: 'review' })
-      setMessage(payload.usedFallback ? 'OpenAI недоступен, выполнен локальный разбор.' : 'ИИ-разбор выполнен. Проверьте факты, риски, связи и отчет.')
+      updateActive({
+        analysis: result,
+        report: result.report,
+        risk_score: result.score,
+        risk_level: result.level,
+        signals: result.risks,
+        connections: result.connections,
+        status: 'review'
+      })
+      setMessage('ИИ-разбор выполнен. Проверьте факты, риски, связи и отчет.')
+      setAiStatus(`4/4 Готово. Модель: ${payload.model || 'OpenAI'}. Частей: ${payload.chunks || 1}. Результат записан в отчет.`)
     } catch (error) {
-      const fallback = analyzeText(rawText, active.name)
-      updateActive({ analysis: fallback, report: fallback.report, risk_score: fallback.score, risk_level: fallback.level, signals: fallback.risks, connections: fallback.connections, status: 'review' })
-      setMessage(`ИИ-разбор не выполнен: ${error.message}. Включен локальный разбор, чтобы работа не остановилась.`)
+      const text = error?.name === 'AbortError'
+        ? 'Превышено время ожидания. Vercel или OpenAI не успели ответить. Попробуйте сократить массив или повторить запрос.'
+        : (error?.message || 'Неизвестная ошибка ИИ-анализа')
+      setMessage(`ИИ-разбор не выполнен: ${text}`)
+      setAiStatus(`Ошибка ИИ: ${text}. Локальный разбор не запускал автоматически, чтобы не перетереть данные плохим результатом.`)
     } finally {
+      clearTimeout(timeout)
       setAiLoading(false)
     }
   }
@@ -540,6 +572,12 @@ export default function RiskIntelligenceWorkspace({ initialObjectId = null }) {
                   <div className="flex flex-wrap gap-3"><button onClick={saveRaw} className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm">Сохранить массив</button><button onClick={runAiAnalysis} disabled={aiLoading} className="rounded-full bg-[#D6A84F] px-5 py-2 text-sm font-semibold text-[#050816] disabled:cursor-not-allowed disabled:opacity-50">{aiLoading ? 'ИИ анализирует...' : 'Разобрать через ИИ'}</button><button onClick={runAnalysis} disabled={aiLoading} className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/70 disabled:opacity-50">Локальный разбор</button></div>
                 </div>
                 <textarea value={rawText} onChange={(e) => setRawText(e.target.value)} placeholder="Вставьте сюда весь поток данных из источников: ФИО, телефоны, почты, компании, выписки, заметки, ссылки, комментарии клиента, найденные материалы..." className="mt-5 min-h-[360px] w-full rounded-[24px] border border-white/10 bg-black/30 p-5 text-sm leading-7 text-white outline-none focus:border-sky-300/40" />
+                {aiStatus && (
+                  <div className="mt-4 rounded-2xl border border-[#D6A84F]/25 bg-[#D6A84F]/10 p-4 text-sm leading-7 text-[#F7D784]">
+                    <div className="mb-1 font-semibold text-[#FFE6A3]">Статус ИИ</div>
+                    <div>{aiStatus}</div>
+                  </div>
+                )}
               </div>
 
               {active.analysis && <AnalysisBlock analysis={active.analysis} />}
