@@ -8,9 +8,11 @@ export const config = {
   }
 }
 
-const DEFAULT_MODEL = process.env.OPENAI_MODEL || 'gpt-4.1-mini'
-const OPENAI_URL = 'https://api.openai.com/v1/chat/completions'
-const CHUNK_SIZE = 45000
+const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages'
+const DEEPSEEK_URL = 'https://api.deepseek.com/chat/completions'
+const DEFAULT_CLAUDE_MODEL = process.env.ANTHROPIC_MODEL || process.env.CLAUDE_MODEL || 'claude-sonnet-4-6'
+const DEFAULT_DEEPSEEK_MODEL = process.env.DEEPSEEK_MODEL || 'deepseek-v4-flash'
+const CHUNK_SIZE = 42000
 
 function safeText(value) {
   return typeof value === 'string' ? value : value == null ? '' : String(value)
@@ -40,9 +42,9 @@ function parseJson(text) {
     return JSON.parse(stripJson(text))
   } catch (error) {
     return {
-      summary: 'ИИ вернул неструктурированный ответ. Ниже сохранен сырой текст ответа.',
+      summary: 'Модель вернула неструктурированный ответ. Ниже сохранен сырой текст ответа.',
       entities: {},
-      facts: [{ title: 'Сырой ответ ИИ', description: safeText(text).slice(0, 12000) }],
+      facts: [{ title: 'Сырой ответ модели', description: safeText(text).slice(0, 12000) }],
       riskSignals: [],
       connections: [],
       contradictions: [],
@@ -55,7 +57,7 @@ function parseJson(text) {
 }
 
 function schemaInstruction() {
-  return `Верни только валидный JSON без markdown. Структура:
+  return `Верни только валидный JSON без markdown, комментариев и пояснений. Структура:
 {
   "summary": "краткое резюме анализа",
   "entities": {
@@ -98,56 +100,139 @@ function systemPrompt() {
 - Не пиши, что лицо виновно, нарушило закон или является мошенником.
 - Используй формулировки: "выявлен признак", "может указывать на", "требует дополнительной проверки", "по предоставленным данным".
 - В riskSignals оценивай не человека, а признаки в данных.
+- Медицинские, паспортные, адресные и семейные сведения не превращай в "риск" сами по себе. Отмечай их только как чувствительные данные или как факт наличия в массиве.
 - Если массив содержит мусор, повторы или противоречия, выделяй это отдельно.
 - Пиши на русском языке.
 
 ${schemaInstruction()}`
 }
 
-async function callOpenAI(messages, maxTokens = 10000) {
-  const key = process.env.OPENAI_API_KEY
-  if (!key) throw new Error('OPENAI_API_KEY не задан в Vercel')
+function buildUserContent({ object, text, index, total }) {
+  return `Объект проверки: ${JSON.stringify(object || {})}\n\nЭто часть ${index + 1} из ${total}. Разбери только этот фрагмент. Не делай финальный отчет по всему делу, только структурированный разбор фрагмента.\n\nСырой массив данных:\n${text}`
+}
 
+function anthropicKey() {
+  return process.env.ANTHROPIC_API_KEY || process.env.CLAUDE_API_KEY || ''
+}
+
+function deepseekKey() {
+  return process.env.DEEPSEEK_API_KEY || ''
+}
+
+function getProvider() {
+  const requested = safeText(process.env.AI_PROVIDER || '').toLowerCase().trim()
+  if (requested === 'claude' || requested === 'anthropic') {
+    if (!anthropicKey()) throw new Error('AI_PROVIDER=claude, но ANTHROPIC_API_KEY не задан в Vercel')
+    return 'claude'
+  }
+  if (requested === 'deepseek') {
+    if (!deepseekKey()) throw new Error('AI_PROVIDER=deepseek, но DEEPSEEK_API_KEY не задан в Vercel')
+    return 'deepseek'
+  }
+  if (anthropicKey()) return 'claude'
+  if (deepseekKey()) return 'deepseek'
+  throw new Error('Не задан ключ ИИ. Добавь в Vercel ANTHROPIC_API_KEY для Claude или DEEPSEEK_API_KEY для DeepSeek')
+}
+
+function withTimeout(ms = 55000) {
   const controller = new AbortController()
-  const timeout = setTimeout(() => controller.abort(), 55000)
+  const timeout = setTimeout(() => controller.abort(), ms)
+  return { controller, done: () => clearTimeout(timeout) }
+}
+
+async function callClaude(messages, maxTokens = 7000) {
+  const key = anthropicKey()
+  if (!key) throw new Error('ANTHROPIC_API_KEY не задан в Vercel')
+
+  const { controller, done } = withTimeout()
   try {
-    const response = await fetch(OPENAI_URL, {
+    const system = messages.find((item) => item.role === 'system')?.content || systemPrompt()
+    const userMessages = messages.filter((item) => item.role !== 'system').map((item) => ({
+      role: item.role === 'assistant' ? 'assistant' : 'user',
+      content: safeText(item.content)
+    }))
+
+    const response = await fetch(ANTHROPIC_URL, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${key}`,
-        'Content-Type': 'application/json'
+        'x-api-key': key,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json'
       },
       body: JSON.stringify({
-        model: DEFAULT_MODEL,
+        model: DEFAULT_CLAUDE_MODEL,
+        max_tokens: maxTokens,
         temperature: 0.1,
-        response_format: { type: 'json_object' },
-        messages,
-        max_tokens: maxTokens
+        system,
+        messages: userMessages
       }),
       signal: controller.signal
     })
 
     const payload = await response.json().catch(() => ({}))
     if (!response.ok) {
-      const message = payload?.error?.message || `OpenAI API error ${response.status}`
+      const message = payload?.error?.message || payload?.message || `Claude API error ${response.status}`
+      throw new Error(message)
+    }
+
+    const parts = Array.isArray(payload?.content) ? payload.content : []
+    const text = parts.map((part) => part?.text || '').join('\n').trim()
+    return text || '{}'
+  } finally {
+    done()
+  }
+}
+
+async function callDeepSeek(messages, maxTokens = 7000) {
+  const key = deepseekKey()
+  if (!key) throw new Error('DEEPSEEK_API_KEY не задан в Vercel')
+
+  const { controller, done } = withTimeout()
+  try {
+    const response = await fetch(DEEPSEEK_URL, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${key}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: DEFAULT_DEEPSEEK_MODEL,
+        temperature: 0.1,
+        response_format: { type: 'json_object' },
+        messages,
+        max_tokens: maxTokens,
+        stream: false
+      }),
+      signal: controller.signal
+    })
+
+    const payload = await response.json().catch(() => ({}))
+    if (!response.ok) {
+      const message = payload?.error?.message || payload?.message || `DeepSeek API error ${response.status}`
       throw new Error(message)
     }
     return payload?.choices?.[0]?.message?.content || '{}'
   } finally {
-    clearTimeout(timeout)
+    done()
   }
 }
 
-async function analyzeChunk({ object, text, index, total }) {
-  const content = await callOpenAI([
+async function callModel(provider, messages, maxTokens = 7000) {
+  if (provider === 'claude') return callClaude(messages, maxTokens)
+  if (provider === 'deepseek') return callDeepSeek(messages, maxTokens)
+  throw new Error(`Неизвестный провайдер ИИ: ${provider}`)
+}
+
+async function analyzeChunk({ provider, object, text, index, total }) {
+  const content = await callModel(provider, [
     { role: 'system', content: systemPrompt() },
-    { role: 'user', content: `Объект проверки: ${JSON.stringify(object || {})}\n\nЭто часть ${index + 1} из ${total}. Разбери только этот фрагмент. Не делай финальный отчет по всему делу, только структурированный разбор фрагмента.\n\nСырой массив данных:\n${text}` }
+    { role: 'user', content: buildUserContent({ object, text, index, total }) }
   ], 5000)
   return parseJson(content)
 }
 
-async function finalMerge({ object, partials, rawLength }) {
-  const content = await callOpenAI([
+async function finalMerge({ provider, object, partials, rawLength }) {
+  const content = await callModel(provider, [
     { role: 'system', content: systemPrompt() },
     { role: 'user', content: `Объект проверки: ${JSON.stringify(object || {})}\n\nНиже частичные разборы большого массива данных. Объедини их в единый аналитический результат. Убери дубли. Не добавляй факты, которых нет в частичных разборах. Сделай итоговый riskAssessment и клиентский отчет.\n\nОбъем исходного массива: ${rawLength} знаков.\n\nЧастичные разборы:\n${JSON.stringify(partials).slice(0, 900000)}` }
   ], 7000)
@@ -168,29 +253,35 @@ export default async function handler(req, res) {
       return res.status(400).json({ ok: false, error: 'Пустой массив данных' })
     }
 
+    const provider = getProvider()
+    const model = provider === 'claude' ? DEFAULT_CLAUDE_MODEL : DEFAULT_DEEPSEEK_MODEL
     const chunks = chunkText(rawText)
     const partials = []
 
     for (let index = 0; index < chunks.length; index += 1) {
-      partials.push(await analyzeChunk({ object, text: chunks[index], index, total: chunks.length }))
+      partials.push(await analyzeChunk({ provider, object, text: chunks[index], index, total: chunks.length }))
     }
 
     const analysis = chunks.length === 1
       ? partials[0]
-      : await finalMerge({ object, partials, rawLength: rawText.length })
+      : await finalMerge({ provider, object, partials, rawLength: rawText.length })
 
     return res.status(200).json({
       ok: true,
-      model: DEFAULT_MODEL,
+      provider,
+      model,
       chunks: chunks.length,
       analysis: {
         ...analysis,
-        provider: 'openai',
-        model: DEFAULT_MODEL,
+        provider,
+        model,
         rawLength: rawText.length
       }
     })
   } catch (error) {
-    return res.status(500).json({ ok: false, error: error.message || 'OpenAI analysis failed' })
+    const message = error?.name === 'AbortError'
+      ? 'ИИ не успел ответить за лимит времени Vercel. Попробуй уменьшить массив или использовать DeepSeek/Claude с более быстрым режимом.'
+      : error.message || 'AI analysis failed'
+    return res.status(500).json({ ok: false, error: message })
   }
 }
