@@ -1,5 +1,4 @@
-// HEIMDALL service worker disabled.
-// Previous versions cached internal analyst routes and could return the home page.
+const CACHE_NAME = 'heimdall-safe-cache-v4'
 
 self.addEventListener('install', (event) => {
   self.skipWaiting()
@@ -7,14 +6,21 @@ self.addEventListener('install', (event) => {
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    Promise.all([
-      self.registration.unregister().catch(() => null),
-      caches.keys().then((keys) => Promise.all(keys.map((key) => caches.delete(key)))).catch(() => null),
-      self.clients.claim().catch(() => null)
-    ])
+    caches.keys().then((keys) => Promise.all(keys.map((key) => caches.delete(key))))
   )
+  self.clients.claim()
 })
 
-self.addEventListener('fetch', () => {
-  // No fetch handler. Browser/Next.js handle all routes directly.
+self.addEventListener('fetch', (event) => {
+  const request = event.request
+  if (request.method !== 'GET') return
+  if (!request.url.startsWith(self.location.origin)) return
+
+  const url = new URL(request.url)
+  if (url.pathname.startsWith('/analyst')) {
+    event.respondWith(fetch(request))
+    return
+  }
+
+  event.respondWith(fetch(request).catch(() => new Response('', { status: 504 })))
 })
