@@ -296,10 +296,16 @@ function buildReport({ objectName, score, level, risks, connections, contradicti
 }
 
 
+function looksLikeTechnicalJson(value) {
+  const text = typeof value === 'string' ? value.trim() : ''
+  if (!text) return false
+  return text.startsWith('{') || text.startsWith('[') || text.includes('"summary"') || text.includes('"riskSignals"') || text.includes('"entities"') || text.includes('"riskAssessment"')
+}
+
 function cleanReportText(value) {
   const text = typeof value === 'string' ? value.trim() : ''
   if (!text) return ''
-  if (text.startsWith('{') || text.startsWith('[') || text.includes('"summary"') || text.includes('"riskSignals"')) return ''
+  if (looksLikeTechnicalJson(text)) return ''
   return text
 }
 
@@ -392,7 +398,8 @@ export default function RiskIntelligenceWorkspace({ initialObjectId = null }) {
         storageReady = Boolean(status?.storage?.enabled)
         if (!cancelled) {
           setServerReady(storageReady)
-          setServerStatus(storageReady ? 'Серверное хранилище активно. Проверки сохраняются на сервере.' : 'Серверное хранилище не подключено. Работа идет в браузере.')
+          const storageLabel = status?.storage?.source ? ` (${status.storage.source})` : ''
+          setServerStatus(storageReady ? `Серверное хранилище активно${storageLabel}. Проверки сохраняются на сервере.` : 'Серверное хранилище не подключено. Работа идет в браузере.')
         }
 
         if (storageReady) {
@@ -540,7 +547,10 @@ export default function RiskIntelligenceWorkspace({ initialObjectId = null }) {
     const safe = result || {}
     const risks = Array.isArray(safe.riskSignals) ? safe.riskSignals : Array.isArray(safe.risks) ? safe.risks : []
     const connections = Array.isArray(safe.connections) ? safe.connections : []
-    const facts = Array.isArray(safe.facts) ? safe.facts : []
+    const facts = (Array.isArray(safe.facts) ? safe.facts : []).filter((item) => {
+      const text = typeof item === 'string' ? item : `${item?.title || ''} ${item?.description || ''}`
+      return !looksLikeTechnicalJson(text)
+    })
     const contradictions = Array.isArray(safe.contradictions) ? safe.contradictions : []
     const questions = Array.isArray(safe.questions) ? safe.questions : []
     const recommendations = Array.isArray(safe.recommendations) ? safe.recommendations : []
@@ -633,7 +643,7 @@ export default function RiskIntelligenceWorkspace({ initialObjectId = null }) {
       updateActive(patch)
       await persistObjectToServer({ ...active, ...patch, updated_at: nowDate() }, rawText, true)
       setMessage('ИИ-разбор выполнен. Проверьте факты, риски, связи и отчет.')
-      setAiStatus(`4/4 Готово. Модель: ${payload.model || payload.provider || 'Claude / DeepSeek'}. Частей: ${payload.chunks || 1}. Результат записан в отчет.`)
+      setAiStatus(`4/4 Готово. Модель: ${payload.model || payload.provider || 'Claude / DeepSeek'}. Частей: ${payload.chunks || 1}. Результат записан в отчет.${payload.analysis?.parseWarning ? ' Было предупреждение разбора, отчет собран из доступных фрагментов.' : ''}`)
     } catch (error) {
       const text = error?.name === 'AbortError'
         ? 'Превышено время ожидания. Vercel или OpenAI не успели ответить. Попробуйте сократить массив или повторить запрос.'
