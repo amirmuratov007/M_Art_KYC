@@ -57,7 +57,12 @@ function createEmptyObject(overrides = {}) {
     connections: overrides.connections || [],
     analysis: overrides.analysis || null,
     report: overrides.report || '',
-    source: overrides.source || 'Рабочая карточка'
+    source: overrides.source || 'Рабочая карточка',
+    client_name: overrides.client_name || '',
+    client_contact: overrides.client_contact || '',
+    priority: overrides.priority || 'normal',
+    due_date: overrides.due_date || '',
+    analyst_notes: overrides.analyst_notes || ''
   }
 }
 
@@ -128,6 +133,31 @@ function loadObjects() {
 function saveObjects(objects) {
   if (typeof window === 'undefined') return
   try { window.localStorage.setItem(META_KEY, JSON.stringify(objects)) } catch (error) {}
+}
+
+async function safeFetchJson(url, options = {}) {
+  const response = await fetch(url, options)
+  const text = await response.text()
+  let payload = {}
+  try { payload = text ? JSON.parse(text) : {} } catch (error) { payload = { ok: false, error: text || 'Сервер вернул не JSON' } }
+  if (!response.ok || payload?.ok === false) {
+    const error = new Error(payload?.error || `HTTP ${response.status}`)
+    error.status = response.status
+    error.payload = payload
+    throw error
+  }
+  return payload
+}
+
+function downloadTextFile(filename, text) {
+  if (typeof window === 'undefined') return
+  const blob = new Blob([text || ''], { type: 'text/plain;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = filename
+  link.click()
+  URL.revokeObjectURL(url)
 }
 
 function unique(list) {
@@ -342,31 +372,61 @@ export default function RiskIntelligenceWorkspace({ initialObjectId = null }) {
   const [message, setMessage] = useState('')
   const [aiLoading, setAiLoading] = useState(false)
   const [aiStatus, setAiStatus] = useState('')
+  const [serverStatus, setServerStatus] = useState('Проверяю серверное хранилище...')
+  const [serverReady, setServerReady] = useState(false)
+  const [reports, setReports] = useState([])
   const [query, setQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [riskFilter, setRiskFilter] = useState('all')
 
   useEffect(() => {
-    const loaded = loadObjects()
-    setObjects(loaded)
+    let cancelled = false
 
-    let id = initialObjectId
-    if (!id && typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search)
-      id = params.get('open') || params.get('id')
-      const match = window.location.pathname.match(/\/analyst\/risk-intelligence\/([^/?#]+)/)
-      if (!id && match && match[1] && !['new', 'object'].includes(match[1])) id = decodeURIComponent(match[1])
+    async function boot() {
+      const localObjects = loadObjects()
+      let loaded = localObjects
+      let storageReady = false
+
+      try {
+        const status = await safeFetchJson('/api/risk-intelligence/storage-status')
+        storageReady = Boolean(status?.storage?.enabled)
+        if (!cancelled) {
+          setServerReady(storageReady)
+          setServerStatus(storageReady ? 'Серверное хранилище активно. Проверки сохраняются на сервере.' : 'Серверное хранилище не подключено. Работа идет в браузере.')
+        }
+
+        if (storageReady) {
+          const data = await safeFetchJson('/api/risk-intelligence/objects')
+          if (Array.isArray(data.objects) && data.objects.length) loaded = data.objects
+        }
+      } catch (error) {
+        if (!cancelled) setServerStatus(`Серверное хранилище недоступно: ${error.message}. Работа идет в браузере.`)
+      }
+
+      if (cancelled) return
+      setObjects(loaded)
+
+      let id = initialObjectId
+      if (!id && typeof window !== 'undefined') {
+        const params = new URLSearchParams(window.location.search)
+        id = params.get('open') || params.get('id')
+        const match = window.location.pathname.match(/\/analyst\/risk-intelligence\/([^/?#]+)/)
+        if (!id && match && match[1] && !['new', 'object'].includes(match[1])) id = decodeURIComponent(match[1])
+      }
+
+      if (id) {
+        const exists = loaded.some((item) => item.id === id)
+        const nextObjects = exists ? loaded : [createEmptyObject({ id, name: `Проверка ${id}`, description: 'Карточка восстановлена по прямой ссылке. Данные можно вставить и разобрать заново.' }), ...loaded]
+        if (!exists) saveObjects(nextObjects)
+        setObjects(nextObjects)
+        setActiveId(id)
+        await openObjectPayload(id, storageReady)
+      }
+      setReady(true)
     }
 
-    if (id) {
-      const exists = loaded.some((item) => item.id === id)
-      const nextObjects = exists ? loaded : [createEmptyObject({ id, name: `Проверка ${id}`, description: 'Карточка восстановлена по прямой ссылке. Данные можно вставить и разобрать заново.' }), ...loaded]
-      if (!exists) saveObjects(nextObjects)
-      setObjects(nextObjects)
-      setActiveId(id)
-      readRaw(id).then(setRawText)
-    }
-    setReady(true)
+    boot()
+    return () => { cancelled = true }
   }, [initialObjectId])
 
   useEffect(() => { saveObjects(objects) }, [objects])
@@ -392,9 +452,42 @@ export default function RiskIntelligenceWorkspace({ initialObjectId = null }) {
     setObjects((current) => current.map((item) => item.id === activeId ? { ...item, ...patch, updated_at: nowDate() } : item))
   }
 
+  const openObjectPayload = async (id, useServer = serverReady) => {
+    if (useServer) {
+      try {
+        const data = await safeFetchJson(`/api/risk-intelligence/objects/${encodeURIComponent(id)}`)
+        if (data?.item) {
+          setObjects((current) => current.some((item) => item.id === id) ? current.map((item) => item.id === id ? data.item : item) : [data.item, ...current])
+        }
+        setRawText(data?.rawText || '')
+        return
+      } catch (error) {
+        setServerStatus(`Не удалось загрузить объект с сервера: ${error.message}. Открыт локальный вариант.`)
+      }
+    }
+    setRawText(await readRaw(id))
+  }
+
+  const persistObjectToServer = async (item, rawOverride = null, silent = false) => {
+    if (!item) return false
+    if (!serverReady) return false
+    try {
+      await safeFetchJson(`/api/risk-intelligence/objects/${encodeURIComponent(item.id)}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ object: item, rawText: rawOverride })
+      })
+      if (!silent) setServerStatus('Сохранено на сервере.')
+      return true
+    } catch (error) {
+      setServerStatus(`Не удалось сохранить на сервере: ${error.message}. Локальная копия сохранена в браузере.`)
+      return false
+    }
+  }
+
   const openObject = async (id) => {
     setActiveId(id)
-    setRawText(await readRaw(id))
+    await openObjectPayload(id)
     if (typeof window !== 'undefined') {
       const url = `/analyst/risk-intelligence?open=${encodeURIComponent(id)}`
       window.history.replaceState(null, '', url)
@@ -405,13 +498,17 @@ export default function RiskIntelligenceWorkspace({ initialObjectId = null }) {
     const item = createEmptyObject({ name: `Проверка ${objects.length + 1}` })
     setObjects((current) => [item, ...current])
     await writeRaw(item.id, '')
+    await persistObjectToServer(item, '', true)
     await openObject(item.id)
     setMessage('Создана новая карточка проверки.')
   }
 
-  const removeObject = (id) => {
-    if (!confirm('Удалить карточку проверки из браузера?')) return
+  const removeObject = async (id) => {
+    if (!confirm('Удалить карточку проверки?')) return
     setObjects((current) => current.filter((item) => item.id !== id))
+    if (serverReady) {
+      try { await safeFetchJson(`/api/risk-intelligence/objects/${encodeURIComponent(id)}`, { method: 'DELETE' }) } catch (error) { setServerStatus(`Не удалось удалить на сервере: ${error.message}`) }
+    }
     if (activeId === id) {
       setActiveId(null)
       setRawText('')
@@ -422,15 +519,19 @@ export default function RiskIntelligenceWorkspace({ initialObjectId = null }) {
   const saveRaw = async () => {
     if (!active) return
     await writeRaw(active.id, rawText)
-    updateActive({ description: active.description || 'Сырой массив данных сохранен.' })
-    setMessage('Массив данных сохранен в браузере.')
+    const next = { ...active, description: active.description || 'Сырой массив данных сохранен.', updated_at: nowDate() }
+    updateActive({ description: next.description })
+    await persistObjectToServer(next, rawText)
+    setMessage(serverReady ? 'Массив данных сохранен в браузере и на сервере.' : 'Массив данных сохранен в браузере.')
   }
 
   const runAnalysis = async () => {
     if (!active) return
     await writeRaw(active.id, rawText)
     const result = analyzeText(rawText, active.name)
-    updateActive({ analysis: result, report: result.report, risk_score: result.score, risk_level: result.level, signals: result.risks, connections: result.connections, status: 'review' })
+    const patch = { analysis: result, report: result.report, risk_score: result.score, risk_level: result.level, signals: result.risks, connections: result.connections, status: 'review' }
+    updateActive(patch)
+    await persistObjectToServer({ ...active, ...patch, updated_at: nowDate() }, rawText, true)
     setMessage('Данные разобраны. Проверьте сигналы, связи и отчет.')
   }
 
@@ -520,7 +621,7 @@ export default function RiskIntelligenceWorkspace({ initialObjectId = null }) {
       }
 
       const result = normalizeAiResult(payload.analysis)
-      updateActive({
+      const patch = {
         analysis: result,
         report: result.report,
         risk_score: result.score,
@@ -528,7 +629,9 @@ export default function RiskIntelligenceWorkspace({ initialObjectId = null }) {
         signals: result.risks,
         connections: result.connections,
         status: 'review'
-      })
+      }
+      updateActive(patch)
+      await persistObjectToServer({ ...active, ...patch, updated_at: nowDate() }, rawText, true)
       setMessage('ИИ-разбор выполнен. Проверьте факты, риски, связи и отчет.')
       setAiStatus(`4/4 Готово. Модель: ${payload.model || payload.provider || 'Claude / DeepSeek'}. Частей: ${payload.chunks || 1}. Результат записан в отчет.`)
     } catch (error) {
@@ -541,6 +644,51 @@ export default function RiskIntelligenceWorkspace({ initialObjectId = null }) {
       clearTimeout(timeout)
       setAiLoading(false)
     }
+  }
+
+  const saveReportSnapshot = async () => {
+    if (!active?.report) {
+      setMessage('Сначала сформируйте отчет.')
+      return
+    }
+    if (!serverReady) {
+      const localReport = { id: `local-report-${Date.now()}`, object_id: active.id, object_name: active.name, report: active.report, risk_score: active.risk_score, risk_level: active.risk_level, created_at: new Date().toISOString() }
+      setReports((current) => [localReport, ...current])
+      setMessage('Снимок отчета сохранен в текущей сессии. Для серверной истории подключите Vercel KV.')
+      return
+    }
+    try {
+      const data = await safeFetchJson('/api/risk-intelligence/reports', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ objectId: active.id, objectName: active.name, report: active.report, riskScore: active.risk_score, riskLevel: active.risk_level })
+      })
+      setReports((current) => [data.report, ...current])
+      setMessage('Отчет сохранен в серверной истории.')
+    } catch (error) {
+      setMessage(`Не удалось сохранить отчет в истории: ${error.message}`)
+    }
+  }
+
+  const loadReportHistory = async () => {
+    if (!active) return
+    if (!serverReady) {
+      setMessage('Серверная история недоступна без Vercel KV.')
+      return
+    }
+    try {
+      const data = await safeFetchJson(`/api/risk-intelligence/reports?objectId=${encodeURIComponent(active.id)}`)
+      setReports(Array.isArray(data.reports) ? data.reports : [])
+      setMessage('История отчетов загружена.')
+    } catch (error) {
+      setMessage(`Не удалось загрузить историю отчетов: ${error.message}`)
+    }
+  }
+
+  const downloadReport = () => {
+    if (!active?.report) return
+    const safeName = (active.name || 'heimdall-report').replace(/[^a-zA-Zа-яА-Я0-9_-]+/g, '_').slice(0, 80)
+    downloadTextFile(`${safeName}-${Date.now()}.txt`, active.report)
   }
 
   const copyReport = async () => {
@@ -583,6 +731,7 @@ export default function RiskIntelligenceWorkspace({ initialObjectId = null }) {
       </div>
 
       {message && <div className="mb-6 rounded-2xl border border-[#D6A84F]/25 bg-[#D6A84F]/10 p-4 text-sm text-[#F7D784]">{message}</div>}
+      {serverStatus && <div className="mb-6 rounded-2xl border border-sky-300/20 bg-sky-300/10 p-4 text-sm text-sky-100">{serverStatus}</div>}
 
       <div className="mb-6 grid gap-4 md:grid-cols-4">
         <Stat label="Всего" value={stats.total} />
@@ -618,7 +767,12 @@ export default function RiskIntelligenceWorkspace({ initialObjectId = null }) {
                   <Field label="Тип объекта"><Select value={active.object_type} onChange={(value) => updateActive({ object_type: value })} options={objectTypes} /></Field>
                   <Field label="Статус"><Select value={active.status} onChange={(value) => updateActive({ status: value })} options={statuses} /></Field>
                   <Field label="Источник"><input value={active.source || ''} onChange={(e) => updateActive({ source: e.target.value })} className="rounded-2xl border border-white/10 bg-black/25 p-3 text-white outline-none focus:border-sky-300/40" /></Field>
+                  <Field label="Клиент"><input value={active.client_name || ''} onChange={(e) => updateActive({ client_name: e.target.value })} placeholder="Компания или заказчик" className="rounded-2xl border border-white/10 bg-black/25 p-3 text-white outline-none focus:border-sky-300/40" /></Field>
+                  <Field label="Контакт клиента"><input value={active.client_contact || ''} onChange={(e) => updateActive({ client_contact: e.target.value })} placeholder="Контакт, договор, заявка" className="rounded-2xl border border-white/10 bg-black/25 p-3 text-white outline-none focus:border-sky-300/40" /></Field>
+                  <Field label="Приоритет"><select value={active.priority || 'normal'} onChange={(e) => updateActive({ priority: e.target.value })} className="rounded-2xl border border-white/10 bg-[#07101f] p-3 text-white"><option value="low">Обычный</option><option value="normal">Рабочий</option><option value="high">Срочно</option><option value="critical">Критично</option></select></Field>
+                  <Field label="Срок"><input type="date" value={active.due_date || ''} onChange={(e) => updateActive({ due_date: e.target.value })} className="rounded-2xl border border-white/10 bg-black/25 p-3 text-white outline-none focus:border-sky-300/40" /></Field>
                   <div className="md:col-span-2"><Field label="Описание"><textarea value={active.description || ''} onChange={(e) => updateActive({ description: e.target.value })} className="min-h-[90px] rounded-2xl border border-white/10 bg-black/25 p-3 text-white outline-none focus:border-sky-300/40" /></Field></div>
+                  <div className="md:col-span-2"><Field label="Внутренние заметки аналитика"><textarea value={active.analyst_notes || ''} onChange={(e) => updateActive({ analyst_notes: e.target.value })} className="min-h-[90px] rounded-2xl border border-white/10 bg-black/25 p-3 text-white outline-none focus:border-sky-300/40" /></Field></div>
                 </div>
               </div>
 
@@ -639,8 +793,16 @@ export default function RiskIntelligenceWorkspace({ initialObjectId = null }) {
               {active.analysis && <AnalysisBlock analysis={active.analysis} />}
 
               <div className="rounded-[32px] border border-[#D6A84F]/20 bg-[#D6A84F]/[0.06] p-6">
-                <div className="mb-4 flex flex-wrap items-center justify-between gap-3"><div className="text-sm uppercase tracking-[0.22em] text-[#F7D784]/80">Отчет</div><div className="flex gap-3"><button onClick={copyReport} className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm">Скопировать</button><button onClick={() => window.print()} className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm">Печать / PDF</button></div></div>
+                <div className="mb-4 flex flex-wrap items-center justify-between gap-3"><div className="text-sm uppercase tracking-[0.22em] text-[#F7D784]/80">Отчет</div><div className="flex flex-wrap gap-3"><button onClick={copyReport} className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm">Скопировать</button><button onClick={downloadReport} className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm">Скачать TXT</button><button onClick={saveReportSnapshot} className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm">Сохранить версию</button><button onClick={loadReportHistory} className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm">История</button><button onClick={() => window.print()} className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm">Печать / PDF</button></div></div>
                 <pre className="max-h-[620px] overflow-auto whitespace-pre-wrap rounded-2xl border border-white/10 bg-black/25 p-5 text-sm leading-7 text-white/72">{active.report || 'Отчет появится после разбора данных.'}</pre>
+                {reports.length > 0 && (
+                  <div className="mt-5 rounded-2xl border border-white/10 bg-black/20 p-4">
+                    <div className="mb-3 text-sm font-semibold text-[#F7D784]">История отчетов</div>
+                    <div className="grid gap-3">
+                      {reports.slice(0, 10).map((report) => <div key={report.id} className="rounded-2xl border border-white/10 bg-white/[0.035] p-3 text-sm text-white/65"><div className="font-semibold text-white/80">{new Date(report.created_at).toLocaleString('ru-RU')} - риск {report.risk_score}/100</div><button onClick={() => updateActive({ report: report.report, risk_score: report.risk_score, risk_level: report.risk_level })} className="mt-2 text-sky-200">Вернуть эту версию в карточку</button></div>)}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           ) : (
@@ -670,7 +832,7 @@ function Stat({ label, value }) {
 }
 
 function ObjectButton({ item, active, onOpen, onRemove }) {
-  return <div className={`rounded-[24px] border p-4 ${active ? 'border-sky-300/40 bg-sky-300/10' : 'border-white/10 bg-black/20'}`}><button type="button" onClick={onOpen} className="block w-full text-left"><div className="flex flex-wrap gap-2"><Badge tone="sky">{optionLabel(statuses, item.status)}</Badge><Badge>{item.risk_score}/100</Badge></div><div className="mt-3 text-xs text-white/35">{item.id}</div><div className="mt-1 text-lg font-semibold">{item.name}</div><div className="mt-1 text-sm text-white/50">{optionLabel(objectTypes, item.object_type)}</div></button><button type="button" onClick={onRemove} className="mt-3 text-xs text-red-200/70 hover:text-red-100">Удалить</button></div>
+  return <div className={`rounded-[24px] border p-4 ${active ? 'border-sky-300/40 bg-sky-300/10' : 'border-white/10 bg-black/20'}`}><button type="button" onClick={onOpen} className="block w-full text-left"><div className="flex flex-wrap gap-2"><Badge tone="sky">{optionLabel(statuses, item.status)}</Badge><Badge>{item.risk_score}/100</Badge></div><div className="mt-3 text-xs text-white/35">{item.id}</div><div className="mt-1 text-lg font-semibold">{item.name}</div><div className="mt-1 text-sm text-white/50">{optionLabel(objectTypes, item.object_type)}</div>{item.client_name && <div className="mt-2 text-xs text-[#F7D784]/80">Клиент: {item.client_name}</div>}{item.due_date && <div className="mt-1 text-xs text-white/40">Срок: {item.due_date}</div>}</button><button type="button" onClick={onRemove} className="mt-3 text-xs text-red-200/70 hover:text-red-100">Удалить</button></div>
 }
 
 function AnalysisBlock({ analysis }) {
