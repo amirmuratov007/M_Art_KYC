@@ -104,6 +104,12 @@ function normalizeList(list, limit = 12) {
   return Array.isArray(list) ? list.filter(Boolean).slice(0, limit) : []
 }
 
+function normalizeTextItem(item, fallback = '') {
+  if (typeof item === 'string') return shortText(item, 900)
+  if (!item || typeof item !== 'object') return fallback
+  return shortText(item.description || item.text || item.summary || item.comment || item.title || fallback, 900)
+}
+
 function normalizeAnalysis(value, rawModelText = '') {
   const source = value && typeof value === 'object' ? value : {}
   const summary = shortText(source.summary || extractStringField(rawModelText, 'summary') || 'Модель выделила признаки по предоставленному массиву. Требуется проверка аналитиком.', 1400)
@@ -116,16 +122,27 @@ function normalizeAnalysis(value, rawModelText = '') {
   const entities = source.entities && typeof source.entities === 'object' ? source.entities : {}
   const score = Math.max(0, Math.min(100, Number(source?.riskAssessment?.score ?? source.score ?? calculateScore(riskSignals))))
   const level = ['low', 'medium', 'high', 'critical'].includes(source?.riskAssessment?.level) ? source.riskAssessment.level : scoreToLevel(score)
+  const normalizedRisks = riskSignals.map((item, index) => normalizeRisk(item, index))
+  const normalizedFacts = facts.map((item, index) => normalizeFact(item, index))
+  const normalizedConnections = connections.map((item, index) => normalizeConnection(item, index))
 
   const normalized = {
     summary,
     entities,
-    facts: facts.map((item, index) => normalizeFact(item, index)),
-    riskSignals: riskSignals.map((item, index) => normalizeRisk(item, index)),
-    connections: connections.map((item, index) => normalizeConnection(item, index)),
+    profile: normalizeProfile(source.profile, source.objectProfile, entities),
+    facts: normalizedFacts,
+    riskSignals: normalizedRisks,
+    riskMatrix: normalizeRiskMatrix(source.riskMatrix, normalizedRisks),
+    riskDetails: normalizeRiskDetails(source.riskDetails, normalizedRisks),
+    chronology: normalizeChronology(source.chronology || source.timeline),
+    sourceContour: normalizeSourceContour(source.sourceContour || source.sources, normalizedRisks),
+    connections: normalizedConnections,
     contradictions: contradictions.map((item) => typeof item === 'string' ? item : item.description || item.title || JSON.stringify(item)),
     questions: questions.map((item) => typeof item === 'string' ? item : item.question || item.description || JSON.stringify(item)),
     recommendations: recommendations.map((item) => typeof item === 'string' ? item : item.recommendation || item.description || JSON.stringify(item)),
+    recommendationActions: normalizeRecommendationActions(source.recommendationActions || source.actions, recommendations),
+    decision: normalizeDecision(source.decision, summary, level),
+    reviewChecklist: normalizeReviewChecklist(source.reviewChecklist),
     riskAssessment: { score, level, explanation: source?.riskAssessment?.explanation || '' },
     parseWarning: value ? '' : 'Модель вернула ответ, который не удалось полностью разобрать как JSON. Сайт собрал отчет из доступных фрагментов.'
   }
@@ -167,6 +184,119 @@ function normalizeConnection(item, index) {
   }
 }
 
+function normalizeProfile(profile, objectProfile, entities) {
+  const source = profile && typeof profile === 'object' ? profile : objectProfile && typeof objectProfile === 'object' ? objectProfile : {}
+  const company = normalizeList(entities?.companies, 1)[0] || ''
+  return {
+    objectName: shortText(source.objectName || source.name || company || 'Объект проверки', 160),
+    objectType: shortText(source.objectType || source.type || 'Не классифицирован', 160),
+    activity: shortText(source.activity || source.sector || source.role || 'Требует уточнения по материалам проверки', 240),
+    declaredHistory: shortText(source.declaredHistory || source.history || source.background || 'История и контекст требуют проверки по источникам', 260),
+    jurisdictions: normalizeList(source.jurisdictions || source.locations || [], 8).map((item) => normalizeTextItem(item)).filter(Boolean),
+    keyRisk: shortText(source.keyRisk || source.mainRisk || 'Ключевой риск определяется после проверки источников и идентификации объекта', 320),
+    statusRecommendation: shortText(source.statusRecommendation || source.status || 'Черновик требует проверки аналитиком HEIMDALL', 320)
+  }
+}
+
+function normalizeRiskMatrix(matrix, risks) {
+  const items = normalizeList(matrix, 8)
+  if (items.length) {
+    return items.map((item, index) => ({
+      category: shortText(item?.category || item?.title || `Категория ${index + 1}`, 140),
+      risk: riskLabel(['low', 'medium', 'high', 'critical'].includes(item?.risk) ? item.risk : item?.level || item?.severity || 'medium'),
+      comment: shortText(item?.comment || item?.description || item?.signal || '', 260)
+    }))
+  }
+
+  return normalizeList(risks, 6).map((risk) => ({
+    category: shortText(risk.category || risk.title || 'Риск', 140),
+    risk: riskLabel(risk.severity || 'medium'),
+    comment: shortText(risk.description || risk.source || 'Требует проверки аналитиком', 260)
+  }))
+}
+
+function normalizeRiskDetails(details, risks) {
+  const items = normalizeList(details, 8)
+  const source = items.length ? items : normalizeList(risks, 8).map((risk) => ({
+    title: risk.title,
+    level: risk.severity,
+    signal: risk.description,
+    whyItMatters: risk.source || 'Сигнал может влиять на договорные, комплаенс- или управленческие решения.',
+    additionalCheck: 'Проверить источник, актуальность, идентификаторы объекта и деловую значимость признака.'
+  }))
+
+  return source.map((item, index) => ({
+    title: shortText(item?.title || item?.risk || `Риск ${index + 1}`, 180),
+    level: ['low', 'medium', 'high', 'critical'].includes(item?.level) ? item.level : ['low', 'medium', 'high', 'critical'].includes(item?.severity) ? item.severity : 'medium',
+    signal: shortText(item?.signal || item?.description || item?.evidence || '', 420),
+    whyItMatters: shortText(item?.whyItMatters || item?.importance || item?.impact || '', 420),
+    additionalCheck: shortText(item?.additionalCheck || item?.whatToCheck || item?.nextStep || '', 420),
+    sourceRefs: normalizeList(item?.sourceRefs || item?.sources || [], 5).map((ref) => normalizeTextItem(ref)).filter(Boolean),
+    confidence: ['low', 'medium', 'high'].includes(item?.confidence) ? item.confidence : 'medium'
+  }))
+}
+
+function normalizeChronology(items) {
+  return normalizeList(items, 8).map((item, index) => ({
+    period: shortText(item?.period || item?.date || item?.year || `Этап ${index + 1}`, 120),
+    event: shortText(item?.event || item?.title || item?.description || '', 260),
+    comment: shortText(item?.comment || item?.meaning || item?.context || '', 260)
+  })).filter((item) => item.event || item.comment)
+}
+
+function normalizeSourceContour(items, risks) {
+  const source = normalizeList(items, 8)
+  if (source.length) {
+    return source.map((item) => ({
+      source: shortText(item?.source || item?.name || item?.type || 'Источник', 140),
+      assessment: shortText(item?.assessment || item?.tone || item?.status || 'Требует проверки', 120),
+      signal: shortText(item?.signal || item?.description || item?.comment || '', 320)
+    }))
+  }
+
+  return normalizeList(risks, 6).map((risk) => ({
+    source: shortText(risk.source || risk.category || 'Сырой массив данных', 140),
+    assessment: risk.severity === 'critical' || risk.severity === 'high' ? 'Негативный' : risk.severity === 'medium' ? 'Смешанный' : 'Нейтральный',
+    signal: shortText(risk.description || risk.title || '', 320)
+  }))
+}
+
+function normalizeRecommendationActions(items, recommendations) {
+  const source = normalizeList(items, 6)
+  if (source.length) {
+    return source.map((item, index) => ({
+      action: shortText(item?.action || item?.title || `Действие ${index + 1}`, 220),
+      description: shortText(item?.description || item?.reason || item?.comment || '', 420)
+    }))
+  }
+
+  return normalizeList(recommendations, 6).map((item, index) => ({
+    action: shortText(typeof item === 'string' ? item : item?.recommendation || item?.title || `Действие ${index + 1}`, 220),
+    description: shortText(typeof item === 'string' ? 'Проверить и применить при согласовании отчета.' : item?.description || item?.reason || '', 420)
+  }))
+}
+
+function normalizeDecision(decision, summary, level) {
+  const source = decision && typeof decision === 'object' ? decision : {}
+  return {
+    recommendation: shortText(source.recommendation || source.action || (level === 'critical' || level === 'high' ? 'Не принимать решение без расширенной проверки и условий защиты.' : 'Допустимо продолжить работу после проверки ключевых источников.'), 420),
+    rationale: shortText(source.rationale || source.summary || summary, 800)
+  }
+}
+
+function normalizeReviewChecklist(items) {
+  const defaults = [
+    'Проверить источники по каждому существенному риску.',
+    'Подтвердить идентификацию объекта и исключить однофамильцев/одноименные компании.',
+    'Отделить подтвержденные факты от гипотез и комментариев.',
+    'Убрать из клиентского отчета избыточные персональные и чувствительные данные.',
+    'Проверить, что формулировки не звучат как обвинение без подтвержденной основы.',
+    'Согласовать итоговую рекомендацию с руководителем проверки.'
+  ]
+  const source = normalizeList(items, 8).map((item) => normalizeTextItem(item)).filter(Boolean)
+  return source.length ? source : defaults
+}
+
 function scoreToLevel(score) {
   return score >= 75 ? 'critical' : score >= 50 ? 'high' : score >= 25 ? 'medium' : 'low'
 }
@@ -190,52 +320,122 @@ function lineList(items, mapper, fallback) {
 function buildClientReport(analysis) {
   const score = Number(analysis?.riskAssessment?.score || 0)
   const level = analysis?.riskAssessment?.level || scoreToLevel(score)
-  const materialRisks = (analysis.riskSignals || []).filter((risk) => ['medium', 'high', 'critical'].includes(risk.severity) || ['high'].includes(risk.confidence))
+  const profile = analysis.profile || {}
+  const riskMatrix = normalizeList(analysis.riskMatrix, 8)
+  const riskDetails = normalizeList(analysis.riskDetails, 8)
+  const chronology = normalizeList(analysis.chronology, 8)
+  const sourceContour = normalizeList(analysis.sourceContour, 8)
+  const recommendations = normalizeList(analysis.recommendationActions, 6)
+  const decision = analysis.decision || {}
+  const methodology = [
+    ['Идентификация', 'Совпадения по названию, роли, регистрационным данным, доменам, контактам и связанным лицам.'],
+    ['Суды и обязательства', 'Судебные дела, исполнительные производства, банкротные признаки, повторяющиеся споры и претензии.'],
+    ['Санкции и комплаенс', 'Прямые списки, косвенные связи, цепочки владения, контрагенты и юрисдикционные ограничения.'],
+    ['Репутация', 'Негативные публикации, отзывы, архивы, профессиональные обсуждения и публичные конфликты.'],
+    ['Связи', 'Директора, учредители, номинальные лица, пересечения по адресам, телефонам, доменам и поставщикам.'],
+    ['Вывод', 'Risk index, ключевые находки, сценарии действий и управленческая рекомендация.']
+  ]
 
   return [
-    'Предварительный аналитический отчет HEIMDALL',
+    'HEIMDALL INTELLIGENCE GROUP',
+    'WORKING DRAFT - ANALYST REVIEW REQUIRED',
+    'Confidential analytical format',
     '',
+    'Counterparty / Subject Intelligence Report',
+    '',
+    `Объект: ${profile.objectName || 'Объект проверки'}`,
+    `Индекс риска: ${score}/100`,
+    `Статус: Черновик на проверке аналитиком`,
+    `Классификация: ${profile.objectType || 'Risk intelligence object'}`,
     `Дата формирования: ${new Date().toLocaleString('ru-RU')}`,
-    `Предварительный уровень риска: ${riskLabel(level)} (${score}/100)`,
     '',
-    '1. Краткий вывод',
+    '1. Executive Summary',
+    '',
+    `Risk Index: ${score}/100`,
+    `Предварительный уровень риска: ${riskLabel(level)}`,
+    '',
     shortText(analysis.summary, 1400),
     '',
-    '2. Идентификация объекта',
-    'По предоставленному массиву выполнена идентификация объекта и связанных источников. Детальные адреса, документы, медицинские сведения и иные чувствительные персональные данные в клиентский отчет не выводятся и должны использоваться только при наличии законного основания.',
+    'Категория | Риск | Комментарий',
+    ...(riskMatrix.length ? riskMatrix.map((item) => `${item.category} | ${item.risk} | ${item.comment}`) : ['Профиль риска | Требует проверки | Недостаточно структурированных сигналов для уверенной матрицы.']),
     '',
-    '3. Подтвержденные факты',
-    ...lineList(analysis.facts, (fact) => shortText(fact.description || fact.title), 'Существенные подтвержденные факты не выделены или требуют ручной проверки.'),
+    '2. Профиль объекта проверки',
     '',
-    '4. Значимые сигналы риска',
-    ...lineList(materialRisks, (risk) => `${risk.title} - ${shortText(risk.description)} Уровень: ${riskLabel(risk.severity)}, достоверность: ${risk.confidence || 'medium'}.`, 'Значимые деловые, юридические, финансовые или репутационные сигналы риска по предоставленному массиву не подтверждены.'),
+    `Объект: ${profile.objectName || 'Не указан'}`,
+    `Тип / роль: ${profile.objectType || 'Не указан'}`,
+    `Сфера / контекст: ${profile.activity || 'Требует уточнения'}`,
+    `Заявленная история: ${profile.declaredHistory || 'Требует проверки'}`,
+    `Юрисдикции: ${profile.jurisdictions?.length ? profile.jurisdictions.join(', ') : 'Не выделены'}`,
+    `Ключевой риск: ${profile.keyRisk || 'Требует ручной квалификации'}`,
+    `Статус: ${profile.statusRecommendation || 'Требует проверки аналитиком'}`,
     '',
-    '5. Связи и контекст',
-    ...lineList(analysis.connections, (connection) => `${connection.target_name} - ${shortText(connection.description || 'упоминается в массиве данных')}`, 'Существенные деловые связи не выделены или требуют подтверждения.'),
+    '3. Выявленные риски и проблемы',
     '',
-    '6. Противоречия и зоны неопределенности',
-    ...lineList(analysis.contradictions, (item) => shortText(item), 'Критичных противоречий по предоставленному массиву не выделено. Отдельные совпадения требуют подтверждения по дополнительным идентификаторам.'),
+    ...(riskDetails.length ? riskDetails.flatMap((risk, index) => [
+      `3.${index + 1}. ${risk.title}`,
+      `Уровень: ${riskLabel(risk.level)}`,
+      `Сигнал: ${risk.signal || 'Сигнал требует уточнения.'}`,
+      `Почему это важно: ${risk.whyItMatters || 'Влияние на решение должно быть проверено аналитиком.'}`,
+      `Что проверить дополнительно: ${risk.additionalCheck || 'Проверить источник, актуальность и деловую значимость.'}`,
+      risk.sourceRefs?.length ? `Источники / фрагменты: ${risk.sourceRefs.join('; ')}` : '',
+      ''
+    ].filter(Boolean)) : ['Существенные риски не выделены или требуют ручной проверки.', '']),
+    '4. Хронология и контекст',
     '',
-    '7. Что проверить дополнительно',
-    ...lineList(analysis.questions?.length ? analysis.questions : analysis.recommendations, (item) => shortText(item), 'Проверить источники ключевых совпадений, актуальность данных и отсутствие однофамильцев.'),
+    'Период | Событие | Комментарий',
+    ...(chronology.length ? chronology.map((item) => `${item.period} | ${item.event} | ${item.comment}`) : ['Не выделено | Хронология требует ручной сборки | Добавьте даты и события после проверки источников.']),
     '',
-    '8. Предварительное заключение',
-    'Отчет является предварительным аналитическим документом. Он не содержит утверждений о виновности, нарушении закона или недобросовестности объекта проверки. Финальный вывод должен быть утвержден аналитиком после проверки источников, релевантности признаков и законности использования данных.'
+    '5. OSINT и репутационный контур',
+    '',
+    'Источник | Оценка | Сигнал',
+    ...(sourceContour.length ? sourceContour.map((item) => `${item.source} | ${item.assessment} | ${item.signal}`) : ['Сырой массив | Требует проверки | Источники должны быть подтверждены аналитиком.']),
+    '',
+    '6. Рекомендации HEIMDALL',
+    '',
+    'Действие | Описание',
+    ...(recommendations.length ? recommendations.map((item) => `${item.action} | ${item.description}`) : lineList(analysis.recommendations, (item) => `${shortText(item)} | Проверить перед финальным решением.`, 'Провести ручную проверку ключевых выводов перед передачей отчета клиенту.')),
+    '',
+    `Решение: ${decision.recommendation || 'Итоговое решение должно быть согласовано аналитиком.'}`,
+    '',
+    `Итог HEIMDALL: ${decision.rationale || 'вывод требует ручного согласования после проверки источников, идентификаторов и релевантности признаков.'}`,
+    '',
+    '7. Приложение - методология проверки',
+    '',
+    'Блок | Что проверяется',
+    ...methodology.map(([block, text]) => `${block} | ${text}`),
+    '',
+    'Внутреннее ограничение: этот документ является рабочим черновиком. Перед передачей клиенту сотрудник HEIMDALL должен проверить источники, убрать неподтвержденные утверждения и согласовать итоговую рекомендацию.'
   ].join('\n')
 }
 
 function schemaInstruction() {
-  return `Верни только компактный валидный JSON без markdown. Не возвращай клиентский отчет внутри JSON. Ограничь массивы: facts до 8, riskSignals до 8, connections до 8, contradictions до 6, questions до 6, recommendations до 6.
+  return `Верни только компактный валидный JSON без markdown. Не возвращай клиентский отчет внутри JSON: сайт сам соберет отчет по шаблону HEIMDALL. Ограничь массивы: facts до 8, riskSignals до 8, riskDetails до 8, riskMatrix до 6, chronology до 8, sourceContour до 8, connections до 8, contradictions до 6, questions до 6, recommendations до 6.
 Структура:
 {
   "summary": "короткий деловой вывод без персональных подробностей",
+  "profile": {
+    "objectName": "",
+    "objectType": "",
+    "activity": "",
+    "declaredHistory": "",
+    "jurisdictions": [],
+    "keyRisk": "",
+    "statusRecommendation": ""
+  },
   "entities": {"people": [], "companies": [], "inn": [], "ogrn": [], "domains": [], "urls": []},
   "facts": [{"title": "", "description": "", "sourceFragment": "", "confidence": "low|medium|high"}],
+  "riskMatrix": [{"category": "", "risk": "low|medium|high|critical", "comment": ""}],
   "riskSignals": [{"category": "legal|financial|reputation|employment|sanctions|conflict_of_interest|behavioral|documents|digital_trace|identification|other", "title": "", "description": "", "severity": "low|medium|high|critical", "confidence": "low|medium|high", "source": ""}],
+  "riskDetails": [{"title": "", "level": "low|medium|high|critical", "signal": "", "whyItMatters": "", "additionalCheck": "", "sourceRefs": [], "confidence": "low|medium|high"}],
+  "chronology": [{"period": "", "event": "", "comment": ""}],
+  "sourceContour": [{"source": "", "assessment": "negative|mixed|neutral|positive|needs_review", "signal": ""}],
   "connections": [{"target_name": "", "target_type": "person|company|phone|email|domain|address|social_profile|document|incident|other", "relation_type": "works_at|owns|affiliated_with|contacted_by|same_phone|same_email|mentioned_together|family_or_close_relation|contractor_of|other", "strength": "weak|medium|strong", "description": ""}],
   "contradictions": [],
   "questions": [],
   "recommendations": [],
+  "recommendationActions": [{"action": "", "description": ""}],
+  "decision": {"recommendation": "", "rationale": ""},
+  "reviewChecklist": [],
   "riskAssessment": {"score": 0, "level": "low|medium|high|critical", "explanation": ""}
 }`
 }
@@ -247,11 +447,15 @@ function systemPrompt() {
 - Не выдумывай факты.
 - Не делай обвинительных формулировок.
 - Отделяй подтвержденные факты от гипотез и вопросов для проверки.
+- Каждый значимый риск должен иметь: сигнал, почему это важно для решения клиента, что проверить дополнительно.
+- Если источник не подтвержден или контекст неполный, снижай confidence и выноси вопрос в questions/reviewChecklist.
+- Не превращай частную жизнь, адреса, телефоны и бытовые сведения в риск без понятной деловой релевантности.
 - Не повышай риск только из-за наличия адресов, паспортов, телефонов, медицинских записей, семейных связей, поездок, покупок или личных сообщений.
 - Если массив содержит чувствительные или избыточные персональные данные, это риск обработки данных и комплаенса, а не автоматический риск самого объекта.
 - Для компаний оценивай финансовые, юридические, корпоративные, репутационные, санкционные и договорные признаки.
 - Для кандидатов оценивай только деловую релевантность, непротиворечивость опыта, юридические/финансовые/репутационные маркеры.
 - Пиши осторожно: "по предоставленному массиву", "выявлен признак", "требует проверки".
+- Стиль отчета должен соответствовать HEIMDALL: управленческий вывод, risk index, таблица категорий, профиль объекта, риски, хронология, OSINT-контур, рекомендации.
 - Пиши на русском языке.
 - Верни только JSON, без markdown.
 

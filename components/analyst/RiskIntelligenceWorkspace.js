@@ -62,7 +62,8 @@ function createEmptyObject(overrides = {}) {
     client_contact: overrides.client_contact || '',
     priority: overrides.priority || 'normal',
     due_date: overrides.due_date || '',
-    analyst_notes: overrides.analyst_notes || ''
+    analyst_notes: overrides.analyst_notes || '',
+    approved_at: overrides.approved_at || ''
   }
 }
 
@@ -554,6 +555,12 @@ export default function RiskIntelligenceWorkspace({ initialObjectId = null }) {
     const contradictions = Array.isArray(safe.contradictions) ? safe.contradictions : []
     const questions = Array.isArray(safe.questions) ? safe.questions : []
     const recommendations = Array.isArray(safe.recommendations) ? safe.recommendations : []
+    const riskMatrix = Array.isArray(safe.riskMatrix) ? safe.riskMatrix : []
+    const riskDetails = Array.isArray(safe.riskDetails) ? safe.riskDetails : []
+    const chronology = Array.isArray(safe.chronology) ? safe.chronology : []
+    const sourceContour = Array.isArray(safe.sourceContour) ? safe.sourceContour : []
+    const recommendationActions = Array.isArray(safe.recommendationActions) ? safe.recommendationActions : []
+    const reviewChecklist = Array.isArray(safe.reviewChecklist) ? safe.reviewChecklist : []
     const score = Math.max(0, Math.min(100, Number(safe?.riskAssessment?.score ?? safe.score ?? calculateScore(risks))))
     const level = safe?.riskAssessment?.level || safe.level || (score >= 75 ? 'critical' : score >= 50 ? 'high' : score >= 25 ? 'medium' : 'low')
     const summary = safe.summary || safe.executiveSummary || `ИИ разобрал массив данных по объекту “${active?.name || 'без названия'}”. Проверьте выводы аналитиком.`
@@ -561,6 +568,7 @@ export default function RiskIntelligenceWorkspace({ initialObjectId = null }) {
 
     return {
       entities: safe.entities || {},
+      profile: safe.profile || {},
       facts: facts.map((item, index) => typeof item === 'string' ? { id: `ai-fact-${index}`, title: `Факт ${index + 1}`, description: item } : { id: item.id || `ai-fact-${index}`, title: item.title || `Факт ${index + 1}`, description: item.description || item.text || JSON.stringify(item) }),
       risks: risks.map((item, index) => ({
         id: item.id || `ai-signal-${Date.now()}-${index}`,
@@ -571,6 +579,10 @@ export default function RiskIntelligenceWorkspace({ initialObjectId = null }) {
         confidence: ['low', 'medium', 'high'].includes(item.confidence) ? item.confidence : 'medium',
         source: item.source || 'ИИ-разбор сырого массива'
       })),
+      riskMatrix,
+      riskDetails,
+      chronology,
+      sourceContour,
       connections: connections.map((item, index) => ({
         id: item.id || `ai-conn-${Date.now()}-${index}`,
         target_name: item.target_name || item.targetName || item.name || `Связь ${index + 1}`,
@@ -582,6 +594,9 @@ export default function RiskIntelligenceWorkspace({ initialObjectId = null }) {
       contradictions: contradictions.map((item) => typeof item === 'string' ? item : item.description || item.text || JSON.stringify(item)),
       questions: questions.map((item) => typeof item === 'string' ? item : item.question || item.description || JSON.stringify(item)),
       recommendations: recommendations.map((item) => typeof item === 'string' ? item : item.recommendation || item.description || JSON.stringify(item)),
+      recommendationActions,
+      decision: safe.decision || {},
+      reviewChecklist,
       score,
       level,
       summary,
@@ -678,6 +693,34 @@ export default function RiskIntelligenceWorkspace({ initialObjectId = null }) {
     } catch (error) {
       setMessage(`Не удалось сохранить отчет в истории: ${error.message}`)
     }
+  }
+
+  const saveReportDraft = async () => {
+    if (!active) return
+    const next = { ...active, status: active.status === 'completed' ? 'review' : active.status, approved_at: active.status === 'completed' ? '' : active.approved_at, updated_at: nowDate() }
+    updateActive({ status: next.status, approved_at: next.approved_at })
+    await persistObjectToServer(next, rawText, true)
+    setMessage(serverReady ? 'Правки отчета сохранены на сервере.' : 'Правки отчета сохранены в браузере.')
+  }
+
+  const approveReport = async () => {
+    if (!active?.report) {
+      setMessage('Нельзя согласовать пустой отчет.')
+      return
+    }
+    const approvedAt = new Date().toISOString()
+    const next = { ...active, status: 'completed', approved_at: approvedAt, updated_at: nowDate() }
+    updateActive({ status: 'completed', approved_at: approvedAt })
+    await persistObjectToServer(next, rawText, true)
+    setMessage('Отчет согласован. Теперь его можно сохранять как финальную версию или передавать клиенту.')
+  }
+
+  const returnReportToReview = async () => {
+    if (!active) return
+    const next = { ...active, status: 'review', approved_at: '', updated_at: nowDate() }
+    updateActive({ status: 'review', approved_at: '' })
+    await persistObjectToServer(next, rawText, true)
+    setMessage('Отчет возвращен на проверку. Внесите правки и согласуйте заново.')
   }
 
   const loadReportHistory = async () => {
@@ -788,8 +831,8 @@ export default function RiskIntelligenceWorkspace({ initialObjectId = null }) {
 
               <div className="rounded-[32px] border border-sky-300/15 bg-sky-300/[0.045] p-6">
                 <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div><div className="text-sm uppercase tracking-[0.22em] text-sky-300/80">Сырой массив данных</div><p className="mt-2 text-sm text-white/55">Вставляйте любые объемы текста. Искусственного ограничения поля нет. Для очень больших массивов браузеру может потребоваться больше времени.</p></div>
-                  <div className="flex flex-wrap gap-3"><button onClick={saveRaw} className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm">Сохранить массив</button><button onClick={runAiAnalysis} disabled={aiLoading} className="rounded-full bg-[#D6A84F] px-5 py-2 text-sm font-semibold text-[#050816] disabled:cursor-not-allowed disabled:opacity-50">{aiLoading ? 'ИИ анализирует...' : 'Разобрать через Claude / DeepSeek'}</button><button onClick={runAnalysis} disabled={aiLoading} className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/70 disabled:opacity-50">Локальный разбор</button></div>
+                  <div><div className="text-sm uppercase tracking-[0.22em] text-sky-300/80">Сырой массив данных</div><p className="mt-2 text-sm text-white/55">Вставляйте любые объемы текста. ИИ сформирует рабочий пакет, а финальный отчет должен проверить и согласовать сотрудник.</p></div>
+                  <div className="flex flex-wrap gap-3"><button onClick={saveRaw} className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm">Сохранить массив</button><button onClick={runAiAnalysis} disabled={aiLoading} className="rounded-full bg-[#D6A84F] px-5 py-2 text-sm font-semibold text-[#050816] disabled:cursor-not-allowed disabled:opacity-50">{aiLoading ? 'ИИ анализирует...' : 'Собрать черновик HEIMDALL'}</button><button onClick={runAnalysis} disabled={aiLoading} className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/70 disabled:opacity-50">Локальный разбор</button></div>
                 </div>
                 <textarea value={rawText} onChange={(e) => setRawText(e.target.value)} placeholder="Вставьте сюда весь поток данных из источников: ФИО, телефоны, почты, компании, выписки, заметки, ссылки, комментарии клиента, найденные материалы..." className="mt-5 min-h-[360px] w-full rounded-[24px] border border-white/10 bg-black/30 p-5 text-sm leading-7 text-white outline-none focus:border-sky-300/40" />
                 {aiStatus && (
@@ -803,8 +846,31 @@ export default function RiskIntelligenceWorkspace({ initialObjectId = null }) {
               {active.analysis && <AnalysisBlock analysis={active.analysis} />}
 
               <div className="rounded-[32px] border border-[#D6A84F]/20 bg-[#D6A84F]/[0.06] p-6">
-                <div className="mb-4 flex flex-wrap items-center justify-between gap-3"><div className="text-sm uppercase tracking-[0.22em] text-[#F7D784]/80">Отчет</div><div className="flex flex-wrap gap-3"><button onClick={copyReport} className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm">Скопировать</button><button onClick={downloadReport} className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm">Скачать TXT</button><button onClick={saveReportSnapshot} className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm">Сохранить версию</button><button onClick={loadReportHistory} className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm">История</button><button onClick={() => window.print()} className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm">Печать / PDF</button></div></div>
-                <pre className="max-h-[620px] overflow-auto whitespace-pre-wrap rounded-2xl border border-white/10 bg-black/25 p-5 text-sm leading-7 text-white/72">{active.report || 'Отчет появится после разбора данных.'}</pre>
+                <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <div className="text-sm uppercase tracking-[0.22em] text-[#F7D784]/80">Отчет</div>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      <Badge tone={active.status === 'completed' ? 'sky' : 'gold'}>{active.status === 'completed' ? 'Согласован' : 'Черновик на проверке'}</Badge>
+                      {active.approved_at && <Badge>Согласован: {new Date(active.approved_at).toLocaleString('ru-RU')}</Badge>}
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-3">
+                    <button onClick={saveReportDraft} className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm">Сохранить правки</button>
+                    <button onClick={returnReportToReview} className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm">На доработку</button>
+                    <button onClick={approveReport} className="rounded-full bg-emerald-400 px-4 py-2 text-sm font-semibold text-[#04110a]">Согласовать</button>
+                    <button onClick={copyReport} className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm">Скопировать</button>
+                    <button onClick={downloadReport} className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm">Скачать TXT</button>
+                    <button onClick={saveReportSnapshot} className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm">Сохранить версию</button>
+                    <button onClick={loadReportHistory} className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm">История</button>
+                    <button onClick={() => window.print()} className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm">Печать / PDF</button>
+                  </div>
+                </div>
+                <textarea
+                  value={active.report || ''}
+                  onChange={(event) => updateActive({ report: event.target.value, status: active.status === 'completed' ? 'review' : active.status, approved_at: active.status === 'completed' ? '' : active.approved_at })}
+                  placeholder="Отчет появится после разбора данных. После генерации сотрудник HEIMDALL должен проверить факты, источники, формулировки и итоговую рекомендацию."
+                  className="min-h-[620px] w-full resize-y rounded-2xl border border-white/10 bg-black/25 p-5 text-sm leading-7 text-white/75 outline-none placeholder:text-white/35 focus:border-[#D6A84F]/45"
+                />
                 {reports.length > 0 && (
                   <div className="mt-5 rounded-2xl border border-white/10 bg-black/20 p-4">
                     <div className="mb-3 text-sm font-semibold text-[#F7D784]">История отчетов</div>
@@ -846,14 +912,27 @@ function ObjectButton({ item, active, onOpen, onRemove }) {
 }
 
 function AnalysisBlock({ analysis }) {
+  const profile = analysis.profile || {}
   const sections = [
     ['Краткое резюме', [analysis.summary]],
+    ['Профиль объекта', [
+      profile.objectName && `Объект: ${profile.objectName}`,
+      profile.objectType && `Тип: ${profile.objectType}`,
+      profile.activity && `Контекст: ${profile.activity}`,
+      profile.keyRisk && `Ключевой риск: ${profile.keyRisk}`,
+      profile.statusRecommendation && `Статус: ${profile.statusRecommendation}`
+    ].filter(Boolean)],
+    ['Матрица риска', (analysis.riskMatrix || []).map((item) => `${item.category || 'Категория'}: ${item.risk || item.level || 'риск не указан'} - ${item.comment || item.description || ''}`)],
+    ['Детализация рисков', (analysis.riskDetails || []).map((item) => `${item.title || 'Риск'}: ${item.signal || item.description || ''} Что проверить: ${item.additionalCheck || 'источник и контекст'}`)],
     ['Выделенные факты', (analysis.facts || []).map((item) => item.description)],
     ['Возможные риски', (analysis.risks || []).map((item) => `${item.title}: ${item.description}`)],
+    ['Хронология', (analysis.chronology || []).map((item) => `${item.period || 'Период'}: ${item.event || ''} ${item.comment || ''}`)],
+    ['OSINT-контур', (analysis.sourceContour || []).map((item) => `${item.source || 'Источник'}: ${item.assessment || 'оценка'} - ${item.signal || ''}`)],
     ['Связи', (analysis.connections || []).map((item) => `${item.target_name}: ${item.description}`)],
     ['Противоречия', analysis.contradictions || []],
     ['Вопросы для уточнения', analysis.questions || []],
-    ['Рекомендации', analysis.recommendations || []]
+    ['Рекомендации', (analysis.recommendationActions || []).length ? analysis.recommendationActions.map((item) => `${item.action}: ${item.description}`) : analysis.recommendations || []],
+    ['Чек-лист согласования', analysis.reviewChecklist || []]
   ]
   return <div className="grid gap-4 md:grid-cols-2">{sections.map(([title, items]) => <div key={title} className="rounded-[28px] border border-white/10 bg-white/[0.045] p-5"><div className="mb-3 text-sm uppercase tracking-[0.2em] text-sky-300/80">{title}</div><div className="grid gap-2 text-sm leading-7 text-white/62">{items && items.length ? items.slice(0, 30).map((item, index) => <div key={index} className="rounded-2xl border border-white/10 bg-black/20 p-3">{item}</div>) : <div className="text-white/35">Нет данных</div>}</div></div>)}</div>
 }
