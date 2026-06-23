@@ -27,7 +27,7 @@ export function HeimdallAuthProvider({ children }) {
 
   useEffect(() => {
     if (!supabase) {
-      setAuthError('В Vercel не указаны NEXT_PUBLIC_SUPABASE_URL и NEXT_PUBLIC_SUPABASE_ANON_KEY')
+      setAuthError('Кабинет временно недоступен. Мы настраиваем защищенный доступ для клиентов HEIMDALL.')
       setLoading(false)
       return undefined
     }

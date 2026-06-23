@@ -87,7 +87,7 @@ export default function AccountPage() {
 
   useEffect(() => {
     if (!supabase) {
-      setError('В Vercel не указаны NEXT_PUBLIC_SUPABASE_URL и NEXT_PUBLIC_SUPABASE_ANON_KEY')
+      setError('Кабинет временно недоступен. Мы настраиваем защищенный доступ для клиентов HEIMDALL.')
       setLoading(false)
       return
     }
