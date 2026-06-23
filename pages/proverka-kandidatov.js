@@ -1,67 +1,43 @@
-import Head from 'next/head'
+import HeimdallServiceLanding from '@/components/HeimdallServiceLanding'
 
-const faq = [
-  ['Как проходит проверка?', 'Проверка включает анализ судебной истории, санкционных рисков, репутации и связанных лиц.'],
-  ['Что получает клиент?', 'Клиент получает структурированный аналитический отчёт с выводами и рекомендацией.']
-]
-
-const benefits = ['Биография кандидата','Конфликты интересов','Репутационные сигналы','Executive screening']
-
-export default function Page() {
+export default function CandidateScreeningPage() {
   return (
-    <>
-      <Head>
-        <title>Проверка кандидатов | HEIMDALL</title>
-        <meta name="description" content="HEIMDALL помогает снизить риск найма проблемных сотрудников." />
-      </Head>
-
-      <main className="min-h-screen bg-[#050816] px-5 py-20 text-white">
-        <div className="mx-auto max-w-5xl">
-          <div className="inline-flex rounded-full border border-sky-300/20 bg-sky-300/10 px-5 py-2 text-sm uppercase tracking-[0.24em] text-sky-200">
-            HEIMDALL Intelligence
-          </div>
-
-          <h1 className="mt-10 text-5xl font-semibold leading-[0.95] tracking-[-0.06em] md:text-7xl">
-            Проверка кандидатов перед наймом
-          </h1>
-
-          <p className="mt-10 text-xl leading-9 text-white/65">
-            Проверка биографии, конфликтов интересов и репутационных сигналов.
-          </p>
-
-          <section className="mt-16 grid gap-5 md:grid-cols-2">
-            {benefits.map((item) => (
-              <div
-                key={item}
-                className="rounded-[28px] border border-white/10 bg-white/[0.04] p-6"
-              >
-                <div className="text-lg font-semibold text-sky-100">
-                  {item}
-                </div>
-              </div>
-            ))}
-          </section>
-
-          <section className="mt-20">
-            <h2 className="text-3xl font-semibold">FAQ</h2>
-
-            <div className="mt-8 space-y-5">
-              {faq.map(([q, a]) => (
-                <div
-                  key={q}
-                  className="rounded-[24px] border border-white/10 bg-white/[0.04] p-6"
-                >
-                  <div className="text-xl font-semibold">{q}</div>
-
-                  <div className="mt-3 leading-7 text-white/65">
-                    {a}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-        </div>
-      </main>
-    </>
+    <HeimdallServiceLanding
+      title="Проверка кандидатов | HEIMDALL"
+      description="Проверка кандидатов на чувствительные должности: конфликт интересов, репутация, цифровой след, судебные и финансовые риски."
+      canonical="https://www.heimdall-group.ru/proverka-kandidatov"
+      eyebrow="Executive and sensitive-role screening"
+      heroTitle="Проверка кандидата перед доступом к деньгам, данным и решениям"
+      heroText="HEIMDALL помогает собственнику, HR и службе безопасности понять, есть ли у кандидата риски, которые опасны именно для этой роли: конфликт интересов, репутационный фон, давление, связи с контрагентами или признаки недостоверности."
+      primaryCta="Проверить кандидата"
+      price="от 35 000 ₽"
+      timing="2-5 рабочих дней"
+      topic="Проверка кандидата"
+      audience={['HRD и собственник', 'Служба безопасности', 'Руководитель функции с чувствительным доступом']}
+      pain={[
+        ['Финансы и CFO', 'Проверить репутацию, долговую нагрузку, конфликт интересов и биографические несостыковки.'],
+        ['Закупки', 'Оценить связи с поставщиками, подрядчиками и возможную аффилированность.'],
+        ['ИБ и безопасность', 'Понять риски доступа к данным, клиентам, внутренним системам и коммерческой тайне.'],
+        ['Топ-менеджмент', 'Проверить публичный фон, корпоративные связи и риски для репутации компании.']
+      ]}
+      includes={[
+        'Проверка предоставленных данных, публичного цифрового следа и делового контекста.',
+        'Судебные, исполнительные, банкротные и репутационные сигналы.',
+        'Конфликт интересов, связи с конкурентами, контрагентами или чувствительными организациями.',
+        'Оценка риска применительно к должности и уровню доступа.',
+        'Осторожный вывод без обвинительных формулировок и с учетом законных оснований обработки данных.'
+      ]}
+      deliverables={[
+        'Риск-профиль кандидата для конкретной должности.',
+        'Ключевые факты, несостыковки и вопросы для интервью.',
+        'Рекомендации по ограничениям доступа, испытательному сроку или дополнительной проверке.',
+        'Отдельная отметка о чувствительных данных и правовых границах использования.'
+      ]}
+      cases={[
+        ['CFO screening', 'проверка кандидата перед финансовым доступом', '/cases/cfo-screening'],
+        ['Закупочный конфликт', 'скрытые связи вокруг закупочной роли', '/cases/procurement-conflict-of-interest'],
+        ['Почему рекрутеры теряют клиентов', 'разбор ошибок в проверке кандидатов', '/journal/why-recruiters-lose-clients']
+      ]}
+    />
   )
 }

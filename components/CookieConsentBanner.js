@@ -33,16 +33,16 @@ export default function CookieConsentBanner() {
   if (!visible) return null
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-[80] px-3 pb-3 sm:px-5 sm:pb-5">
-      <div className="mx-auto max-w-5xl overflow-hidden rounded-[26px] border border-white/12 bg-[#07101f]/95 text-white shadow-[0_24px_90px_rgba(0,0,0,0.46)] backdrop-blur-2xl">
-        <div className="grid gap-5 p-5 sm:p-6 lg:grid-cols-[1fr_auto] lg:items-center">
+    <div className="fixed inset-x-0 bottom-0 z-[80] px-3 pb-3 sm:flex sm:justify-end sm:px-5 sm:pb-5">
+      <div className="w-full max-w-xl overflow-hidden rounded-[22px] border border-white/[0.12] bg-[#07101f]/95 text-white shadow-[0_24px_90px_rgba(0,0,0,0.42)] backdrop-blur-2xl">
+        <div className="grid gap-4 p-4 sm:p-5">
           <div className="min-w-0">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <div className="text-sm font-semibold uppercase tracking-[0.18em] text-[#F7D784]">
                   Cookies и аналитика
                 </div>
-                <p className="mt-3 max-w-3xl text-sm leading-7 text-white/68 sm:text-base">
+                <p className="mt-2 max-w-2xl text-xs leading-6 text-white/68 sm:text-sm">
                   Мы используем обязательные технические данные для работы сайта, а также можем использовать cookie и аналитические инструменты для улучшения сайта и оценки эффективности страниц. Вы можете принять или отклонить необязательные cookie. Подробнее - в политике конфиденциальности и политике обработки персональных данных.
                 </p>
               </div>
@@ -57,7 +57,7 @@ export default function CookieConsentBanner() {
               </button>
             </div>
 
-            <div className="mt-4 flex flex-wrap gap-3 text-xs text-white/54 sm:text-sm">
+            <div className="mt-3 flex flex-wrap gap-3 text-xs text-white/54">
               <Link href="/privacy" className="underline decoration-white/20 underline-offset-4 transition hover:text-sky-200">
                 Политика конфиденциальности
               </Link>
@@ -67,18 +67,18 @@ export default function CookieConsentBanner() {
             </div>
           </div>
 
-          <div className="grid gap-3 sm:flex sm:justify-end lg:grid lg:min-w-[220px]">
+          <div className="grid gap-2 sm:grid-cols-2">
             <button
               type="button"
               onClick={() => saveConsent('accepted')}
-              className="inline-flex items-center justify-center rounded-2xl bg-sky-500 px-5 py-3 text-sm font-semibold text-white shadow-[0_0_34px_rgba(56,189,248,0.24)] transition hover:bg-sky-400"
+              className="inline-flex items-center justify-center rounded-xl bg-sky-500 px-4 py-3 text-sm font-semibold text-white shadow-[0_0_34px_rgba(56,189,248,0.24)] transition hover:bg-sky-400"
             >
               Принять
             </button>
             <button
               type="button"
               onClick={() => saveConsent('declined')}
-              className="inline-flex items-center justify-center rounded-2xl border border-white/12 bg-white/[0.06] px-5 py-3 text-sm font-semibold text-white/78 transition hover:bg-white/10 hover:text-white"
+              className="inline-flex items-center justify-center rounded-xl border border-white/[0.12] bg-white/[0.06] px-4 py-3 text-sm font-semibold text-white/78 transition hover:bg-white/10 hover:text-white"
             >
               Отклонить
             </button>

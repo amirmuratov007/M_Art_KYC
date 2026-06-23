@@ -1,67 +1,56 @@
-import Head from 'next/head'
+import HeimdallServiceLanding from '@/components/HeimdallServiceLanding'
 
-const faq = [
-  ['Как проходит проверка?', 'Проверка включает анализ судебной истории, санкционных рисков, репутации и связанных лиц.'],
-  ['Что получает клиент?', 'Клиент получает структурированный аналитический отчёт с выводами и рекомендацией.']
-]
-
-const benefits = ['Business intelligence','Due diligence','Risk analytics','Counterparty intelligence']
-
-export default function Page() {
+export default function CorporateIntelligencePage() {
   return (
-    <>
-      <Head>
-        <title>Корпоративная разведка | HEIMDALL</title>
-        <meta name="description" content="HEIMDALL проводит корпоративную разведку, due diligence и risk intelligence." />
-      </Head>
-
-      <main className="min-h-screen bg-[#050816] px-5 py-20 text-white">
-        <div className="mx-auto max-w-5xl">
-          <div className="inline-flex rounded-full border border-sky-300/20 bg-sky-300/10 px-5 py-2 text-sm uppercase tracking-[0.24em] text-sky-200">
-            HEIMDALL Intelligence
-          </div>
-
-          <h1 className="mt-10 text-5xl font-semibold leading-[0.95] tracking-[-0.06em] md:text-7xl">
-            Корпоративная разведка и бизнес-аналитика
-          </h1>
-
-          <p className="mt-10 text-xl leading-9 text-white/65">
-            Проверка партнёров, сделок и скрытых рисков.
-          </p>
-
-          <section className="mt-16 grid gap-5 md:grid-cols-2">
-            {benefits.map((item) => (
-              <div
-                key={item}
-                className="rounded-[28px] border border-white/10 bg-white/[0.04] p-6"
-              >
-                <div className="text-lg font-semibold text-sky-100">
-                  {item}
-                </div>
-              </div>
-            ))}
-          </section>
-
-          <section className="mt-20">
-            <h2 className="text-3xl font-semibold">FAQ</h2>
-
-            <div className="mt-8 space-y-5">
-              {faq.map(([q, a]) => (
-                <div
-                  key={q}
-                  className="rounded-[24px] border border-white/10 bg-white/[0.04] p-6"
-                >
-                  <div className="text-xl font-semibold">{q}</div>
-
-                  <div className="mt-3 leading-7 text-white/65">
-                    {a}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-        </div>
-      </main>
-    </>
+    <HeimdallServiceLanding
+      language="en"
+      title="Corporate Intelligence | HEIMDALL"
+      description="HEIMDALL corporate intelligence for deals, counterparties, ownership, sanctions exposure, reputation and hidden business risks."
+      canonical="https://www.heimdall-group.ru/corporate-intelligence"
+      eyebrow="Corporate intelligence"
+      heroTitle="Know who you are dealing with before the decision is irreversible"
+      heroText="HEIMDALL reviews companies, owners, links, litigation, sanctions exposure and reputation signals, then turns scattered facts into a management conclusion."
+      primaryCta="Request intelligence review"
+      secondaryCta={{ label: 'View sample reports', href: '/sample-reports-en' }}
+      price="from $450"
+      timing="24-72 hours"
+      audience={[
+        'Owners, CEOs and investment teams',
+        'Legal, compliance and procurement teams',
+        'Companies entering sensitive deals or new markets'
+      ]}
+      pain={[
+        ['Before a deal', 'Understand hidden ownership, litigation, reputation and related-party risk before signing.'],
+        ['Before advance payment', 'Check shell patterns, payment-substitution risk, supplier credibility and delivery exposure.'],
+        ['Before partnership', 'Assess real control, affiliates, sanctions exposure and potential conflicts of interest.'],
+        ['Before escalation', 'Structure facts and links before legal action, negotiation or internal decision.']
+      ]}
+      includes={[
+        'Company profile, registration logic and operating footprint',
+        'Shareholders, beneficial-owner signals and related companies',
+        'Litigation, enforcement, bankruptcy and debt-risk indicators',
+        'Sanctions, PEP, adverse media and reputation exposure',
+        'Digital footprint, website, contacts and document consistency',
+        'Conclusion: proceed, limit exposure, request more documents or stop'
+      ]}
+      deliverables={[
+        'Executive risk summary for decision makers',
+        'Fact map with sources, links and uncertainty notes',
+        'Red flags prioritized by business impact',
+        'Recommended next step and control measures'
+      ]}
+      process={[
+        ['01', 'Object framing', 'We define the company, people, documents, bank details, websites and related entities to review.'],
+        ['02', 'Source review', 'We check public registries, courts, media, sanctions lists, corporate links and digital traces.'],
+        ['03', 'Risk correlation', 'We connect facts into a coherent picture instead of listing unrelated database hits.'],
+        ['04', 'Decision brief', 'You receive a concise conclusion with risk level, limitations and recommended next action.']
+      ]}
+      related={[
+        ['Business support', 'Continuous review perimeter for recurring checks and risk monitoring.', '/business-support-en'],
+        ['Security outsourcing', 'External security department for deals, hiring, suppliers and information security.', '/security-outsourcing-en'],
+        ['Internal investigations', 'Lawful corporate investigations for fraud, leaks and conflicts of interest.', '/internal-investigations-en']
+      ]}
+      topic="Corporate intelligence request"
+    />
   )
 }

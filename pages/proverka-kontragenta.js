@@ -1,67 +1,43 @@
-import Head from 'next/head'
+import HeimdallServiceLanding from '@/components/HeimdallServiceLanding'
 
-const faq = [
-  ['Как проходит проверка?', 'Проверка включает анализ судебной истории, санкционных рисков, репутации и связанных лиц.'],
-  ['Что получает клиент?', 'Клиент получает структурированный аналитический отчёт с выводами и рекомендацией.']
-]
-
-const benefits = ['Скрытые владельцы','Судебные риски','Санкционные проверки','Проверка репутации']
-
-export default function Page() {
+export default function CounterpartyCheckPage() {
   return (
-    <>
-      <Head>
-        <title>Проверка контрагентов | HEIMDALL</title>
-        <meta name="description" content="HEIMDALL проводит проверку контрагентов, бенефициаров, судебной истории и санкционных рисков." />
-      </Head>
-
-      <main className="min-h-screen bg-[#050816] px-5 py-20 text-white">
-        <div className="mx-auto max-w-5xl">
-          <div className="inline-flex rounded-full border border-sky-300/20 bg-sky-300/10 px-5 py-2 text-sm uppercase tracking-[0.24em] text-sky-200">
-            HEIMDALL Intelligence
-          </div>
-
-          <h1 className="mt-10 text-5xl font-semibold leading-[0.95] tracking-[-0.06em] md:text-7xl">
-            Проверка контрагентов для принятия правильных решений
-          </h1>
-
-          <p className="mt-10 text-xl leading-9 text-white/65">
-            Суды, санкции, репутация, связи и бенефициары.
-          </p>
-
-          <section className="mt-16 grid gap-5 md:grid-cols-2">
-            {benefits.map((item) => (
-              <div
-                key={item}
-                className="rounded-[28px] border border-white/10 bg-white/[0.04] p-6"
-              >
-                <div className="text-lg font-semibold text-sky-100">
-                  {item}
-                </div>
-              </div>
-            ))}
-          </section>
-
-          <section className="mt-20">
-            <h2 className="text-3xl font-semibold">FAQ</h2>
-
-            <div className="mt-8 space-y-5">
-              {faq.map(([q, a]) => (
-                <div
-                  key={q}
-                  className="rounded-[24px] border border-white/10 bg-white/[0.04] p-6"
-                >
-                  <div className="text-xl font-semibold">{q}</div>
-
-                  <div className="mt-3 leading-7 text-white/65">
-                    {a}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-        </div>
-      </main>
-    </>
+    <HeimdallServiceLanding
+      title="Проверка контрагента | HEIMDALL"
+      description="Проверка контрагента перед договором, авансом или партнерством: владельцы, суды, связи, санкционные и репутационные риски."
+      canonical="https://www.heimdall-group.ru/proverka-kontragenta"
+      eyebrow="Counterparty intelligence"
+      heroTitle="Проверка контрагента перед договором, авансом или партнерством"
+      heroText="Собираем судебные, корпоративные, санкционные, репутационные и связевые сигналы в один управленческий вывод: можно работать, нужен контроль, требуется углубленная проверка или лучше остановиться."
+      primaryCta="Проверить контрагента"
+      price="от 45 000 ₽"
+      timing="2-5 рабочих дней"
+      topic="Проверка контрагента"
+      audience={['Собственник, CEO или CFO', 'Юридический, комплаенс и закупочный контур', 'Служба безопасности или руководитель проекта']}
+      pain={[
+        ['Перед договором', 'Понять, кто реально стоит за компанией и нет ли скрытых красных флагов.'],
+        ['Перед авансом', 'Оценить риск фиктивности, долгов, судебных конфликтов и подмены стороны сделки.'],
+        ['Перед отсрочкой', 'Проверить платежную дисциплину, банкротные признаки и связанные компании.'],
+        ['Перед партнерством', 'Увидеть бенефициаров, связи, репутационный фон и санкционную экспозицию.']
+      ]}
+      includes={[
+        'Юридическое лицо, владельцы, руководители и признаки номинальности.',
+        'Суды, исполнительные производства, банкротные и долговые сигналы.',
+        'Связанные компании, адреса, телефоны, домены, представители и возможная аффилированность.',
+        'Санкционная и PEP-экспозиция, adverse media и репутационный фон.',
+        'Рекомендации по договору, авансу, лимиту, обеспечению или отказу от сделки.'
+      ]}
+      deliverables={[
+        'Краткий вывод для руководителя: работать, контролировать, углубить или остановить.',
+        'Карта красных флагов и связанных лиц.',
+        'Список источников, подтвержденных фактов и зон неопределенности.',
+        'Практические условия снижения риска перед подписанием или оплатой.'
+      ]}
+      cases={[
+        ['Контрагент на 180 млн', 'как проверка изменила условия договора', '/cases/kontragent-180m'],
+        ['Санкционный риск', 'связанный риск без прямого совпадения', '/cases/sanctions-risk-without-direct-match'],
+        ['Скрытый бенефициар', 'цепочка контроля через связанные структуры', '/cases/hidden-beneficiary-chain']
+      ]}
+    />
   )
 }

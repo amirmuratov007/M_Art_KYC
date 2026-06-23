@@ -530,3 +530,28 @@ pre,
     font-size: clamp(2rem, 10.6vw, 2.75rem) !important;
   }
 }
+
+/* Redesign baseline: keep the interface quiet and predictable for business users. */
+html,
+body,
+body *,
+a,
+button,
+input,
+textarea,
+select,
+label {
+  cursor: auto !important;
+}
+
+button,
+a,
+select,
+label {
+  cursor: pointer !important;
+}
+
+.global-cursor-dot,
+.global-cursor-ring {
+  display: none !important;
+}

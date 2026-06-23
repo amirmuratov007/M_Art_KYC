@@ -208,7 +208,7 @@ export default function HeimdallNav({ language }) {
                 onMouseEnter={() => setActiveDropdown(group.title)}
                 onMouseLeave={() => setActiveDropdown(null)}
               >
-                <Link href={group.href} className="inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm text-white/70 transition hover:bg-white/7 hover:text-[#F7D784]">
+                <Link href={group.href} className="inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm text-white/70 transition hover:bg-white/[0.07] hover:text-[#F7D784]">
                   {group.title}
                   <ChevronDown className="h-4 w-4 opacity-70" />
                 </Link>
