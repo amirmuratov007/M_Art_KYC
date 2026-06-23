@@ -11,6 +11,23 @@ const DEEPSEEK_URL = 'https://api.deepseek.com/chat/completions'
 const DEFAULT_CLAUDE_MODEL = process.env.ANTHROPIC_MODEL || process.env.CLAUDE_MODEL || 'claude-sonnet-4-6'
 const DEFAULT_DEEPSEEK_MODEL = process.env.DEEPSEEK_MODEL || 'deepseek-chat'
 const CHUNK_SIZE = 36000
+const EMAIL_RE = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi
+const URL_RE = /https?:\/\/[^\s)\]]+/gi
+const DOMAIN_RE = /\b(?:[a-z0-9-]+\.)+(?:ru|com|net|org|io|ai|рф|su|kz|by|de|eu|ae|tr)\b/gi
+const INN_RE = /\b\d{10}(?:\d{2})?\b/g
+const OGRN_RE = /\b\d{13}(?:\d{2})?\b/g
+const COMPANY_RE = /\b(?:ООО|АО|ПАО|ИП|НКО|ЗАО|OAO|LLC|Ltd|Inc)\s+[«"A-Za-zА-Яа-яЁё0-9 ._-]{2,80}[»"]?/g
+const PERSON_RE = /\b[А-ЯЁ][а-яё]+\s+[А-ЯЁ][а-яё]+(?:\s+[А-ЯЁ][а-яё]+)?\b/g
+
+const LOCAL_RISK_MARKERS = [
+  ['legal', 'Судебная и претензионная нагрузка', 'high', ['суд', 'иск', 'арбитраж', 'исполнительное производство', 'фссп', 'претенз', 'спор']],
+  ['financial', 'Финансовые признаки риска', 'high', ['банкрот', 'долг', 'задолженность', 'кредитор', 'неплатеж', 'убыток', 'аванс']],
+  ['sanctions', 'Санкционный и комплаенс-контур', 'critical', ['санкц', 'ofac', 'pep', 'экстрем', 'террор', 'ограничительн']],
+  ['conflict_of_interest', 'Связанные лица и конфликт интересов', 'high', ['аффилирован', 'связанное лицо', 'номинал', 'родственник', 'бенефициар', 'конфликт интересов']],
+  ['documents', 'Документальные несоответствия', 'medium', ['не совпадает', 'расхождение', 'поддельн', 'недостовер', 'не подтверждено']],
+  ['reputation', 'Репутационные признаки риска', 'medium', ['скандал', 'негатив', 'жалоба', 'мошен', 'подозр', 'обман']],
+  ['digital_trace', 'Цифровой след и технические совпадения', 'low', ['домен', 'почта', 'телефон', 'telegram', 'соцсеть', 'утечка']]
+]
 
 function safeText(value) {
   return typeof value === 'string' ? value : value == null ? '' : String(value)
@@ -102,6 +119,34 @@ function extractArrayItems(text, field, limit = 8) {
 
 function normalizeList(list, limit = 12) {
   return Array.isArray(list) ? list.filter(Boolean).slice(0, limit) : []
+}
+
+function uniqueMatches(text, regex, max = 80) {
+  const set = new Set()
+  const matches = safeText(text).match(regex) || []
+  for (const item of matches) {
+    const cleaned = String(item).trim().replace(/[,.);:]+$/, '')
+    if (cleaned) set.add(cleaned)
+    if (set.size >= max) break
+  }
+  return Array.from(set)
+}
+
+function textLines(text) {
+  return safeText(text).split(/\r?\n/).map((line) => line.trim()).filter(Boolean)
+}
+
+function findContextLines(text, words, max = 6) {
+  const lowerWords = words.map((word) => word.toLowerCase())
+  const found = []
+  for (const line of textLines(text)) {
+    const lower = line.toLowerCase()
+    if (lowerWords.some((word) => lower.includes(word))) {
+      found.push(shortText(line, 360))
+      if (found.length >= max) break
+    }
+  }
+  return found
 }
 
 function normalizeTextItem(item, fallback = '') {
@@ -474,6 +519,140 @@ function buildSourceManifest(sources = []) {
   return list.length ? JSON.stringify(list, null, 2) : '[]'
 }
 
+function buildLocalFallbackAnalysis({ object, rawText, sources = [] }) {
+  const text = safeText(rawText)
+  const lower = text.toLowerCase()
+  const entities = {
+    people: uniqueMatches(text, PERSON_RE, 40),
+    companies: uniqueMatches(text, COMPANY_RE, 40),
+    inn: uniqueMatches(text, INN_RE, 40),
+    ogrn: uniqueMatches(text, OGRN_RE, 40),
+    domains: uniqueMatches(text, DOMAIN_RE, 40),
+    urls: uniqueMatches(text, URL_RE, 40)
+  }
+
+  const sourceRefs = normalizeList(sources, 8).map((source) => source.file_name || source.name).filter(Boolean)
+  const facts = textLines(text)
+    .filter((line) => line.length > 28 && !line.startsWith('====='))
+    .slice(0, 8)
+    .map((line, index) => ({
+      title: `Факт ${index + 1}`,
+      description: shortText(line, 520),
+      sourceFragment: shortText(line, 220),
+      confidence: 'medium'
+    }))
+
+  const riskSignals = LOCAL_RISK_MARKERS
+    .map(([category, title, severity, words]) => {
+      const hits = words.filter((word) => lower.includes(word.toLowerCase()))
+      if (!hits.length) return null
+      const evidence = findContextLines(text, words, 4)
+      return {
+        category,
+        title,
+        description: `В загруженном массиве найдены маркеры: ${hits.join(', ')}. Контекст требует ручной проверки аналитиком.`,
+        severity,
+        confidence: evidence.length >= 2 ? 'medium' : 'low',
+        source: sourceRefs[0] || 'Локальный структурный разбор',
+        evidence
+      }
+    })
+    .filter(Boolean)
+
+  const score = Math.max(0, Math.min(100, Math.round(riskSignals.reduce((sum, risk) => {
+    const weight = risk.severity === 'critical' ? 80 : risk.severity === 'high' ? 46 : risk.severity === 'medium' ? 24 : 10
+    return sum + weight * (risk.confidence === 'medium' ? 0.8 : 0.55)
+  }, 0))))
+  const level = scoreToLevel(score)
+
+  const profileName = object?.name || entities.companies[0] || entities.people[0] || 'Объект проверки'
+  const profile = {
+    objectName: profileName,
+    objectType: object?.object_type || 'risk intelligence object',
+    activity: object?.description || 'Контекст определен по загруженным материалам',
+    declaredHistory: sources.length ? `Загружено источников: ${sources.length}` : 'История требует уточнения по материалам проверки',
+    jurisdictions: [],
+    keyRisk: riskSignals[0]?.title || 'Ключевой риск требует ручной квалификации',
+    statusRecommendation: 'Локальный черновик: проверить источники и формулировки перед передачей клиенту'
+  }
+
+  const riskMatrix = riskSignals.slice(0, 6).map((risk) => ({
+    category: risk.title,
+    risk: risk.severity,
+    comment: risk.description
+  }))
+
+  const riskDetails = riskSignals.slice(0, 8).map((risk) => ({
+    title: risk.title,
+    level: risk.severity,
+    signal: risk.description,
+    whyItMatters: 'Сигнал может влиять на договорные, комплаенс- или управленческие решения, но требует подтверждения источником.',
+    additionalCheck: 'Проверить первоисточник, актуальность, идентификаторы объекта и деловую значимость признака.',
+    sourceRefs: risk.evidence?.length ? risk.evidence.slice(0, 3) : sourceRefs.slice(0, 3),
+    confidence: risk.confidence
+  }))
+
+  const sourceContour = normalizeList(sources, 8).map((source) => ({
+    source: source.file_name || 'Загруженный файл',
+    assessment: source.status === 'extracted' ? 'needs_review' : source.status || 'needs_review',
+    signal: source.status === 'extracted'
+      ? `Извлечено ${Number(source.characters || 0).toLocaleString('ru-RU')} знаков.`
+      : source.error || 'Источник требует дополнительной обработки.'
+  }))
+
+  const summary = `Локальный демонстрационный разбор HEIMDALL обработал ${text.length.toLocaleString('ru-RU')} знаков по объекту "${profileName}". Выделено фактов: ${facts.length}, сигналов риска: ${riskSignals.length}, источников: ${sources.length}. Это не результат Claude/DeepSeek; черновик нужен для проверки сценария и ручного согласования.`
+
+  const analysis = normalizeAnalysis({
+    summary,
+    profile,
+    entities,
+    facts,
+    riskMatrix,
+    riskSignals,
+    riskDetails,
+    chronology: [],
+    sourceContour,
+    connections: [
+      ...entities.companies.slice(0, 5).map((name) => ({ target_name: name, target_type: 'company', relation_type: 'mentioned_together', strength: 'medium', description: 'Компания упоминается в загруженном массиве.' })),
+      ...entities.domains.slice(0, 5).map((name) => ({ target_name: name, target_type: 'domain', relation_type: 'mentioned_together', strength: 'weak', description: 'Домен упоминается в загруженном массиве.' }))
+    ],
+    contradictions: findContextLines(text, ['не совпадает', 'расхождение', 'противореч', 'не подтвержден'], 6),
+    questions: [
+      'Какие источники подтверждают наиболее существенные признаки?',
+      'Достаточно ли идентификаторов для уверенного отнесения совпадений к объекту проверки?',
+      'Какие сведения можно включать в клиентский отчет без юридических рисков?'
+    ],
+    recommendations: [
+      'Запустить настоящий AI-анализ после добавления ANTHROPIC_API_KEY или DEEPSEEK_API_KEY.',
+      'Проверить источники по каждому существенному сигналу.',
+      'Удалить неподтвержденные или избыточные персональные сведения перед передачей клиенту.'
+    ],
+    recommendationActions: [
+      { action: 'Проверить источники', description: 'Сверить каждый существенный сигнал с первоисточником и датой получения.' },
+      { action: 'Запустить настоящую модель', description: 'Для качественного отчета подключить Claude или DeepSeek и повторить сборку черновика.' },
+      { action: 'Согласовать вручную', description: 'Финальный вывод должен подтвердить сотрудник HEIMDALL.' }
+    ],
+    decision: {
+      recommendation: level === 'high' || level === 'critical' ? 'Не принимать решение без ручной проверки источников.' : 'Продолжить ручную проверку перед финальным выводом.',
+      rationale: summary
+    },
+    reviewChecklist: [
+      'Это локальный демонстрационный черновик без внешней AI-модели.',
+      'Проверить все источники и фрагменты доказательств.',
+      'Подключить ANTHROPIC_API_KEY или DEEPSEEK_API_KEY для настоящего AI-разбора.',
+      'Убрать неподтвержденные утверждения и чувствительные данные из клиентской версии.',
+      'Согласовать итоговую рекомендацию вручную.'
+    ],
+    riskAssessment: { score, level, explanation: 'Оценка рассчитана локально по маркерам риска и не заменяет AI-анализ.' }
+  })
+
+  return {
+    ...analysis,
+    localFallback: true,
+    parseWarning: 'Настоящий AI-ключ не задан. Сформирован локальный демонстрационный черновик для проверки интерфейса.'
+  }
+}
+
 function buildUserContent({ object, text, index, total, sources = [] }) {
   return `Объект проверки: ${JSON.stringify(object || {})}
 
@@ -597,7 +776,20 @@ export default async function handler(req, res) {
     const sources = Array.isArray(req.body?.sources) ? req.body.sources : []
     if (!rawText.trim()) return res.status(400).json({ ok: false, error: 'Пустой массив данных' })
 
-    const provider = getProvider()
+    let provider = ''
+    try {
+      provider = getProvider()
+    } catch (error) {
+      const analysis = buildLocalFallbackAnalysis({ object, rawText, sources })
+      return res.status(200).json({
+        ok: true,
+        provider: 'local-demo',
+        model: 'local-structured-fallback',
+        chunks: 1,
+        analysis: { ...analysis, provider: 'local-demo', model: 'local-structured-fallback', rawLength: rawText.length, sourceCount: sources.length }
+      })
+    }
+
     const model = provider === 'claude' ? DEFAULT_CLAUDE_MODEL : DEFAULT_DEEPSEEK_MODEL
     const chunks = chunkText(rawText)
     const partials = []

@@ -756,7 +756,10 @@ export default function RiskIntelligenceWorkspace({ initialObjectId = null }) {
       updateActive(patch)
       await persistObjectToServer({ ...active, ...patch, updated_at: nowDate() }, rawText, true)
       setMessage('ИИ-разбор выполнен. Проверьте факты, риски, связи и отчет.')
-      setAiStatus(`4/4 Готово. Модель: ${payload.model || payload.provider || 'Claude / DeepSeek'}. Частей: ${payload.chunks || 1}. Результат записан в отчет.${payload.analysis?.parseWarning ? ' Было предупреждение разбора, отчет собран из доступных фрагментов.' : ''}`)
+      const localFallbackNote = payload.provider === 'local-demo' || payload.analysis?.localFallback
+        ? ' Это локальный демонстрационный черновик без Claude / DeepSeek: он нужен, чтобы проверить загрузку файлов, редактор и согласование.'
+        : ''
+      setAiStatus(`4/4 Готово. Модель: ${payload.model || payload.provider || 'Claude / DeepSeek'}. Частей: ${payload.chunks || 1}. Результат записан в отчет.${payload.analysis?.parseWarning ? ' Было предупреждение разбора, отчет собран из доступных фрагментов.' : ''}${localFallbackNote}`)
     } catch (error) {
       const text = error?.name === 'AbortError'
         ? 'Превышено время ожидания. Vercel или OpenAI не успели ответить. Попробуйте сократить массив или повторить запрос.'
