@@ -185,6 +185,10 @@ function sourceStatusLabel(status) {
   return 'Источник'
 }
 
+function escapeRegExp(value) {
+  return String(value || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
 function buildSourceBlock(source) {
   const name = source?.file_name || source?.name || 'uploaded-file'
   const text = source?.text || ''
@@ -192,6 +196,19 @@ function buildSourceBlock(source) {
   const footer = `===== END SOURCE: ${name} =====`
   if (!text.trim()) return `${header}\n[Текст не извлечен: ${source?.error || sourceStatusLabel(source?.status)}]\n${footer}`
   return `${header}\n${text.trim()}\n${footer}`
+}
+
+function removeExistingSourceBlocks(raw, sources = []) {
+  let next = String(raw || '')
+  const names = [...new Set(sources.map((source) => source?.file_name || source?.name).filter(Boolean))]
+
+  for (const name of names) {
+    const escaped = escapeRegExp(name)
+    const sourceBlock = new RegExp(`\\n*===== HEIMDALL SOURCE: ${escaped}\\s*\\|[\\s\\S]*?===== END SOURCE: ${escaped} =====\\n*`, 'g')
+    next = next.replace(sourceBlock, '\n\n')
+  }
+
+  return next.replace(/\n{4,}/g, '\n\n\n').trim()
 }
 
 function unique(list) {
@@ -605,9 +622,14 @@ export default function RiskIntelligenceWorkspace({ initialObjectId = null }) {
       }
 
       const sourceBlocks = extracted.map(buildSourceBlock)
-      const nextRawText = [rawText.trim(), ...sourceBlocks].filter(Boolean).join('\n\n')
+      const cleanedRawText = removeExistingSourceBlocks(rawText, extracted)
+      const nextRawText = [cleanedRawText, ...sourceBlocks].filter(Boolean).join('\n\n')
       const sourceMeta = extracted.map(({ text, ...source }) => source)
-      const nextSourceFiles = [...(active.source_files || []), ...sourceMeta]
+      const uploadedNames = new Set(sourceMeta.map((source) => source.file_name).filter(Boolean))
+      const nextSourceFiles = [
+        ...(active.source_files || []).filter((source) => !uploadedNames.has(source.file_name)),
+        ...sourceMeta
+      ]
       const patch = {
         source_files: nextSourceFiles,
         description: active.description || 'Материалы проверки загружены из файлов.',
@@ -621,7 +643,7 @@ export default function RiskIntelligenceWorkspace({ initialObjectId = null }) {
 
       const extractedCount = extracted.filter((source) => source.status === 'extracted' && source.characters > 0).length
       const needsOcr = extracted.filter((source) => source.status === 'needs_ocr').length
-      setMessage(`Файлы обработаны: текст извлечен из ${extractedCount}, требуют OCR: ${needsOcr}. Материалы добавлены в сырой массив.`)
+      setMessage(`Файлы обработаны: текст извлечен из ${extractedCount}, требуют OCR: ${needsOcr}. Старые блоки этих файлов заменены в сыром массиве.`)
       setFileStatus('Готово. Проверьте список источников и запустите сборку черновика HEIMDALL.')
     } catch (error) {
       setMessage(`Не удалось обработать файлы: ${error.message}`)
