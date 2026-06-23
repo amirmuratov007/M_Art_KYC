@@ -119,7 +119,7 @@ export default function HeimdallServiceLanding({
           <SectionHeader
             eyebrow={ru ? 'Когда нужен HEIMDALL' : 'When HEIMDALL helps'}
             title={ru ? 'Мы включаемся там, где ошибка стоит дороже проверки' : 'We step in where a wrong decision costs more than the review'}
-            text={ru ? 'Сайт должен сразу отвечать на главный вопрос клиента: в какой момент риск становится управленческой задачей.' : 'The site should answer the main client question: when does risk become a management decision?'}
+            text={ru ? 'Мы подключаемся до того, как договор, платеж, доступ или конфликт становятся дорогой ошибкой.' : 'We step in before a contract, payment, access decision or dispute becomes an expensive mistake.'}
           />
           <div className="mx-auto grid max-w-7xl gap-5 md:grid-cols-2 lg:grid-cols-4">
             {(pain.length ? pain : [

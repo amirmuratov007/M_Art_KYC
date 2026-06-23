@@ -167,8 +167,8 @@ export default function HeimdallHomeExperience({ language = 'ru' }) {
         <section className="bg-[#f3f6fb] px-4 py-16 text-[#111827] sm:px-5 sm:py-20">
           <SectionHeader
             eyebrow={isRu ? 'Продукты' : 'Products'}
-            title={isRu ? 'Сайт должен продавать не услуги, а решение в момент риска' : 'The site should sell a decision at the moment of risk'}
-            text={isRu ? 'Я бы развивал HEIMDALL как понятную линейку продуктов, а не как длинный каталог похожих проверок.' : 'I would develop HEIMDALL as a clear product line, not a long catalogue of similar checks.'}
+            title={isRu ? 'Решение по риску до договора, платежа, найма или партнерства' : 'Risk decisions before contracts, payments, hiring and partnerships'}
+            text={isRu ? 'Выберите формат под конкретный момент: проверить контрагента, кандидата, сделку или построить постоянный контур безопасности.' : 'Choose the format that matches the moment: counterparty review, candidate screening, due diligence or ongoing security support.'}
           />
           <div className="mx-auto grid max-w-7xl gap-5 md:grid-cols-2 lg:grid-cols-4">
             {content.products.map(([title, text, href, Icon]) => (
@@ -187,7 +187,7 @@ export default function HeimdallHomeExperience({ language = 'ru' }) {
         <section className="bg-white px-4 py-16 text-[#111827] sm:px-5 sm:py-20">
           <SectionHeader
             eyebrow={isRu ? 'Сценарии' : 'Scenarios'}
-            title={isRu ? 'Когда клиенту нужен не сайт, а быстрый ответ' : 'When the client needs an answer, not a website'}
+            title={isRu ? 'Когда важно быстро понять, можно ли продолжать' : 'When you need to know whether it is safe to proceed'}
             text={isRu ? 'Каждый сценарий ведет к понятной заявке и отчету.' : 'Each scenario leads to a clear request and report.'}
           />
           <div className="mx-auto grid max-w-7xl gap-5 md:grid-cols-2 lg:grid-cols-4">
@@ -200,7 +200,7 @@ export default function HeimdallHomeExperience({ language = 'ru' }) {
             dark
             eyebrow={isRu ? 'Методология' : 'Method'}
             title={isRu ? 'Доверие создается процессом' : 'Trust is created by process'}
-            text={isRu ? 'HEIMDALL должен выглядеть как аналитическая компания с дисциплиной, а не как лендинг с обещаниями.' : 'HEIMDALL should feel like a disciplined intelligence company, not a promise-heavy landing page.'}
+            text={isRu ? 'Мы показываем не только найденные факты, но и их значение для решения: работать, ограничить риск, проверить глубже или остановиться.' : 'We show not only the facts found, but what they mean for the decision: proceed, limit exposure, review deeper or stop.'}
           />
           <div className="mx-auto grid max-w-7xl gap-4 lg:grid-cols-4">
             {content.method.map(([step, title, text]) => (
