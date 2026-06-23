@@ -168,7 +168,7 @@ export default function RecruitmentAgencies() {
         <header className="relative z-10 border-b border-white/10 bg-[#050816]/70 backdrop-blur-2xl">
           <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5">
             <Link href={language === 'ru' ? '/' : '/?lang=en'} className="flex items-center gap-4">
-              <img src="/heimdall-logo-gold-mark.png" alt="HEIMDALL" className="h-12 w-12 rounded-2xl" />
+              <img src="/heimdall-logo-mark.png" alt="HEIMDALL" className="h-12 w-12 rounded-2xl" />
               <div>
                 <div className="text-xl font-semibold tracking-[0.34em]">HEIMDALL</div>
                 <div className="mt-1 text-[11px] uppercase tracking-[0.22em] text-[#D4AF37]/80">Intelligence Group</div>

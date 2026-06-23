@@ -1,21 +1,16 @@
 
 import crypto from 'crypto'
+import { verifyAdminRequest } from '@/lib/adminAuth'
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin'
-
-function requireAdmin(req) {
-  const secret = process.env.HEIMDALL_ADMIN_SECRET
-  const provided = req.headers['x-heimdall-admin-secret']
-
-  return secret && provided && secret === provided
-}
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ ok: false, error: 'Method not allowed' })
   }
 
-  if (!requireAdmin(req)) {
-    return res.status(401).json({ ok: false, error: 'Unauthorized' })
+  const admin = verifyAdminRequest(req, res, { scope: 'create-client-access-link' })
+  if (!admin.ok) {
+    return res.status(admin.status).json({ ok: false, error: admin.error })
   }
 
   try {

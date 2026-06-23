@@ -21,6 +21,11 @@ async function loadHeimdallDashboardData() {
   return data
 }
 
+function safeNumber(value) {
+  const number = Number(value)
+  return Number.isFinite(number) ? number : 0
+}
+
 window.loadHeimdallDashboardData = loadHeimdallDashboardData
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -33,12 +38,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     root.innerHTML = `
       <div style="display:grid;gap:16px">
-        <div>Проверок всего: ${data.summary.checks_total}</div>
-        <div>Активных проверок: ${data.summary.active_checks}</div>
-        <div>Завершено: ${data.summary.completed_checks}</div>
+        <div>Проверок всего: ${safeNumber(data?.summary?.checks_total)}</div>
+        <div>Активных проверок: ${safeNumber(data?.summary?.active_checks)}</div>
+        <div>Завершено: ${safeNumber(data?.summary?.completed_checks)}</div>
       </div>
     `
   } catch (error) {
-    root.innerHTML = `Не удалось загрузить данные: ${error.message}`
+    root.textContent = `Не удалось загрузить данные: ${error.message || 'Unknown error'}`
   }
 })

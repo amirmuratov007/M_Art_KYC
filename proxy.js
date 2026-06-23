@@ -11,7 +11,7 @@ function isAnalystApi(pathname) {
   return pathname.startsWith('/api/risk-intelligence')
 }
 
-export async function middleware(request) {
+export async function proxy(request) {
   const { pathname, search } = request.nextUrl
 
   if (isPublicAnalystPath(pathname)) {

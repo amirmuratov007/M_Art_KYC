@@ -1,4 +1,5 @@
 import { COOKIE_NAME, createAnalystSession, getAuthSecret, analystCookieOptions } from '../../../lib/analystSession'
+import { applyRateLimitHeaders, checkRateLimit } from '../../../lib/rateLimit'
 
 function safeCompare(a, b) {
   if (typeof a !== 'string' || typeof b !== 'string') return false
@@ -24,6 +25,16 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST')
     return res.status(405).json({ ok: false, error: 'Method not allowed' })
+  }
+
+  const rate = checkRateLimit(req, { scope: 'analyst-login', limit: 8, windowMs: 60 * 1000 })
+  applyRateLimitHeaders(res, rate)
+
+  if (!rate.ok) {
+    return res.status(429).json({
+      ok: false,
+      error: 'Слишком много попыток входа. Попробуйте еще раз через минуту.'
+    })
   }
 
   const expectedLogin = process.env.HEIMDALL_ANALYST_LOGIN || ''

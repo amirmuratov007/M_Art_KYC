@@ -1,5 +1,14 @@
 /** @type {import('next').NextConfig} */
 
+const scriptSrc = [
+  "'self'",
+  "'unsafe-inline'",
+  ...(process.env.NODE_ENV === 'production' ? [] : ["'unsafe-eval'"]),
+  'https://www.googletagmanager.com',
+  'https://mc.yandex.ru',
+  'https://yastatic.net'
+]
+
 const securityHeaders = [
   {
     key: 'Strict-Transport-Security',
@@ -31,7 +40,7 @@ const securityHeaders = [
       "object-src 'none'",
       "upgrade-insecure-requests",
       "block-all-mixed-content",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://mc.yandex.ru https://yastatic.net",
+      `script-src ${scriptSrc.join(' ')}`,
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob: https:",
       "font-src 'self' data:",
@@ -45,7 +54,9 @@ const securityHeaders = [
 
 const nextConfig = {
   reactStrictMode: true,
-  outputFileTracing: false,
+  turbopack: {
+    root: __dirname
+  },
 
   async headers() {
     return [
@@ -67,15 +78,20 @@ const nextConfig = {
         ]
       },
       {
-        source: '/downloads/:path*',
+        source: '/admin-crm',
         headers: [
           {
-            key: 'Cache-Control',
-            value: 'public, max-age=86400'
-          },
+            key: 'X-Robots-Tag',
+            value: 'noindex, nofollow, noarchive'
+          }
+        ]
+      },
+      {
+        source: '/admin-client-checks',
+        headers: [
           {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff'
+            key: 'X-Robots-Tag',
+            value: 'noindex, nofollow, noarchive'
           }
         ]
       }

@@ -160,7 +160,8 @@ export default function AdminCrmPage() {
   const [riskObjectsByLead, setRiskObjectsByLead] = useState({})
 
   useEffect(() => {
-    setSecret(window.localStorage.getItem('heimdall_admin_secret') || '')
+    setSecret(window.sessionStorage.getItem('heimdall_admin_secret') || '')
+    window.localStorage.removeItem('heimdall_admin_secret')
     setSource(window.localStorage.getItem('heimdall_crm_source') || '')
   }, [])
 
@@ -220,9 +221,10 @@ export default function AdminCrmPage() {
   }, [leads])
 
   function saveSecret() {
-    window.localStorage.setItem('heimdall_admin_secret', secret)
+    window.sessionStorage.setItem('heimdall_admin_secret', secret)
+    window.localStorage.removeItem('heimdall_admin_secret')
     window.localStorage.setItem('heimdall_crm_source', source)
-    setMessage('Настройки сохранены в этом браузере.')
+    setMessage('Админ-ключ сохранен до закрытия вкладки. Источник заявок сохранен в этом браузере.')
     setError('')
   }
 

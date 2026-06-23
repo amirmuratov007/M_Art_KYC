@@ -73,8 +73,9 @@ export default function AdminClientChecksPage() {
   const isEditing = Boolean(form.id)
 
   useEffect(() => {
-    const saved = window.localStorage.getItem('heimdall_admin_secret') || ''
+    const saved = window.sessionStorage.getItem('heimdall_admin_secret') || ''
     setSecret(saved)
+    window.localStorage.removeItem('heimdall_admin_secret')
   }, [])
 
   useEffect(() => {
@@ -107,8 +108,9 @@ export default function AdminClientChecksPage() {
   }
 
   function saveSecret() {
-    window.localStorage.setItem('heimdall_admin_secret', secret)
-    setMessage('Админ-ключ сохранен в этом браузере.')
+    window.sessionStorage.setItem('heimdall_admin_secret', secret)
+    window.localStorage.removeItem('heimdall_admin_secret')
+    setMessage('Админ-ключ сохранен до закрытия вкладки.')
     setError('')
   }
 

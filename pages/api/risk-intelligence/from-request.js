@@ -1,24 +1,10 @@
+import { verifyAdminRequest } from '@/lib/adminAuth'
 import { createRiskObject, findRiskObjectBySourceRequest } from '@/lib/riskIntelligenceStore'
 
 function setNoStore(res) {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
   res.setHeader('Pragma', 'no-cache')
   res.setHeader('Expires', '0')
-}
-
-function getAdminSecret(req) {
-  const authorization = req.headers.authorization || ''
-  const bearer = authorization.startsWith('Bearer ') ? authorization.slice(7).trim() : ''
-  return req.headers['x-heimdall-admin-secret'] || bearer || req.query?.secret || ''
-}
-
-function verifyAdmin(req) {
-  const expected = process.env.HEIMDALL_ADMIN_SECRET
-  const received = getAdminSecret(req)
-
-  if (!expected) return { ok: false, status: 500, error: 'HEIMDALL_ADMIN_SECRET is not configured in Vercel' }
-  if (!received || received !== expected) return { ok: false, status: 401, error: 'Admin access denied' }
-  return { ok: true }
 }
 
 function clean(value, max = 1000) {
@@ -49,7 +35,7 @@ function mapObjectType(lead = {}) {
 export default async function handler(req, res) {
   setNoStore(res)
 
-  const admin = verifyAdmin(req)
+  const admin = verifyAdminRequest(req, res, { scope: 'risk-intelligence-from-request' })
   if (!admin.ok) return res.status(admin.status).json({ ok: false, error: admin.error })
 
   if (req.method !== 'POST') {
