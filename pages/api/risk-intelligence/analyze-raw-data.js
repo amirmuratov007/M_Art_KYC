@@ -462,8 +462,30 @@ function systemPrompt() {
 ${schemaInstruction()}`
 }
 
-function buildUserContent({ object, text, index, total }) {
-  return `Объект проверки: ${JSON.stringify(object || {})}\n\nФрагмент ${index + 1} из ${total}. Разбери только этот фрагмент. Не включай подробные адреса, паспорта, медицину и частную жизнь в выводы, кроме нейтральной отметки о наличии чувствительных данных.\n\nСырой массив данных:\n${text}`
+function buildSourceManifest(sources = []) {
+  const list = normalizeList(sources, 20).map((source, index) => ({
+    index: index + 1,
+    file_name: shortText(source?.file_name || source?.name || '', 180),
+    status: shortText(source?.status || '', 40),
+    characters: Number(source?.characters || 0),
+    mime_type: shortText(source?.mime_type || source?.type || '', 120),
+    error: shortText(source?.error || '', 180)
+  }))
+  return list.length ? JSON.stringify(list, null, 2) : '[]'
+}
+
+function buildUserContent({ object, text, index, total, sources = [] }) {
+  return `Объект проверки: ${JSON.stringify(object || {})}
+
+Паспорт загруженных источников:
+${buildSourceManifest(sources)}
+
+Фрагмент ${index + 1} из ${total}. Разбери только этот фрагмент. Не включай подробные адреса, паспорта, медицину и частную жизнь в выводы, кроме нейтральной отметки о наличии чувствительных данных.
+
+Если в тексте есть блоки "HEIMDALL SOURCE", используй их как паспорт источников. В sourceRefs указывай имя файла или короткий фрагмент, но не выдумывай источники. Если источник имеет status needs_ocr, отметь его в reviewChecklist, но не делай выводов из невидимого текста.
+
+Сырой массив данных:
+${text}`
 }
 
 function anthropicKey() {
@@ -537,18 +559,28 @@ async function callModel(provider, messages, maxTokens = 5000) {
   throw new Error(`Неизвестный провайдер ИИ: ${provider}`)
 }
 
-async function analyzeChunk({ provider, object, text, index, total }) {
+async function analyzeChunk({ provider, object, text, index, total, sources }) {
   const content = await callModel(provider, [
     { role: 'system', content: systemPrompt() },
-    { role: 'user', content: buildUserContent({ object, text, index, total }) }
+    { role: 'user', content: buildUserContent({ object, text, index, total, sources }) }
   ], 4200)
   return normalizeAnalysis(tryJson(content), content)
 }
 
-async function finalMerge({ provider, object, partials, rawLength }) {
+async function finalMerge({ provider, object, partials, rawLength, sources }) {
   const content = await callModel(provider, [
     { role: 'system', content: systemPrompt() },
-    { role: 'user', content: `Объект проверки: ${JSON.stringify(object || {})}\n\nНиже частичные разборы большого массива данных. Объедини их в один компактный результат. Убери дубли. Не добавляй факты, которых нет в частичных разборах. Не включай подробные чувствительные персональные данные.\n\nОбъем исходного массива: ${rawLength} знаков.\n\nЧастичные разборы:\n${JSON.stringify(partials).slice(0, 750000)}` }
+    { role: 'user', content: `Объект проверки: ${JSON.stringify(object || {})}
+
+Паспорт загруженных источников:
+${buildSourceManifest(sources)}
+
+Ниже частичные разборы большого массива данных. Объедини их в один компактный результат. Убери дубли. Не добавляй факты, которых нет в частичных разборах. Не включай подробные чувствительные персональные данные. Если часть источников требует OCR, добавь это в reviewChecklist.
+
+Объем исходного массива: ${rawLength} знаков.
+
+Частичные разборы:
+${JSON.stringify(partials).slice(0, 750000)}` }
   ], 5200)
   return normalizeAnalysis(tryJson(content), content)
 }
@@ -562,6 +594,7 @@ export default async function handler(req, res) {
   try {
     const object = req.body?.object || {}
     const rawText = safeText(req.body?.rawText)
+    const sources = Array.isArray(req.body?.sources) ? req.body.sources : []
     if (!rawText.trim()) return res.status(400).json({ ok: false, error: 'Пустой массив данных' })
 
     const provider = getProvider()
@@ -570,17 +603,17 @@ export default async function handler(req, res) {
     const partials = []
 
     for (let index = 0; index < chunks.length; index += 1) {
-      partials.push(await analyzeChunk({ provider, object, text: chunks[index], index, total: chunks.length }))
+      partials.push(await analyzeChunk({ provider, object, text: chunks[index], index, total: chunks.length, sources }))
     }
 
-    const analysis = chunks.length === 1 ? partials[0] : await finalMerge({ provider, object, partials, rawLength: rawText.length })
+    const analysis = chunks.length === 1 ? partials[0] : await finalMerge({ provider, object, partials, rawLength: rawText.length, sources })
 
     return res.status(200).json({
       ok: true,
       provider,
       model,
       chunks: chunks.length,
-      analysis: { ...analysis, provider, model, rawLength: rawText.length }
+      analysis: { ...analysis, provider, model, rawLength: rawText.length, sourceCount: sources.length }
     })
   } catch (error) {
     const message = error?.name === 'AbortError'

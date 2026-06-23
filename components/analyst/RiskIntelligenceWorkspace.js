@@ -63,6 +63,7 @@ function createEmptyObject(overrides = {}) {
     priority: overrides.priority || 'normal',
     due_date: overrides.due_date || '',
     analyst_notes: overrides.analyst_notes || '',
+    source_files: Array.isArray(overrides.source_files) ? overrides.source_files : [],
     approved_at: overrides.approved_at || ''
   }
 }
@@ -159,6 +160,38 @@ function downloadTextFile(filename, text) {
   link.download = filename
   link.click()
   URL.revokeObjectURL(url)
+}
+
+function readFileAsBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(String(reader.result || '').split(',').pop() || '')
+    reader.onerror = () => reject(reader.error || new Error('Не удалось прочитать файл'))
+    reader.readAsDataURL(file)
+  })
+}
+
+function formatBytes(bytes = 0) {
+  const value = Number(bytes || 0)
+  if (value >= 1024 * 1024) return `${(value / 1024 / 1024).toFixed(1)} МБ`
+  if (value >= 1024) return `${Math.round(value / 1024)} КБ`
+  return `${value} Б`
+}
+
+function sourceStatusLabel(status) {
+  if (status === 'extracted') return 'Текст извлечен'
+  if (status === 'needs_ocr') return 'Нужен OCR'
+  if (status === 'error') return 'Ошибка'
+  return 'Источник'
+}
+
+function buildSourceBlock(source) {
+  const name = source?.file_name || source?.name || 'uploaded-file'
+  const text = source?.text || ''
+  const header = `===== HEIMDALL SOURCE: ${name} | ${source?.mime_type || 'unknown'} | ${source?.characters || 0} знаков =====`
+  const footer = `===== END SOURCE: ${name} =====`
+  if (!text.trim()) return `${header}\n[Текст не извлечен: ${source?.error || sourceStatusLabel(source?.status)}]\n${footer}`
+  return `${header}\n${text.trim()}\n${footer}`
 }
 
 function unique(list) {
@@ -379,6 +412,8 @@ export default function RiskIntelligenceWorkspace({ initialObjectId = null }) {
   const [message, setMessage] = useState('')
   const [aiLoading, setAiLoading] = useState(false)
   const [aiStatus, setAiStatus] = useState('')
+  const [fileLoading, setFileLoading] = useState(false)
+  const [fileStatus, setFileStatus] = useState('')
   const [serverStatus, setServerStatus] = useState('Проверяю серверное хранилище...')
   const [serverReady, setServerReady] = useState(false)
   const [reports, setReports] = useState([])
@@ -533,6 +568,69 @@ export default function RiskIntelligenceWorkspace({ initialObjectId = null }) {
     setMessage(serverReady ? 'Массив данных сохранен в браузере и на сервере.' : 'Массив данных сохранен в браузере.')
   }
 
+  const uploadSourceFiles = async (event) => {
+    if (!active || fileLoading) return
+    const files = Array.from(event.target.files || [])
+    event.target.value = ''
+
+    if (!files.length) return
+
+    setFileLoading(true)
+    setFileStatus(`Готовлю ${files.length} файл(ов) к извлечению текста...`)
+    setMessage('')
+
+    try {
+      const extracted = []
+
+      for (let index = 0; index < files.length; index += 1) {
+        const file = files[index]
+        setFileStatus(`Файл ${index + 1}/${files.length}: читаю ${file.name} (${formatBytes(file.size)})...`)
+        const dataBase64 = await readFileAsBase64(file)
+
+        setFileStatus(`Файл ${index + 1}/${files.length}: извлекаю текст на сервере...`)
+        const payload = await safeFetchJson('/api/risk-intelligence/extract-file-text', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            files: [{
+              name: file.name,
+              type: file.type,
+              size: file.size,
+              dataBase64
+            }]
+          })
+        })
+
+        extracted.push(...(Array.isArray(payload.sources) ? payload.sources : []))
+      }
+
+      const sourceBlocks = extracted.map(buildSourceBlock)
+      const nextRawText = [rawText.trim(), ...sourceBlocks].filter(Boolean).join('\n\n')
+      const sourceMeta = extracted.map(({ text, ...source }) => source)
+      const nextSourceFiles = [...(active.source_files || []), ...sourceMeta]
+      const patch = {
+        source_files: nextSourceFiles,
+        description: active.description || 'Материалы проверки загружены из файлов.',
+        status: active.status === 'new' ? 'in_progress' : active.status
+      }
+
+      setRawText(nextRawText)
+      updateActive(patch)
+      await writeRaw(active.id, nextRawText)
+      await persistObjectToServer({ ...active, ...patch, updated_at: nowDate() }, nextRawText, true)
+
+      const extractedCount = extracted.filter((source) => source.status === 'extracted' && source.characters > 0).length
+      const needsOcr = extracted.filter((source) => source.status === 'needs_ocr').length
+      setMessage(`Файлы обработаны: текст извлечен из ${extractedCount}, требуют OCR: ${needsOcr}. Материалы добавлены в сырой массив.`)
+      setFileStatus('Готово. Проверьте список источников и запустите сборку черновика HEIMDALL.')
+    } catch (error) {
+      setMessage(`Не удалось обработать файлы: ${error.message}`)
+      setFileStatus('Ошибка загрузки файлов.')
+    } finally {
+      setFileLoading(false)
+    }
+  }
+
   const runAnalysis = async () => {
     if (!active) return
     await writeRaw(active.id, rawText)
@@ -628,7 +726,7 @@ export default function RiskIntelligenceWorkspace({ initialObjectId = null }) {
       const response = await fetch('/api/risk-intelligence/analyze-raw-data', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ object: active, rawText }),
+        body: JSON.stringify({ object: active, rawText, sources: active.source_files || [] }),
         signal: controller.signal
       })
 
@@ -832,8 +930,39 @@ export default function RiskIntelligenceWorkspace({ initialObjectId = null }) {
               <div className="rounded-[32px] border border-sky-300/15 bg-sky-300/[0.045] p-6">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div><div className="text-sm uppercase tracking-[0.22em] text-sky-300/80">Сырой массив данных</div><p className="mt-2 text-sm text-white/55">Вставляйте любые объемы текста. ИИ сформирует рабочий пакет, а финальный отчет должен проверить и согласовать сотрудник.</p></div>
-                  <div className="flex flex-wrap gap-3"><button onClick={saveRaw} className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm">Сохранить массив</button><button onClick={runAiAnalysis} disabled={aiLoading} className="rounded-full bg-[#D6A84F] px-5 py-2 text-sm font-semibold text-[#050816] disabled:cursor-not-allowed disabled:opacity-50">{aiLoading ? 'ИИ анализирует...' : 'Собрать черновик HEIMDALL'}</button><button onClick={runAnalysis} disabled={aiLoading} className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/70 disabled:opacity-50">Локальный разбор</button></div>
+                  <div className="flex flex-wrap gap-3">
+                    <label className={`cursor-pointer rounded-full border border-sky-300/20 bg-sky-300/10 px-4 py-2 text-sm text-sky-100 ${fileLoading ? 'pointer-events-none opacity-50' : ''}`}>
+                      {fileLoading ? 'Файлы обрабатываются...' : 'Загрузить файлы'}
+                      <input type="file" multiple accept=".txt,.csv,.tsv,.json,.md,.html,.htm,.pdf,.docx,.xlsx,.png,.jpg,.jpeg,.webp,.tif,.tiff" onChange={uploadSourceFiles} className="hidden" />
+                    </label>
+                    <button onClick={saveRaw} className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm">Сохранить массив</button>
+                    <button onClick={runAiAnalysis} disabled={aiLoading || fileLoading} className="rounded-full bg-[#D6A84F] px-5 py-2 text-sm font-semibold text-[#050816] disabled:cursor-not-allowed disabled:opacity-50">{aiLoading ? 'ИИ анализирует...' : 'Собрать черновик HEIMDALL'}</button>
+                    <button onClick={runAnalysis} disabled={aiLoading || fileLoading} className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/70 disabled:opacity-50">Локальный разбор</button>
+                  </div>
                 </div>
+                {fileStatus && (
+                  <div className="mt-4 rounded-2xl border border-sky-300/20 bg-sky-300/10 p-4 text-sm leading-7 text-sky-100">
+                    {fileStatus}
+                  </div>
+                )}
+                {Boolean(active.source_files?.length) && (
+                  <div className="mt-5 rounded-[24px] border border-white/10 bg-black/20 p-4">
+                    <div className="mb-3 text-sm font-semibold text-sky-100">Источники проверки</div>
+                    <div className="grid gap-3 md:grid-cols-2">
+                      {active.source_files.slice(-12).map((source) => (
+                        <div key={source.id} className="rounded-2xl border border-white/10 bg-white/[0.035] p-4 text-sm text-white/62">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <Badge tone={source.status === 'extracted' ? 'sky' : source.status === 'needs_ocr' ? 'gold' : 'red'}>{sourceStatusLabel(source.status)}</Badge>
+                            <span className="text-white/35">{formatBytes(source.size)}</span>
+                          </div>
+                          <div className="mt-3 font-semibold text-white/80">{source.file_name}</div>
+                          <div className="mt-1 text-xs text-white/42">{source.mime_type || 'тип не указан'} · {Number(source.characters || 0).toLocaleString('ru-RU')} знаков</div>
+                          {source.error && <div className="mt-2 text-xs leading-5 text-[#F7D784]">{source.error}</div>}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 <textarea value={rawText} onChange={(e) => setRawText(e.target.value)} placeholder="Вставьте сюда весь поток данных из источников: ФИО, телефоны, почты, компании, выписки, заметки, ссылки, комментарии клиента, найденные материалы..." className="mt-5 min-h-[360px] w-full rounded-[24px] border border-white/10 bg-black/30 p-5 text-sm leading-7 text-white outline-none focus:border-sky-300/40" />
                 {aiStatus && (
                   <div className="mt-4 rounded-2xl border border-[#D6A84F]/25 bg-[#D6A84F]/10 p-4 text-sm leading-7 text-[#F7D784]">
