@@ -858,20 +858,6 @@ export default function AccountPage() {
                 </div>
               )}
 
-              <div className="grid gap-6 rounded-[42px] border border-[#D6A84F]/20 bg-[#D6A84F]/[0.07] p-7 backdrop-blur-2xl md:p-10 lg:grid-cols-[1fr_auto] lg:items-center">
-                <div>
-                  <div className="text-sm uppercase tracking-[0.22em] text-[#F7D784]/80">Client application</div>
-                  <h3 className="mt-4 text-3xl font-semibold tracking-[-0.04em] md:text-5xl">Открыть клиентское приложение</h3>
-                  <p className="mt-5 max-w-3xl text-base leading-8 text-white/64">
-                    Если вам выдана персональная ссылка после оплаты, используйте ее для доступа к защищенному приложению.
-                  </p>
-                </div>
-                <Link href="/app-download" className="inline-flex items-center justify-center gap-3 rounded-2xl bg-[#D6A84F] px-7 py-4 font-semibold text-[#050816]">
-                  Перейти в приложение
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              </div>
-
               {error && (
                 <div className="rounded-2xl border border-red-300/20 bg-red-300/10 p-4 text-sm leading-6 text-red-100">
                   {error}
