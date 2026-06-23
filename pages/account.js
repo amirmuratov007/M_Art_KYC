@@ -57,12 +57,60 @@ const initialClientRequest = {
   contact: ''
 }
 
+const validTabs = ['checks', 'reports', 'request', 'documents']
+
+const demoUser = {
+  id: 'demo-client',
+  email: 'client@heimdall-demo.ru',
+  user_metadata: {
+    full_name: 'Meridian Capital Group',
+    company: 'Meridian Capital Group'
+  }
+}
+
+const demoChecks = [
+  {
+    id: 'demo-001',
+    user_id: 'demo-client',
+    title: 'Проверка контрагента Northbridge Trading',
+    type: 'counterparty',
+    status: 'in_progress',
+    risk_score: 72,
+    summary: 'Проверяются владельцы, судебные сигналы, санкционный контур и связанные лица. Первичные признаки требуют расширенной проверки бенефициаров.',
+    report_url: '',
+    created_at: '2026-06-22T10:30:00+03:00'
+  },
+  {
+    id: 'demo-002',
+    user_id: 'demo-client',
+    title: 'Проверка кандидата на финансовую роль',
+    type: 'candidate',
+    status: 'review',
+    risk_score: 48,
+    summary: 'Идет анализ конфликта интересов, цифрового следа и пересечений с поставщиками. Аналитик готовит вопросы для финального интервью.',
+    report_url: '',
+    created_at: '2026-06-19T16:15:00+03:00'
+  },
+  {
+    id: 'demo-003',
+    user_id: 'demo-client',
+    title: 'Due Diligence поставщика оборудования',
+    type: 'due_diligence',
+    status: 'completed',
+    risk_score: 31,
+    summary: 'Финальный отчет готов. Критичных санкционных совпадений не выявлено, но рекомендован контроль платежного маршрута и договора поставки.',
+    report_url: '/reports/counterparty-intelligence-premium-demo.pdf',
+    created_at: '2026-06-13T12:00:00+03:00'
+  }
+]
+
 export default function AccountPage() {
   const router = useRouter()
   const { refreshSession, signOut } = useHeimdallAuth()
   const [mode, setMode] = useState('login')
   const [activeTab, setActiveTab] = useState('checks')
   const [loading, setLoading] = useState(true)
+  const [demoMode, setDemoMode] = useState(false)
   const [authLoading, setAuthLoading] = useState(false)
   const [checksLoading, setChecksLoading] = useState(false)
   const [requestLoading, setRequestLoading] = useState(false)
@@ -89,6 +137,11 @@ export default function AccountPage() {
   }, [])
 
   useEffect(() => {
+    if (demoMode) {
+      setLoading(false)
+      return
+    }
+
     if (!supabase) {
       setError('Кабинет временно недоступен. Мы настраиваем защищенный доступ для клиентов HEIMDALL.')
       setLoading(false)
@@ -130,22 +183,52 @@ export default function AccountPage() {
       mounted = false
       listener?.subscription?.unsubscribe()
     }
-  }, [supabase])
+  }, [supabase, demoMode])
 
   useEffect(() => {
     if (!router.isReady) return
 
+    const demo = Array.isArray(router.query.demo) ? router.query.demo[0] : router.query.demo
     const requestedTab = Array.isArray(router.query.tab) ? router.query.tab[0] : router.query.tab
     const requestedService = Array.isArray(router.query.service) ? router.query.service[0] : router.query.service
 
-    if (['checks', 'reports', 'request', 'documents'].includes(requestedTab)) {
+    if (demo === '1' || demo === 'true') {
+      enterDemoMode(validTabs.includes(requestedTab) ? requestedTab : 'checks')
+    } else if (demoMode) {
+      leaveDemoMode()
+    }
+
+    if (validTabs.includes(requestedTab)) {
       setActiveTab(requestedTab)
     }
 
     if (requestedService && serviceOptions.includes(requestedService)) {
       setClientRequest((current) => ({ ...current, service: requestedService }))
     }
-  }, [router.isReady, router.query.tab, router.query.service])
+  }, [router.isReady, router.query.demo, router.query.tab, router.query.service])
+
+  function enterDemoMode(tab = 'checks') {
+    setDemoMode(true)
+    setUser(demoUser)
+    setChecks(demoChecks)
+    setActiveTab(tab)
+    setLoading(false)
+    setError('')
+    setMessage('')
+    setRequestMessage('')
+    setRequestError('')
+    hydrateClientRequest(demoUser)
+  }
+
+  function leaveDemoMode() {
+    setDemoMode(false)
+    setUser(null)
+    setChecks([])
+    setMessage('')
+    setError('')
+    setRequestMessage('')
+    setRequestError('')
+  }
 
   function hydrateClientRequest(currentUser) {
     setClientRequest((current) => ({
@@ -156,6 +239,13 @@ export default function AccountPage() {
   }
 
   async function loadChecks(userId) {
+    if (demoMode) {
+      setChecks(demoChecks)
+      setChecksLoading(false)
+      setError('')
+      return
+    }
+
     if (!supabase || !userId) return
 
     setChecksLoading(true)
@@ -234,6 +324,13 @@ export default function AccountPage() {
   async function submitClientRequest(event) {
     event.preventDefault()
 
+    if (demoMode) {
+      setRequestError('')
+      setRequestMessage('В демо-режиме заявка не отправляется. В рабочем аккаунте она уйдет команде HEIMDALL.')
+      setActiveTab('checks')
+      return
+    }
+
     if (!supabase || !user) return
 
     setRequestLoading(true)
@@ -283,6 +380,12 @@ export default function AccountPage() {
   }
 
   async function logout() {
+    if (demoMode) {
+      leaveDemoMode()
+      router.replace('/account', undefined, { shallow: true })
+      return
+    }
+
     if (!supabase) return
 
     await signOut()
@@ -467,6 +570,11 @@ export default function AccountPage() {
                   <h2 className="mt-4 text-4xl font-semibold tracking-[-0.05em] md:text-6xl">
                     {displayName}
                   </h2>
+                  {demoMode && (
+                    <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-[#D6A84F]/25 bg-[#D6A84F]/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#F7D784]">
+                      Демо-просмотр
+                    </div>
+                  )}
                   <p className="mt-5 text-base leading-8 text-white/60">
                     Здесь отображаются ваши проверки, отчеты, документы и новые задачи для команды HEIMDALL.
                   </p>
@@ -487,9 +595,11 @@ export default function AccountPage() {
 
               <div className="grid gap-6 rounded-[34px] border border-sky-300/20 bg-sky-300/[0.055] p-6 backdrop-blur-2xl md:grid-cols-[1fr_auto] md:items-center md:p-7">
                 <div>
-                  <div className="text-sm uppercase tracking-[0.22em] text-sky-300/80">Подсказка по кабинету</div>
+                  <div className="text-sm uppercase tracking-[0.22em] text-sky-300/80">{demoMode ? 'Демо-режим' : 'Подсказка по кабинету'}</div>
                   <p className="mt-3 text-sm leading-7 text-white/62">
-                    Проверки появляются после добавления аналитиком HEIMDALL. Новый запрос можно отправить во вкладке “Новый запрос”, а готовые материалы появятся во вкладке “Отчеты”.
+                    {demoMode
+                      ? 'Это безопасный пример клиентского приложения с демонстрационными проверками. Реальные клиентские данные здесь не используются.'
+                      : 'Проверки появляются после добавления аналитиком HEIMDALL. Новый запрос можно отправить во вкладке “Новый запрос”, а готовые материалы появятся во вкладке “Отчеты”.'}
                   </p>
                 </div>
                 <Link href="/client-account-guide" className="inline-flex items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/10 px-5 py-3 text-sm font-semibold text-white hover:bg-white/15">
@@ -756,7 +866,7 @@ export default function AccountPage() {
                     Если вам выдана персональная ссылка после оплаты, используйте ее для доступа к защищенному приложению.
                   </p>
                 </div>
-                <Link href="/app" className="inline-flex items-center justify-center gap-3 rounded-2xl bg-[#D6A84F] px-7 py-4 font-semibold text-[#050816]">
+                <Link href="/app-download" className="inline-flex items-center justify-center gap-3 rounded-2xl bg-[#D6A84F] px-7 py-4 font-semibold text-[#050816]">
                   Перейти в приложение
                   <ArrowRight className="h-4 w-4" />
                 </Link>
