@@ -36,9 +36,25 @@ function normalizePayload(body = {}) {
   }
 }
 
+function normalizeAccountPayload(body = {}) {
+  return {
+    email: sanitize(body.email, 220).toLowerCase(),
+    password: sanitize(body.password, 200),
+    full_name: sanitize(body.full_name || body.fullName, 220),
+    company: sanitize(body.company, 220)
+  }
+}
+
 function validatePayload(payload) {
   if (!payload.user_id) return 'Сначала найдите клиента по email. UUID вручную вводить не нужно.'
   if (!payload.title) return 'Укажите название проверки'
+  return ''
+}
+
+function validateAccountPayload(payload) {
+  if (!payload.email) return 'Укажите email клиента'
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.email)) return 'Email клиента выглядит некорректно'
+  if (!payload.password || payload.password.length < 8) return 'Пароль должен быть не короче 8 символов'
   return ''
 }
 
@@ -120,6 +136,50 @@ export default async function handler(req, res) {
   }
 
   if (req.method === 'POST') {
+    if (req.body?.action === 'create_user') {
+      const account = normalizeAccountPayload(req.body)
+      const validationError = validateAccountPayload(account)
+
+      if (validationError) {
+        return res.status(400).json({ ok: false, error: validationError })
+      }
+
+      const existing = await resolveUserByEmail(supabase, account.email)
+
+      if (existing.ok) {
+        return res.status(200).json({ ok: true, user: existing.user, existing: true })
+      }
+
+      const { data, error } = await supabase.auth.admin.createUser({
+        email: account.email,
+        password: account.password,
+        email_confirm: true,
+        user_metadata: {
+          full_name: account.full_name,
+          company: account.company
+        }
+      })
+
+      if (error) {
+        return res.status(500).json({ ok: false, error: error.message || 'Unable to create client account' })
+      }
+
+      const user = data?.user
+
+      return res.status(200).json({
+        ok: true,
+        user: {
+          id: user?.id,
+          email: user?.email,
+          created_at: user?.created_at,
+          last_sign_in_at: user?.last_sign_in_at,
+          full_name: user?.user_metadata?.full_name || '',
+          company: user?.user_metadata?.company || ''
+        },
+        existing: false
+      })
+    }
+
     const payload = normalizePayload(req.body)
     const validationError = validatePayload(payload)
 

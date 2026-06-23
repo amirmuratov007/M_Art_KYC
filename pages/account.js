@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/router'
 import HeimdallNav from '@/components/HeimdallNav'
+import PWAInstallButton from '@/components/PWAInstallButton'
 import { getSupabaseBrowserClient } from '@/lib/supabaseClient'
 import { useHeimdallAuth } from '@/components/HeimdallAuthProvider'
 import {
@@ -343,6 +344,10 @@ export default function AccountPage() {
                 Как работает кабинет
                 <ArrowRight className="h-4 w-4" />
               </Link>
+              <Link href="/app-download" className="inline-flex items-center justify-center gap-3 rounded-2xl bg-sky-500 px-6 py-4 font-semibold text-white shadow-[0_0_45px_rgba(56,189,248,0.25)]">
+                Установить приложение
+                <ArrowRight className="h-4 w-4" />
+              </Link>
             </div>
           </div>
         </section>
@@ -362,7 +367,7 @@ export default function AccountPage() {
                 </h2>
 
                 <p className="mt-6 text-base leading-8 text-white/60">
-                  После входа клиент видит только свои проверки. Доступ строится через Supabase Auth и привязку проверок к user_id.
+                  После заключения договора HEIMDALL выдает клиенту email и пароль. После входа клиент видит только свои проверки, статусы, отчеты и новые запросы.
                 </p>
 
                 <div className="mt-8 grid gap-3">
@@ -370,7 +375,7 @@ export default function AccountPage() {
                     'Мои проверки и текущие статусы',
                     'Мои отчеты и ссылки на PDF',
                     'Новый запрос в работу',
-                    'Документы, вводные данные и рекомендации'
+                    'Установка на телефон как клиентское приложение'
                   ].map((item) => (
                     <div key={item} className="flex items-start gap-3 rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-sm text-white/70">
                       <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-sky-300" />
@@ -381,29 +386,8 @@ export default function AccountPage() {
               </div>
 
               <div className="rounded-[42px] border border-sky-300/20 bg-white/[0.055] p-7 backdrop-blur-2xl md:p-10">
-                <div className="mb-7 flex rounded-2xl border border-white/10 bg-black/25 p-1">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setMode('login')
-                      setError('')
-                      setMessage('')
-                    }}
-                    className={`flex-1 rounded-xl px-4 py-3 text-sm font-semibold transition ${mode === 'login' ? 'bg-sky-500 text-white' : 'text-white/55 hover:text-white'}`}
-                  >
-                    Вход
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setMode('register')
-                      setError('')
-                      setMessage('')
-                    }}
-                    className={`flex-1 rounded-xl px-4 py-3 text-sm font-semibold transition ${mode === 'register' ? 'bg-sky-500 text-white' : 'text-white/55 hover:text-white'}`}
-                  >
-                    Регистрация
-                  </button>
+                <div className="mb-7 rounded-2xl border border-sky-300/20 bg-sky-300/10 p-5 text-sm leading-7 text-sky-50/85">
+                  Введите email и пароль, которые вы получили от HEIMDALL после заключения договора сопровождения.
                 </div>
 
                 <form onSubmit={submit} className="grid gap-4">
@@ -466,6 +450,10 @@ export default function AccountPage() {
                     {error}
                   </div>
                 )}
+
+                <div className="mt-5">
+                  <PWAInstallButton language="ru" />
+                </div>
               </div>
             </div>
           ) : (
@@ -484,14 +472,17 @@ export default function AccountPage() {
                   </p>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={logout}
-                  className="inline-flex items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/10 px-6 py-4 font-semibold text-white"
-                >
-                  Выйти
-                  <LogOut className="h-4 w-4" />
-                </button>
+                <div className="grid gap-3">
+                  <PWAInstallButton language="ru" />
+                  <button
+                    type="button"
+                    onClick={logout}
+                    className="inline-flex items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/10 px-6 py-4 font-semibold text-white"
+                  >
+                    Выйти
+                    <LogOut className="h-4 w-4" />
+                  </button>
+                </div>
               </div>
 
               <div className="grid gap-6 rounded-[34px] border border-sky-300/20 bg-sky-300/[0.055] p-6 backdrop-blur-2xl md:grid-cols-[1fr_auto] md:items-center md:p-7">

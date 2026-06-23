@@ -21,9 +21,9 @@ const screens = [
   ['Request', Send]
 ]
 
-const credentials = [
-  ['Email', 'demo@heimdall-group.ru'],
-  ['Password', 'HeimdallDemo2026!']
+const accessNotes = [
+  ['Access', 'HEIMDALL issues login and password after contract signing'],
+  ['Working entry', 'The app opens the real client account']
 ]
 
 export default function ClientAppEnPage() {
@@ -31,7 +31,7 @@ export default function ClientAppEnPage() {
     <>
       <Head>
         <title>Client Application | HEIMDALL</title>
-        <meta name="description" content="HEIMDALL client app: mobile access to checks, reports, risk signals and demo account." />
+        <meta name="description" content="HEIMDALL client app: mobile access to checks, statuses, reports and new client requests." />
         <link rel="canonical" href="https://www.heimdall-group.ru/client-app-en" />
       </Head>
 
@@ -55,7 +55,7 @@ export default function ClientAppEnPage() {
             </h1>
 
             <p className="mt-9 max-w-3xl text-xl leading-9 text-white/64">
-              Not just a page. This is a private mobile client interface for checks, reports, risk signals, fast requests and test access.
+              Not just a page. This is a private mobile client interface for checks, reports, risk signals and fast requests under an active support contract.
             </p>
 
             <div className="mt-10 flex flex-col gap-4 sm:flex-row">
@@ -63,8 +63,8 @@ export default function ClientAppEnPage() {
                 Download app
                 <Download className="h-4 w-4" />
               </Link>
-              <Link href="/demo-client-app-en" className="inline-flex items-center justify-center gap-3 rounded-2xl border border-[#D6A84F]/25 bg-[#D6A84F]/10 px-7 py-4 font-semibold text-[#F7D784]">
-                Open demo
+              <Link href="/account" className="inline-flex items-center justify-center gap-3 rounded-2xl border border-[#D6A84F]/25 bg-[#D6A84F]/10 px-7 py-4 font-semibold text-[#F7D784]">
+                Open account
                 <ArrowRight className="h-4 w-4" />
               </Link>
               <Link href="/account" className="inline-flex items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/10 px-7 py-4 font-semibold text-white">
@@ -73,10 +73,10 @@ export default function ClientAppEnPage() {
             </div>
 
             <div className="mt-7 grid max-w-xl gap-3 sm:grid-cols-2">
-              {credentials.map(([label, value]) => (
+              {accessNotes.map(([label, value]) => (
                 <div key={label} className="rounded-2xl border border-white/10 bg-white/[0.045] px-5 py-4">
                   <div className="text-xs uppercase tracking-[0.18em] text-white/38">{label}</div>
-                  <div className="mt-2 select-all font-mono text-sm text-[#F7D784]">{value}</div>
+                  <div className="mt-2 text-sm leading-6 text-[#F7D784]">{value}</div>
                 </div>
               ))}
             </div>

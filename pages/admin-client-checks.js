@@ -27,6 +27,13 @@ const emptyForm = {
   report_url: ''
 }
 
+const emptyAccountForm = {
+  email: '',
+  password: '',
+  full_name: '',
+  company: ''
+}
+
 const statusLabels = {
   new: 'Новая',
   in_progress: 'В работе',
@@ -65,6 +72,7 @@ export default function AdminClientChecksPage() {
   const router = useRouter()
   const [secret, setSecret] = useState('')
   const [email, setEmail] = useState('')
+  const [accountForm, setAccountForm] = useState(emptyAccountForm)
   const [userInfo, setUserInfo] = useState(null)
   const [form, setForm] = useState(emptyForm)
   const [checks, setChecks] = useState([])
@@ -107,6 +115,21 @@ export default function AdminClientChecksPage() {
 
   function update(key, value) {
     setForm((current) => ({ ...current, [key]: value }))
+  }
+
+  function updateAccount(key, value) {
+    setAccountForm((current) => ({ ...current, [key]: value }))
+  }
+
+  function generatePassword() {
+    const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789'
+    let suffix = ''
+
+    for (let index = 0; index < 12; index += 1) {
+      suffix += alphabet[Math.floor(Math.random() * alphabet.length)]
+    }
+
+    updateAccount('password', `HMD-${suffix}`)
   }
 
   function saveSecret() {
@@ -166,6 +189,47 @@ export default function AdminClientChecksPage() {
       await loadChecks(result.user.id, false)
     } catch (error) {
       setError(error.message || 'Клиент не найден')
+    }
+
+    setLoading(false)
+  }
+
+  async function createClientAccount(event) {
+    event.preventDefault()
+
+    if (!secret) {
+      setError('Сначала укажите HEIMDALL_ADMIN_SECRET')
+      return
+    }
+
+    if (!accountForm.email || !accountForm.password) {
+      setError('Укажите email и временный пароль клиента')
+      return
+    }
+
+    setLoading(true)
+    setError('')
+    setMessage('')
+
+    try {
+      const result = await apiRequest('/api/admin-client-checks', {
+        method: 'POST',
+        body: JSON.stringify({
+          action: 'create_user',
+          ...accountForm
+        })
+      })
+
+      setUserInfo(result.user)
+      setEmail(result.user.email || accountForm.email)
+      setForm((current) => ({ ...current, user_id: result.user.id }))
+      setMessage(result.existing
+        ? `Аккаунт уже существовал: ${result.user.email}. Можно добавлять проверки.`
+        : `Аккаунт создан: ${result.user.email}. Передайте клиенту email и временный пароль безопасным каналом.`)
+      setAccountForm(emptyAccountForm)
+      await loadChecks(result.user.id, false)
+    } catch (error) {
+      setError(error.message || 'Не удалось создать клиентский аккаунт')
     }
 
     setLoading(false)
@@ -282,19 +346,19 @@ export default function AdminClientChecksPage() {
 
         <HeimdallNav language="ru" />
 
-        <section className="relative z-10 mx-auto max-w-7xl px-4 py-16 sm:px-5 sm:py-24">
-          <div className="max-w-5xl">
+        <section className="relative z-10 mx-auto max-w-7xl px-4 py-10 sm:px-5 sm:py-12">
+          <div className="max-w-4xl">
             <div className="inline-flex items-center gap-3 rounded-full border border-[#D6A84F]/25 bg-[#D6A84F]/10 px-5 py-2 text-sm uppercase tracking-[0.24em] text-[#F7D784]">
               <LockKeyhole className="h-4 w-4" />
               Только для администратора
             </div>
 
-            <h1 className="mt-9 text-5xl font-semibold leading-[0.95] tracking-[-0.06em] md:text-8xl">
+            <h1 className="mt-6 text-4xl font-semibold leading-[0.98] tracking-[-0.055em] md:text-6xl">
               Клиентские проверки
             </h1>
 
-            <p className="mt-8 max-w-3xl text-lg leading-8 text-white/64 md:text-xl md:leading-9">
-              Закрытая панель для добавления, обновления и удаления проверок в личном кабинете клиента HEIMDALL.
+            <p className="mt-5 max-w-3xl text-base leading-8 text-white/64">
+              Админская панель для создания клиентского доступа и управления проверками, которые клиент видит в приложении.
             </p>
           </div>
         </section>
@@ -338,7 +402,7 @@ export default function AdminClientChecksPage() {
               </div>
 
               <p className="mt-5 text-sm leading-7 text-white/58">
-                Введи email клиента, с которым он зарегистрировался в кабинете. UUID из Supabase больше вручную вводить не нужно.
+                Введи email клиента, для которого создан доступ в приложении. UUID из Supabase вручную вводить не нужно.
               </p>
 
               <div className="mt-6 grid gap-3 sm:grid-cols-[1fr_auto]">
@@ -368,6 +432,63 @@ export default function AdminClientChecksPage() {
                   {userInfo.company && <div>Компания: {userInfo.company}</div>}
                 </div>
               )}
+            </form>
+
+            <form onSubmit={createClientAccount} className="rounded-[42px] border border-[#D6A84F]/20 bg-[#D6A84F]/[0.06] p-7 backdrop-blur-2xl md:p-10">
+              <div className="flex items-center gap-3 text-sm uppercase tracking-[0.24em] text-[#F7D784]">
+                <UserRound className="h-4 w-4" />
+                Создать доступ
+              </div>
+
+              <p className="mt-5 text-sm leading-7 text-white/62">
+                Для клиента на сопровождении: создайте email и временный пароль, затем добавьте проверки в его кабинет. Пароль передавайте только безопасным каналом.
+              </p>
+
+              <div className="mt-6 grid gap-4">
+                <input
+                  type="email"
+                  value={accountForm.email}
+                  onChange={(event) => updateAccount('email', event.target.value)}
+                  placeholder="Email клиента"
+                  className={inputClass()}
+                />
+                <input
+                  value={accountForm.full_name}
+                  onChange={(event) => updateAccount('full_name', event.target.value)}
+                  placeholder="ФИО клиента"
+                  className={inputClass()}
+                />
+                <input
+                  value={accountForm.company}
+                  onChange={(event) => updateAccount('company', event.target.value)}
+                  placeholder="Компания"
+                  className={inputClass()}
+                />
+                <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
+                  <input
+                    value={accountForm.password}
+                    onChange={(event) => updateAccount('password', event.target.value)}
+                    placeholder="Временный пароль"
+                    className={inputClass('font-mono text-sm')}
+                  />
+                  <button
+                    type="button"
+                    onClick={generatePassword}
+                    className="rounded-2xl border border-white/10 bg-white/10 px-5 py-4 text-sm font-semibold text-white"
+                  >
+                    Сгенерировать
+                  </button>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#D6A84F] px-5 py-4 font-semibold text-[#050816] disabled:opacity-60"
+              >
+                <Save className="h-4 w-4" />
+                {loading ? 'Создание...' : 'Создать аккаунт'}
+              </button>
             </form>
 
             {(message || error) && (
@@ -410,7 +531,7 @@ export default function AdminClientChecksPage() {
                     {userInfo?.email ? (
                       <>Найден клиент: <span className="font-semibold text-white">{userInfo.email}</span>. Проверка будет добавлена в его личный кабинет.</>
                     ) : (
-                      <>Сначала найди клиента по email выше. Если клиент еще не зарегистрирован, попроси его войти или зарегистрироваться на /account.</>
+                      <>Сначала найди клиента по email выше. Если аккаунта еще нет, создай доступ в левой колонке и передай клиенту email/пароль.</>
                     )}
                   </div>
                 </div>
@@ -586,7 +707,7 @@ export default function AdminClientChecksPage() {
                 <AlertTriangle className="h-4 w-4" />
                 Важно
               </div>
-              Эта панель управляет только карточками в таблице client_checks. UUID вручную вводить не нужно: клиент находится по email. Аккаунт клиента создается через регистрацию на /account.
+              Эта панель управляет карточками в таблице client_checks и помогает создать клиентский доступ. UUID вручную вводить не нужно: клиент находится по email, а аккаунт создается через админскую форму слева.
             </div>
           </div>
         </section>

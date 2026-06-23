@@ -69,19 +69,18 @@ export default function App({ Component, pageProps }) {
         </Script>
       )}
 
-      <Script id="heimdall-service-worker-cleanup" strategy="afterInteractive">
+      <Script id="heimdall-service-worker" strategy="afterInteractive">
         {`
           if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.getRegistrations().then(function (registrations) {
-              registrations.forEach(function (registration) { registration.unregister(); });
-            }).catch(function () {});
-          }
-          if ('caches' in window) {
-            caches.keys().then(function (keys) {
-              keys.forEach(function (key) {
-                if (key.indexOf('heimdall') === 0) caches.delete(key);
-              });
-            }).catch(function () {});
+            var registerHeimdallWorker = function () {
+              navigator.serviceWorker.register('/sw.js').catch(function () {});
+            };
+
+            if (document.readyState === 'complete') {
+              registerHeimdallWorker();
+            } else {
+              window.addEventListener('load', registerHeimdallWorker);
+            }
           }
         `}
       </Script>

@@ -160,12 +160,24 @@ export default function AdminCrmPage() {
   const [activeCrmTab, setActiveCrmTab] = useState('list')
   const [newClient, setNewClient] = useState(emptyNewClient)
   const [riskObjectsByLead, setRiskObjectsByLead] = useState({})
+  const [autoLoaded, setAutoLoaded] = useState(false)
 
   useEffect(() => {
     setSecret(window.sessionStorage.getItem('heimdall_admin_secret') || '')
     window.localStorage.removeItem('heimdall_admin_secret')
     setSource(window.localStorage.getItem('heimdall_crm_source') || '')
   }, [])
+
+  useEffect(() => {
+    if (!secret || autoLoaded) return
+
+    const timer = window.setTimeout(() => {
+      setAutoLoaded(true)
+      loadLeads()
+    }, 250)
+
+    return () => window.clearTimeout(timer)
+  }, [secret, autoLoaded])
 
   const headers = useMemo(() => ({
     'Content-Type': 'application/json',
@@ -487,20 +499,44 @@ export default function AdminCrmPage() {
 
         <HeimdallNav language="ru" />
 
-        <section className="relative z-10 mx-auto max-w-7xl px-4 py-16 sm:px-5 sm:py-24">
-          <div className="max-w-5xl">
+        <section className="relative z-10 mx-auto max-w-7xl px-4 py-10 sm:px-5 sm:py-12">
+          <div className="grid gap-6 lg:grid-cols-[1fr_auto] lg:items-end">
+            <div className="max-w-4xl">
             <div className="inline-flex items-center gap-3 rounded-full border border-[#D6A84F]/25 bg-[#D6A84F]/10 px-5 py-2 text-sm uppercase tracking-[0.24em] text-[#F7D784]">
               <LockKeyhole className="h-4 w-4" />
-              Закрытая CRM v1.3
+              Закрытая CRM
             </div>
 
-            <h1 className="mt-9 text-5xl font-semibold leading-[0.95] tracking-[-0.06em] md:text-8xl">
+            <h1 className="mt-6 text-4xl font-semibold leading-[0.98] tracking-[-0.055em] md:text-6xl">
               Заявки и продажи
             </h1>
 
-            <p className="mt-8 max-w-3xl text-lg leading-8 text-white/64 md:text-xl md:leading-9">
-              Собственная CRM HEIMDALL: заявки с сайта, этапы обработки, быстрые действия, архив, приоритет, сумма, следующий шаг и внутренний комментарий.
+            <p className="mt-5 max-w-3xl text-base leading-8 text-white/64">
+              Рабочая панель HEIMDALL: заявки, этапы, приоритет, следующий шаг, клиентский доступ и переход к проверкам без ручного поиска UUID.
             </p>
+            </div>
+
+            <div className="grid grid-cols-3 gap-3 rounded-[28px] border border-white/10 bg-white/[0.045] p-3 backdrop-blur-2xl">
+              {[
+                ['Активно', stats.inWork],
+                ['Сегодня', stats.today],
+                ['Просрочено', stats.overdue]
+              ].map(([label, value]) => (
+                <button
+                  key={label}
+                  type="button"
+                  onClick={() => {
+                    if (label === 'Сегодня') setViewFilter('today')
+                    if (label === 'Просрочено') setViewFilter('overdue')
+                    if (label === 'Активно') setViewFilter('active')
+                  }}
+                  className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-left transition hover:bg-white/10"
+                >
+                  <div className="text-2xl font-semibold text-[#F7D784]">{value}</div>
+                  <div className="mt-1 text-xs uppercase tracking-[0.16em] text-white/45">{label}</div>
+                </button>
+              ))}
+            </div>
           </div>
         </section>
 
