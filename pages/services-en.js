@@ -4,7 +4,7 @@ import { useState } from 'react'
 import HeimdallNav from '@/components/HeimdallNav'
 import HeimdallFooter from '@/components/HeimdallFooter'
 import ContactModal from '@/components/ContactModal'
-import { ArrowRight, FileSearch, ShieldCheck, Network, UserSearch, Scale, Building2, CheckCircle2, AlertTriangle, LockKeyhole, ClipboardCheck, Home } from 'lucide-react'
+import { ArrowRight, FileSearch, ShieldCheck, Network, UserSearch, Scale, Building2, CheckCircle2, AlertTriangle, LockKeyhole, ClipboardCheck, Home, Car } from 'lucide-react'
 
 const services = [
   {
@@ -43,6 +43,20 @@ const services = [
     href: '/private-staff-check-en',
     icon: Home,
     bestFor: 'when a private client hires a person with access to home, children, keys or private information'
+  },
+  {
+    title: 'Apartment Owner Verification',
+    text: 'Seller, litigation, debts, intermediaries, powers of attorney, pressure indicators and transaction challenge risk.',
+    href: '/apartment-owner-verification',
+    icon: Building2,
+    bestFor: 'before an advance, deposit, settlement or real estate purchase agreement'
+  },
+  {
+    title: 'Car Owner Verification',
+    text: 'Vehicle seller, debts, litigation, intermediaries, powers of attorney, disputed ownership and fraud indicators.',
+    href: '/car-owner-verification',
+    icon: Car,
+    bestFor: 'before paying for a vehicle, sending a deposit or dealing through an intermediary'
   },
   {
     title: 'Background Check',
@@ -119,7 +133,7 @@ export default function ServicesEnPage() {
     <>
       <Head>
         <title>Services | HEIMDALL</title>
-        <meta name="description" content="HEIMDALL services: corporate intelligence, China supplier verification, household staff checks, background checks, beneficial ownership review, AML/KYC, due diligence and business support." />
+        <meta name="description" content="HEIMDALL services: corporate intelligence, China supplier verification, household staff checks, apartment and car owner verification, background checks, beneficial ownership review, AML/KYC, due diligence and business support." />
         <link rel="canonical" href="https://www.heimdall-group.ru/services-en" />
       </Head>
 

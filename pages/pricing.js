@@ -4,7 +4,7 @@ import { useState } from 'react'
 import HeimdallNav from '@/components/HeimdallNav'
 import HeimdallFooter from '@/components/HeimdallFooter'
 import ContactModal from '@/components/ContactModal'
-import { ArrowRight, ShieldCheck, FileSearch, UserSearch, Building2, LockKeyhole, SearchCheck, Clock3, CheckCircle2, AlertTriangle, Scale, BriefcaseBusiness, Home } from 'lucide-react'
+import { ArrowRight, ShieldCheck, FileSearch, UserSearch, Building2, LockKeyhole, SearchCheck, Clock3, CheckCircle2, AlertTriangle, Scale, BriefcaseBusiness, Home, Car } from 'lucide-react'
 
 const oneTimeServices = [
   {
@@ -43,6 +43,24 @@ const oneTimeServices = [
     includes: ['проверка предоставленных данных и открытых признаков риска', 'публичный цифровой след, судебные и исполнительные сигналы', 'рекомендации и биографические несостыковки при наличии согласия', 'вывод для семьи: какие риски есть и какие ограничения нужны'],
     icon: Home,
     href: '/private-staff-check'
+  },
+  {
+    title: 'Проверка собственника квартиры',
+    price: 'от 35 000 ₽',
+    term: 'обычно 2-5 рабочих дней',
+    text: 'Для покупателя квартиры перед авансом, задатком, расчетами или подписанием договора с продавцом.',
+    includes: ['личность продавца и роль в сделке', 'судебные, долговые и исполнительные сигналы', 'посредники, доверенности, давление и признаки мошенничества', 'вывод по рискам сделки и вопросам для юриста'],
+    icon: Building2,
+    href: '/proverka-sobstvennika-kvartiry'
+  },
+  {
+    title: 'Проверка собственника автомобиля',
+    price: 'от 25 000 ₽',
+    term: 'обычно 1-5 рабочих дней',
+    text: 'Для покупателя автомобиля перед оплатой, переводом задатка или сделкой через посредника.',
+    includes: ['личность продавца и совпадение с владельцем', 'долги, суды, исполнительные производства и спорные сигналы', 'перекупы, доверенности, давление по срокам и признаки обмана', 'вывод по человеку и безопасному следующему шагу'],
+    icon: Car,
+    href: '/proverka-sobstvennika-avtomobilya'
   },
   {
     title: 'Due Diligence сделки',
@@ -169,7 +187,7 @@ export default function PricingPage() {
     <>
       <Head>
         <title>Прайс HEIMDALL - проверки, ИБ, расследования и служба безопасности</title>
-        <meta name="description" content="Единый прайс HEIMDALL: проверки контрагентов, поставщиков, кандидатов и домашнего персонала, Due Diligence, информационная безопасность, внутренние расследования и служба безопасности на аутсорсе." />
+        <meta name="description" content="Единый прайс HEIMDALL: проверки контрагентов, поставщиков, кандидатов, домашнего персонала, собственников квартир и автомобилей, Due Diligence, ИБ, расследования и безопасность на аутсорсе." />
         <link rel="canonical" href="https://www.heimdall-group.ru/pricing" />
       </Head>
 

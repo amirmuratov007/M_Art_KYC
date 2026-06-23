@@ -4,7 +4,7 @@ import { useState } from 'react'
 import HeimdallNav from '@/components/HeimdallNav'
 import HeimdallFooter from '@/components/HeimdallFooter'
 import ContactModal from '@/components/ContactModal'
-import { ArrowRight, ShieldCheck, FileSearch, UserSearch, Building2, SearchCheck, Clock3, CheckCircle2, AlertTriangle, Scale, BriefcaseBusiness, Home } from 'lucide-react'
+import { ArrowRight, ShieldCheck, FileSearch, UserSearch, Building2, SearchCheck, Clock3, CheckCircle2, AlertTriangle, Scale, BriefcaseBusiness, Home, Car } from 'lucide-react'
 
 const oneTimeServices = [
   {
@@ -43,6 +43,24 @@ const oneTimeServices = [
     includes: ['provided data and open risk indicators', 'public digital footprint, litigation and enforcement signals', 'references and biography inconsistencies when consent is available', 'family-facing conclusion: risks and recommended restrictions'],
     icon: Home,
     href: '/private-staff-check-en'
+  },
+  {
+    title: 'Apartment Owner Verification',
+    price: 'from 35,000 RUB',
+    term: 'usually 2-5 business days',
+    text: 'For apartment buyers before an advance payment, deposit, settlement or purchase agreement.',
+    includes: ['seller identity and role in the transaction', 'litigation, debt and enforcement signals', 'intermediaries, powers of attorney, pressure and fraud indicators', 'risk conclusion and questions for legal review'],
+    icon: Building2,
+    href: '/apartment-owner-verification'
+  },
+  {
+    title: 'Car Owner Verification',
+    price: 'from 25,000 RUB',
+    term: 'usually 1-5 business days',
+    text: 'For vehicle buyers before payment, deposit transfer or a transaction through an intermediary.',
+    includes: ['seller identity and match with the owner', 'debts, litigation, enforcement and dispute signals', 'resellers, powers of attorney, time pressure and fraud indicators', 'seller risk conclusion and safer next step'],
+    icon: Car,
+    href: '/car-owner-verification'
   },
   {
     title: 'Deal Due Diligence',
@@ -169,7 +187,7 @@ export default function PricingEnPage() {
     <>
       <Head>
         <title>HEIMDALL Pricing - checks, InfoSec, investigations and security outsourcing</title>
-        <meta name="description" content="HEIMDALL pricing: counterparty checks, supplier and candidate screening, due diligence, information security, internal investigations and outsourced security department." />
+        <meta name="description" content="HEIMDALL pricing: counterparty checks, supplier and candidate screening, household staff checks, apartment and car owner verification, due diligence, information security, investigations and outsourced security." />
         <link rel="canonical" href="https://www.heimdall-group.ru/pricing-en" />
       </Head>
 

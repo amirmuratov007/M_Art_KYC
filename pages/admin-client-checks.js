@@ -40,6 +40,8 @@ const typeOptions = [
   ['supplier', 'Проверка поставщика'],
   ['candidate', 'Проверка кандидата'],
   ['private_staff', 'Проверка домашнего персонала'],
+  ['apartment_owner', 'Проверка собственника квартиры'],
+  ['car_owner', 'Проверка собственника автомобиля'],
   ['due_diligence', 'Due Diligence'],
   ['infosec', 'Информационная безопасность'],
   ['internal_investigation', 'Внутреннее расследование'],

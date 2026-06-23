@@ -17,7 +17,10 @@ import {
   Bell,
   Newspaper,
   CheckCircle2,
-  Sparkles
+  Sparkles,
+  Home,
+  Building2,
+  Car
 } from 'lucide-react'
 
 const core = [
@@ -25,6 +28,12 @@ const core = [
   ['Проверка кандидатов', 'Конфликт интересов, репутация, финансовая нагрузка и чувствительные роли.', '/proverka-kandidatov', ShieldCheck],
   ['Due Diligence', 'Комплексная проверка бизнеса, партнёров, сделок и международных структур.', '/due-diligence-russia', Network],
   ['Примеры отчётов', 'Показываем, как выглядит аналитический вывод HEIMDALL.', '/sample-reports', Gauge]
+]
+
+const privateChecks = [
+  ['Проверка домашнего персонала', 'Няни, сиделки, водители, домработницы и помощники перед допуском к дому, детям, имуществу и личной информации.', '/private-staff-check', Home],
+  ['Проверка собственника квартиры', 'Продавец, долги, суды, посредники, доверенности, признаки давления и риски оспаривания сделки.', '/proverka-sobstvennika-kvartiry', Building2],
+  ['Проверка собственника автомобиля', 'Продавец авто, долги, суды, перекупы, доверенности, спорное владение и признаки мошенничества.', '/proverka-sobstvennika-avtomobilya', Car]
 ]
 
 const decisionMoments = [
@@ -182,6 +191,33 @@ export default function HomePage() {
           </div>
         </section>
 
+
+        <section className="relative z-10 mx-auto max-w-7xl px-4 pb-16 sm:px-5 sm:pb-24">
+          <div className="mb-8 max-w-4xl">
+            <div className="text-sm uppercase tracking-[0.24em] text-[#F7D784]/80">Частные проверки</div>
+            <h2 className="mt-4 text-3xl font-semibold tracking-[-0.05em] sm:text-5xl">
+              Для дома, семьи и личных сделок
+            </h2>
+            <p className="mt-5 max-w-3xl text-base leading-8 text-white/62">
+              Отдельный контур HEIMDALL для ситуаций, где риск связан не с компанией, а с человеком, доступом к дому или крупной личной покупкой.
+            </p>
+          </div>
+
+          <div className="grid gap-5 md:grid-cols-3">
+            {privateChecks.map(([title, text, href, Icon]) => (
+              <Link key={href} href={href} className="group rounded-[30px] border border-white/10 bg-white/[0.045] p-6 backdrop-blur-2xl transition duration-500 hover:-translate-y-2 hover:border-[#D6A84F]/35 hover:bg-white/[0.07] sm:p-7">
+                <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl border border-[#D6A84F]/25 bg-[#D6A84F]/10 text-[#F7D784]">
+                  <Icon className="h-6 w-6" />
+                </div>
+                <h3 className="text-xl font-semibold tracking-[-0.03em] sm:text-2xl">{title}</h3>
+                <p className="mt-4 text-sm leading-7 text-white/58">{text}</p>
+                <div className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-[#F7D784]">
+                  Подробнее <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
 
         <HeimdallRiskTest language="ru" compact />
         <section className="relative z-10 mx-auto max-w-7xl px-4 pb-16 sm:px-5 sm:pb-24">

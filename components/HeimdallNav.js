@@ -14,6 +14,9 @@ const ruMenu = [
       ['Проверка кандидатов', '/proverka-kandidatov'],
       ['Проверка бенефициаров', '/proverka-beneficiarov'],
       ['AML / KYC', '/aml-kyc-russia'],
+      ['Проверка домашнего персонала', '/private-staff-check'],
+      ['Проверка собственника квартиры', '/proverka-sobstvennika-kvartiry'],
+      ['Проверка собственника автомобиля', '/proverka-sobstvennika-avtomobilya'],
       ['Due Diligence', '/due-diligence-russia'],
       ['Внутренние расследования', '/internal-investigations'],
       ['Единый прайс', '/pricing']
@@ -67,6 +70,9 @@ const enMenu = [
       ['CFO Screening', '/cfo-screening-en'],
       ['Procurement Risk Check', '/procurement-risk-check-en'],
       ['Background Check', '/background-check'],
+      ['Private Staff Check', '/private-staff-check-en'],
+      ['Apartment Owner Verification', '/apartment-owner-verification'],
+      ['Car Owner Verification', '/car-owner-verification'],
       ['Internal Investigations', '/internal-investigations-en'],
       ['Pricing', '/pricing-en']
     ]
@@ -124,6 +130,12 @@ const langMap = {
   '/': '/en',
   '/en': '/',
   '/account': '/account',
+  '/private-staff-check': '/private-staff-check-en',
+  '/private-staff-check-en': '/private-staff-check',
+  '/proverka-sobstvennika-kvartiry': '/apartment-owner-verification',
+  '/apartment-owner-verification': '/proverka-sobstvennika-kvartiry',
+  '/proverka-sobstvennika-avtomobilya': '/car-owner-verification',
+  '/car-owner-verification': '/proverka-sobstvennika-avtomobilya',
 
   '/proverka-kontragenta-dubai': '/counterparty-check-dubai-en',
   '/counterparty-check-dubai-en': '/proverka-kontragenta-dubai',
