@@ -960,6 +960,23 @@ export default function RiskIntelligenceWorkspace({ initialObjectId = null }) {
                           </div>
                           <div className="mt-3 font-semibold text-white/80">{source.file_name}</div>
                           <div className="mt-1 text-xs text-white/42">{source.mime_type || 'тип не указан'} · {Number(source.characters || 0).toLocaleString('ru-RU')} знаков</div>
+                          {Boolean(source.tabs?.length || source.image_count || source.table_count || source.details_count) && (
+                            <div className="mt-2 text-xs leading-5 text-sky-100/70">
+                              {source.tabs?.length ? `Вкладок: ${source.tabs.length}. ` : ''}
+                              {source.table_count ? `Таблиц: ${source.table_count}. ` : ''}
+                              {source.details_count ? `Блоков: ${source.details_count}. ` : ''}
+                              {source.image_count ? `Фото/изображений: ${source.image_count}.` : ''}
+                            </div>
+                          )}
+                          {Boolean(source.tabs?.length) && (
+                            <div className="mt-2 flex flex-wrap gap-1">
+                              {source.tabs.slice(0, 8).map((tab) => (
+                                <span key={`${source.id}-${tab.index}`} className="rounded-full border border-white/10 bg-black/25 px-2 py-1 text-[11px] text-white/50">
+                                  {tab.index}. {tab.title}
+                                </span>
+                              ))}
+                            </div>
+                          )}
                           {source.error && <div className="mt-2 text-xs leading-5 text-[#F7D784]">{source.error}</div>}
                         </div>
                       ))}

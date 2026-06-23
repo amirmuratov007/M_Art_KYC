@@ -32,6 +32,7 @@ function decodeXml(value = '') {
 function cleanExtractedText(value) {
   return safeText(value)
     .replace(/\u0000/g, '')
+    .replace(/\r/g, '\n')
     .replace(/[ \t]+\n/g, '\n')
     .replace(/\n{4,}/g, '\n\n\n')
     .trim()
@@ -136,11 +137,183 @@ async function extractXlsx(buffer) {
   return parts.join('\n\n')
 }
 
+function compactLine(value, limit = 400) {
+  return safeText(value).replace(/\s+/g, ' ').trim().slice(0, limit)
+}
+
+function cleanLines(value) {
+  return safeText(value)
+    .replace(/\r/g, '\n')
+    .split('\n')
+    .map((line) => line.replace(/[ \t]+/g, ' ').trim())
+    .filter(Boolean)
+}
+
+function describeImage($, img, index = 0) {
+  const node = $(img)
+  const src = node.attr('src') || ''
+  const link = node.attr('link') || node.attr('data-src') || node.attr('data-original') || ''
+  const photoId = node.attr('photo_id') || node.attr('photo') || node.attr('data-photo') || ''
+  const rawRef = link || src
+  const isEmbedded = /^data:image\//i.test(rawRef)
+  const mime = isEmbedded ? rawRef.match(/^data:([^;,]+)/i)?.[1] || 'image' : ''
+  const approxBytes = isEmbedded ? Math.round((rawRef.split(',').pop() || '').length * 0.75) : 0
+  const context = compactLine(node.closest('details, .additional_block, .card_sources, .photosearch_face, table, div').first().text(), 220)
+  const ref = isEmbedded
+    ? `${mime}, embedded base64, ~${Math.round(approxBytes / 1024)} KB`
+    : compactLine(rawRef.replace(/^https?:\/\/[^/?#]+/i, ''), 220)
+
+  return {
+    index: index + 1,
+    alt: compactLine(node.attr('alt') || node.attr('title') || '', 120),
+    class_name: compactLine(node.attr('class') || '', 120),
+    ref,
+    photo_id: compactLine(photoId, 120),
+    width: compactLine(node.attr('width') || node.css('width') || '', 40),
+    height: compactLine(node.attr('height') || node.css('height') || '', 40),
+    context
+  }
+}
+
+function imageMarker(image) {
+  const bits = [
+    `#${image.index}`,
+    image.alt ? `alt="${image.alt}"` : '',
+    image.photo_id ? `photo_id=${image.photo_id}` : '',
+    image.ref ? `ref=${image.ref}` : '',
+    image.context ? `context="${image.context}"` : ''
+  ].filter(Boolean)
+  return `[IMAGE ${bits.join(' | ')}]`
+}
+
+function tableToText($, table) {
+  const rows = []
+  $(table).find('tr').each((_, row) => {
+    const cells = []
+    $(row).children('th,td').each((__, cell) => {
+      const value = compactLine($(cell).text(), 900)
+      if (value) cells.push(value)
+    })
+    if (cells.length) rows.push(cells.join(' | '))
+  })
+  return rows.join('\n')
+}
+
+function nodeToText($, node, imageOffset = 0) {
+  const clone = $(node).clone()
+  clone.find('script,style,noscript,template,svg').remove()
+  clone.find('br').replaceWith('\n')
+  clone.find('li').each((_, item) => {
+    $(item).prepend('\n- ')
+  })
+
+  clone.find('img').each((index, img) => {
+    const marker = imageMarker(describeImage($, img, imageOffset + index))
+    $(img).replaceWith(`\n${marker}\n`)
+  })
+
+  clone.find('table').each((_, table) => {
+    const tableText = tableToText($, table)
+    if (tableText) $(table).replaceWith(`\n[TABLE]\n${tableText}\n[/TABLE]\n`)
+  })
+
+  clone.find('h1,h2,h3,h4,h5,h6,p,div,section,article,details,summary,table,tr,ul,ol').each((_, element) => {
+    $(element).append('\n')
+  })
+
+  return cleanLines(clone.text()).join('\n')
+}
+
+function nearestTabLabels($, tabsElement) {
+  return $(tabsElement)
+    .find('.tab')
+    .toArray()
+    .map((tab, index) => compactLine($(tab).text(), 120) || `Вкладка ${index + 1}`)
+}
+
+function extractHtmlTabs($) {
+  const extracted = []
+  const seen = new Set()
+
+  $('.tabs').each((_, tabsElement) => {
+    const labels = nearestTabLabels($, tabsElement)
+    const parent = $(tabsElement).parent()
+    const contents = parent.find('.tab-content').toArray()
+
+    contents.forEach((content, index) => {
+      const html = $.html(content)
+      const key = html.slice(0, 240)
+      if (seen.has(key)) return
+      seen.add(key)
+      const title = labels[index] || compactLine($(content).find('h1,h2,h3,summary').first().text(), 120) || `Вкладка ${index + 1}`
+      const text = nodeToText($, content)
+      if (text) extracted.push({ title, text, characters: text.length })
+    })
+  })
+
+  if (extracted.length) return extracted
+
+  $('body > details, body > div, body > section, body > article').each((index, element) => {
+    const title = compactLine($(element).find('h1,h2,h3,summary').first().text(), 120) || `Раздел ${index + 1}`
+    const text = nodeToText($, element)
+    if (text && text.length > 40) extracted.push({ title, text, characters: text.length })
+  })
+
+  if (extracted.length) return extracted
+
+  const text = nodeToText($, $('body').first())
+  return text ? [{ title: 'HTML документ', text, characters: text.length }] : []
+}
+
+async function extractHtml(buffer, fileName = '') {
+  const { load } = await import('cheerio')
+  const html = buffer.toString('utf8')
+  const $ = load(html, { decodeEntities: true })
+  $('script,style,noscript,template,svg').remove()
+
+  const images = $('img').toArray().map((img, index) => describeImage($, img, index)).slice(0, 80)
+  const tabs = extractHtmlTabs($)
+  const detailsCount = $('details').length
+  const tableCount = $('table').length
+
+  const parts = [
+    `HTML-ФАЙЛ: ${fileName || 'uploaded.html'}`,
+    `Найдено вкладок/разделов: ${tabs.length}`,
+    `Найдено раскрывающихся блоков details: ${detailsCount}`,
+    `Найдено таблиц: ${tableCount}`,
+    `Найдено изображений: ${images.length}`,
+    ''
+  ]
+
+  if (images.length) {
+    parts.push('ФОТО И ИЗОБРАЖЕНИЯ')
+    parts.push(...images.slice(0, 40).map((image) => imageMarker(image)))
+    parts.push('')
+  }
+
+  tabs.forEach((tab, index) => {
+    parts.push(`===== HTML TAB ${index + 1}: ${tab.title} =====`)
+    parts.push(tab.text)
+    parts.push(`===== END HTML TAB ${index + 1}: ${tab.title} =====`)
+    parts.push('')
+  })
+
+  return {
+    text: parts.join('\n'),
+    tabs: tabs.map((tab, index) => ({ index: index + 1, title: tab.title, characters: tab.characters })),
+    image_count: images.length,
+    table_count: tableCount,
+    details_count: detailsCount
+  }
+}
+
 async function extractText({ fileName, mimeType, buffer }) {
   const ext = extensionOf(fileName)
   const mime = safeText(mimeType).toLowerCase()
 
-  if (['txt', 'csv', 'tsv', 'json', 'md', 'html', 'htm'].includes(ext) || mime.startsWith('text/') || mime.includes('json')) {
+  if (['html', 'htm'].includes(ext) || mime.includes('html')) return extractHtml(buffer, fileName)
+
+  if (['txt', 'csv', 'tsv', 'json', 'md'].includes(ext) || mime.startsWith('text/') || mime.includes('json')) {
     return buffer.toString('utf8')
   }
 
@@ -162,12 +335,12 @@ async function extractText({ fileName, mimeType, buffer }) {
     throw error
   }
 
-  const error = new Error('Формат пока не поддержан. Поддерживаются TXT, CSV, JSON, PDF, DOCX и XLSX.')
+  const error = new Error('Формат пока не поддержан. Поддерживаются TXT, CSV, JSON, HTML, PDF, DOCX и XLSX.')
   error.code = 'UNSUPPORTED_FILE'
   throw error
 }
 
-function buildSource({ fileName, mimeType, size, text, status = 'extracted', error = '' }) {
+function buildSource({ fileName, mimeType, size, text, status = 'extracted', error = '', tabs = [], imageCount = 0, tableCount = 0, detailsCount = 0 }) {
   const cleanText = cleanExtractedText(text)
   return {
     id: `src-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
@@ -177,6 +350,10 @@ function buildSource({ fileName, mimeType, size, text, status = 'extracted', err
     characters: cleanText.length,
     status,
     error,
+    tabs,
+    image_count: Number(imageCount || 0),
+    table_count: Number(tableCount || 0),
+    details_count: Number(detailsCount || 0),
     extracted_at: new Date().toISOString(),
     text: cleanText
   }
@@ -210,8 +387,18 @@ export default async function handler(req, res) {
       }
 
       try {
-        const text = await extractText({ fileName, mimeType, buffer })
-        sources.push(buildSource({ fileName, mimeType, size, text }))
+        const extracted = await extractText({ fileName, mimeType, buffer })
+        const text = typeof extracted === 'string' ? extracted : extracted?.text || ''
+        sources.push(buildSource({
+          fileName,
+          mimeType,
+          size,
+          text,
+          tabs: Array.isArray(extracted?.tabs) ? extracted.tabs : [],
+          imageCount: extracted?.image_count || 0,
+          tableCount: extracted?.table_count || 0,
+          detailsCount: extracted?.details_count || 0
+        }))
       } catch (error) {
         sources.push(buildSource({ fileName, mimeType, size, status: error.code === 'OCR_NOT_CONFIGURED' ? 'needs_ocr' : 'error', error: error.message || 'Не удалось извлечь текст', text: '' }))
       }
