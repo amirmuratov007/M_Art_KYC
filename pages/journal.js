@@ -5,23 +5,30 @@ import HeimdallNav from '@/components/HeimdallNav'
 import telegramPosts from '../data/telegramPosts'
 import { Search, Send, ArrowRight } from 'lucide-react'
 
-const categories = ['Все', ...Array.from(new Set(telegramPosts.map((post) => post.category)))]
+const allCategory = 'Все'
+const categories = [allCategory, ...Array.from(new Set(telegramPosts.map((post) => post.category)))]
 
 export default function JournalPage() {
   const [query, setQuery] = useState('')
-  const [category, setCategory] = useState('Все')
+  const [category, setCategory] = useState(allCategory)
 
   const filteredPosts = useMemo(() => {
     const q = query.trim().toLowerCase()
     return telegramPosts
       .filter((post) => {
-        const byCategory = category === 'Все' || post.category === category
+        const byCategory = category === allCategory || post.category === category
         const searchText = [post.title, post.text, post.category, ...(post.body || [])].join(' ').toLowerCase()
         const byQuery = !q || searchText.includes(q)
         return byCategory && byQuery
       })
       .sort((a, b) => new Date(b.date) - new Date(a.date))
   }, [query, category])
+
+  const hasActiveFilters = query.trim() || category !== allCategory
+  const resetFilters = () => {
+    setQuery('')
+    setCategory(allCategory)
+  }
 
   return (
     <>
@@ -50,6 +57,10 @@ export default function JournalPage() {
             <p className="mt-10 max-w-3xl text-xl leading-9 text-white/64">
               Здесь собраны публикации HEIMDALL о проверке контрагентов, кандидатов, бенефициаров, санкционных рисках, due diligence и корпоративной безопасности.
             </p>
+            <Link href="/proverka-prodavca-pered-pokupkoy" className="mt-8 inline-flex items-center gap-3 rounded-2xl border border-[#D6A84F]/25 bg-[#D6A84F]/10 px-5 py-4 text-sm font-semibold text-[#F7D784] transition hover:border-[#D6A84F]/45">
+              Новый раздел: проверка продавца перед покупкой
+              <ArrowRight className="h-4 w-4" />
+            </Link>
           </div>
         </section>
 
@@ -57,7 +68,7 @@ export default function JournalPage() {
           <div className="grid gap-5 rounded-[34px] border border-white/10 bg-white/[0.045] p-5 backdrop-blur-2xl md:grid-cols-[1fr_auto] md:items-center">
             <div className="relative">
               <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-white/35" />
-              <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Поиск по публикациям" className="w-full rounded-2xl border border-white/10 bg-black/25 px-12 py-4 text-white outline-none placeholder:text-white/35 focus:border-sky-300/40" />
+              <input value={query} onChange={(e) => setQuery(e.target.value)} aria-label="Поиск по публикациям" placeholder="Поиск по публикациям" className="w-full rounded-2xl border border-white/10 bg-black/25 px-12 py-4 text-white outline-none placeholder:text-white/35 focus:border-sky-300/40" />
             </div>
             <div className="flex max-w-full gap-2 overflow-x-auto pb-1 md:pb-0">
               {categories.map((item) => (
@@ -66,6 +77,14 @@ export default function JournalPage() {
                 </button>
               ))}
             </div>
+          </div>
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm text-white/45">
+            <span>Найдено публикаций: <span className="font-semibold text-white/75">{filteredPosts.length}</span></span>
+            {hasActiveFilters && (
+              <button type="button" onClick={resetFilters} className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-white/62 transition hover:border-sky-300/30 hover:text-white">
+                Сбросить фильтр
+              </button>
+            )}
           </div>
         </section>
 

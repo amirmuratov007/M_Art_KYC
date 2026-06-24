@@ -20,12 +20,44 @@ export async function getStaticProps({ params }) {
 export default function JournalPostPage({ post }) {
   if (!post) return null
 
+  const paragraphs = post.body || [post.text]
+  const wordCount = paragraphs.join(' ').trim().split(/\s+/).filter(Boolean).length
+  const readingTime = Math.max(2, Math.ceil(wordCount / 180))
+  const canonical = `https://www.heimdall-group.ru/journal/${post.slug}`
+  const relatedPosts = telegramPosts
+    .filter((item) => item.slug !== post.slug && item.category === post.category)
+    .slice(0, 3)
+  const articleJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: post.title,
+    description: post.text,
+    datePublished: post.date,
+    dateModified: post.date,
+    author: {
+      '@type': 'Organization',
+      name: 'HEIMDALL'
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: 'HEIMDALL'
+    },
+    mainEntityOfPage: canonical
+  }
+
   return (
     <>
       <Head>
         <title>{post.title} | HEIMDALL</title>
         <meta name="description" content={post.text} />
-        <link rel="canonical" href={`https://www.heimdall-group.ru/journal/${post.slug}`} />
+        <meta property="og:title" content={`${post.title} | HEIMDALL`} />
+        <meta property="og:description" content={post.text} />
+        <meta property="og:type" content="article" />
+        <meta property="og:url" content={canonical} />
+        <meta property="article:published_time" content={post.date} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <link rel="canonical" href={canonical} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }} />
       </Head>
 
       <main className="min-h-screen overflow-hidden bg-[#050816] text-white">
@@ -51,10 +83,10 @@ export default function JournalPostPage({ post }) {
             {post.title}
           </h1>
 
-          <div className="mt-6 text-sm text-white/40">{post.date}</div>
+          <div className="mt-6 text-sm text-white/40">{post.date} · {readingTime} мин чтения</div>
 
           <div className="mt-10 rounded-[34px] border border-white/10 bg-white/[0.045] p-8 backdrop-blur-2xl">
-            {(post.body || [post.text]).map((paragraph) => (
+            {paragraphs.map((paragraph) => (
               <p key={paragraph} className="mb-6 text-lg leading-9 text-white/70 last:mb-0">
                 {paragraph}
               </p>
@@ -69,6 +101,20 @@ export default function JournalPostPage({ post }) {
                   <Link key={href} href={href} className="inline-flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-black/20 px-5 py-4 text-sm font-semibold text-white transition hover:border-[#D6A84F]/35">
                     {label}
                     <ArrowRight className="h-4 w-4 shrink-0 text-[#F7D784]" />
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {relatedPosts.length > 0 && (
+            <section className="mt-10 rounded-[34px] border border-white/10 bg-white/[0.045] p-8 backdrop-blur-2xl">
+              <div className="text-sm uppercase tracking-[0.24em] text-sky-200">Еще по теме</div>
+              <div className="mt-6 grid gap-3">
+                {relatedPosts.map((item) => (
+                  <Link key={item.slug} href={`/journal/${item.slug}`} className="group inline-flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-black/20 px-5 py-4 text-sm font-semibold text-white transition hover:border-sky-300/35">
+                    <span>{item.title}</span>
+                    <ArrowRight className="h-4 w-4 shrink-0 text-sky-200 transition group-hover:translate-x-1" />
                   </Link>
                 ))}
               </div>

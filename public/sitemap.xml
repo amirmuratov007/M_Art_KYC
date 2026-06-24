@@ -839,5 +839,17 @@
     <changefreq>weekly</changefreq>
     <priority>0.78</priority>
   </url>
+  <url>
+    <loc>https://www.heimdall-group.ru/journal/proverka-prodavca-pered-pokupkoy-kvartiry-dachi-avto</loc>
+    <lastmod>2026-06-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.heimdall-group.ru/journal/kak-ne-poteryat-avans-pri-pokupke</loc>
+    <lastmod>2026-06-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
 
 </urlset>
