@@ -13,6 +13,7 @@ const ruMenu = [
       ['Проверка контрагентов', '/proverka-kontragenta'],
       ['Проверка кандидатов', '/proverka-kandidatov'],
       ['Проверка бенефициаров', '/proverka-beneficiarov'],
+      ['Покупка квартиры, дома или авто', '/proverka-prodavca-pered-pokupkoy'],
       ['AML / KYC', '/aml-kyc-russia'],
       ['Due Diligence', '/due-diligence-russia'],
       ['Внутренние расследования', '/internal-investigations'],
