@@ -9,8 +9,11 @@ import HeimdallRiskTest from '@/components/HeimdallRiskTest'
 import HeimdallRiskFloatingPlugin from '@/components/HeimdallRiskFloatingPlugin'
 import {
   ArrowRight,
+  Building2,
+  Car,
   ShieldCheck,
   FileSearch,
+  Home,
   LockKeyhole,
   Network,
   Gauge,
@@ -32,6 +35,12 @@ const decisionMoments = [
   ['Перед оплатой поставщику', 'Увидеть фиктивность, аффилированность, санкционную экспозицию и конфликтные связи.'],
   ['Перед наймом', 'Снизить риск допуска к деньгам, данным, закупкам и управленческим решениям.'],
   ['Перед партнерством', 'Понять, кто реально стоит за компанией и какие риски придут вместе с партнером.']
+]
+
+const purchaseChecks = [
+  ['Проверка собственника квартиры', 'Продавец, долги, суды, посредники, доверенности, давление и риск оспаривания сделки.', '/proverka-sobstvennika-kvartiry', Building2],
+  ['Проверка собственника дачи или дома', 'Земля, дом, продавец, наследники, представители, споры, долги и нестандартные условия расчета.', '/proverka-sobstvennika-dachi', Home],
+  ['Проверка собственника автомобиля', 'Продавец авто, долги, суды, перекупы, доверенности, спорное владение и признаки проблемной сделки.', '/proverka-sobstvennika-avtomobilya', Car]
 ]
 
 const trustProof = [
@@ -182,6 +191,33 @@ export default function HomePage() {
           </div>
         </section>
 
+
+        <section className="relative z-10 mx-auto max-w-7xl px-4 pb-16 sm:px-5 sm:pb-24">
+          <div className="mb-8 max-w-4xl">
+            <div className="text-sm uppercase tracking-[0.24em] text-[#F7D784]/80">Покупка недвижимости и авто</div>
+            <h2 className="mt-4 text-3xl font-semibold tracking-[-0.05em] sm:text-5xl">
+              Проверка продавца до аванса и сделки
+            </h2>
+            <p className="mt-5 max-w-3xl text-base leading-8 text-white/62">
+              Отдельный контур HEIMDALL для личных покупок: квартира, дача, дом или автомобиль. Смотрим не только объект, но и человека, который продает.
+            </p>
+          </div>
+
+          <div className="grid gap-5 md:grid-cols-3">
+            {purchaseChecks.map(([title, text, href, Icon]) => (
+              <Link key={href} href={href} className="group rounded-[30px] border border-white/10 bg-white/[0.045] p-6 backdrop-blur-2xl transition duration-500 hover:-translate-y-2 hover:border-[#D6A84F]/35 hover:bg-white/[0.07] sm:p-7">
+                <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl border border-[#D6A84F]/25 bg-[#D6A84F]/10 text-[#F7D784]">
+                  <Icon className="h-6 w-6" />
+                </div>
+                <h3 className="text-xl font-semibold tracking-[-0.03em] sm:text-2xl">{title}</h3>
+                <p className="mt-4 text-sm leading-7 text-white/58">{text}</p>
+                <div className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-[#F7D784]">
+                  Подробнее <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
 
         <HeimdallRiskTest language="ru" compact />
         <section className="relative z-10 mx-auto max-w-7xl px-4 pb-16 sm:px-5 sm:pb-24">
