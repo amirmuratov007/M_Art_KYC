@@ -1,9 +1,9 @@
 {
   "name": "HEIMDALL",
   "short_name": "HEIMDALL",
-  "description": "HEIMDALL client workspace for checks, statuses and reports",
-  "id": "/account",
-  "start_url": "/account",
+  "description": "HEIMDALL client app",
+  "id": "/demo-client-app",
+  "start_url": "/demo-client-app",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",

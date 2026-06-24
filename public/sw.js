@@ -1,9 +1,6 @@
-const CACHE_NAME = 'heimdall-app-cache-v1'
+const CACHE_NAME = 'heimdall-safe-cache-v4'
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(['/account', '/site.webmanifest'])).catch(() => {})
-  )
   self.skipWaiting()
 })
 
@@ -20,16 +17,10 @@ self.addEventListener('fetch', (event) => {
   if (!request.url.startsWith(self.location.origin)) return
 
   const url = new URL(request.url)
-  if (
-    url.pathname.startsWith('/api') ||
-    url.pathname.startsWith('/admin') ||
-    url.pathname.startsWith('/analyst')
-  ) {
+  if (url.pathname.startsWith('/analyst')) {
     event.respondWith(fetch(request))
     return
   }
 
-  event.respondWith(
-    fetch(request).catch(() => caches.match('/account').then((cached) => cached || new Response('', { status: 504 })))
-  )
+  event.respondWith(fetch(request).catch(() => new Response('', { status: 504 })))
 })
