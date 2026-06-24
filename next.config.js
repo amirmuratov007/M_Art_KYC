@@ -106,6 +106,19 @@ const nextConfig = {
         permanent: false
       }
     ]
+  },
+
+  async rewrites() {
+    return [
+      {
+        source: '/app',
+        destination: '/app/index.html'
+      },
+      {
+        source: '/app/',
+        destination: '/app/index.html'
+      }
+    ]
   }
 }
 
