@@ -4,7 +4,7 @@ import { useState } from 'react'
 import HeimdallNav from '@/components/HeimdallNav'
 import HeimdallFooter from '@/components/HeimdallFooter'
 import ContactModal from '@/components/ContactModal'
-import { ArrowRight, FileSearch, ShieldCheck, Network, UserSearch, Scale, Building2, CheckCircle2, AlertTriangle, LockKeyhole, ClipboardCheck, Home, Car } from 'lucide-react'
+import { ArrowRight, FileSearch, ShieldCheck, Network, UserSearch, Scale, Building2, CheckCircle2, AlertTriangle, LockKeyhole, ClipboardCheck, Home } from 'lucide-react'
 
 const services = [
   {
@@ -45,25 +45,11 @@ const services = [
     bestFor: 'когда частное лицо нанимает человека с доступом к дому, детям, ключам или личной информации'
   },
   {
-    title: 'Проверка собственника квартиры',
-    text: 'Продавец, долги, суды, посредники, доверенности, признаки давления, мошенничества и риски оспаривания сделки.',
-    href: '/proverka-sobstvennika-kvartiry',
+    title: 'Проверка продавца перед покупкой квартиры, дачи, дома или авто',
+    text: 'Проверяем человека за сделкой: собственника квартиры, дачи, дома, участка или автомобиля, его долги, суды, связи, посредников, доверенности и признаки проблемной продажи.',
+    href: '/proverka-prodavca-pered-pokupkoy',
     icon: Building2,
-    bestFor: 'перед авансом, задатком, расчетами или подписанием договора по недвижимости'
-  },
-  {
-    title: 'Проверка собственника дачи или дома',
-    text: 'Земля, дом, продавец, наследники, представители, долги, суды, земельные споры и нестандартные условия расчета.',
-    href: '/proverka-sobstvennika-dachi',
-    icon: Home,
-    bestFor: 'перед покупкой дачи, дома, участка, передачей аванса или сделкой через представителя'
-  },
-  {
-    title: 'Проверка собственника автомобиля',
-    text: 'Продавец авто, долги, суды, перекупы, доверенности, спорное владение и признаки проблемной сделки.',
-    href: '/proverka-sobstvennika-avtomobilya',
-    icon: Car,
-    bestFor: 'перед оплатой автомобиля, переводом задатка или сделкой через посредника'
+    bestFor: 'перед авансом, задатком, оплатой, подписанием договора или сделкой через представителя'
   },
   {
     title: 'Проверка кандидатов',
@@ -140,7 +126,7 @@ export default function ServicesPage() {
     <>
       <Head>
         <title>Услуги | HEIMDALL</title>
-        <meta name="description" content="Услуги HEIMDALL: проверка контрагентов, поставщиков из Китая, кандидатов, домашнего персонала, собственников квартир и автомобилей, бенефициаров, AML/KYC, due diligence и сопровождение бизнеса." />
+        <meta name="description" content="Услуги HEIMDALL: проверка контрагентов, поставщиков из Китая, кандидатов, домашнего персонала, продавцов перед покупкой квартиры, дачи, дома или авто, бенефициаров, AML/KYC, due diligence и сопровождение бизнеса." />
         <link rel="canonical" href="https://www.heimdall-group.ru/services" />
       </Head>
 
