@@ -40,6 +40,7 @@ export default function HeimdallFooter({ language = 'ru' }) {
             <Link href={ru ? '/cases' : '/cases-en'} className="text-white/58 transition hover:text-sky-200">{ru ? 'Кейсы' : 'Cases'}</Link>
             <Link href={ru ? '/journal' : '/journal-en'} className="text-white/58 transition hover:text-sky-200">Journal</Link>
             <a href="https://t.me/heimdall_risk" target="_blank" rel="noreferrer" className="text-white/58 transition hover:text-sky-200">{ru ? 'Telegram-канал' : 'Telegram channel'}</a>
+            {ru && <Link href="/security-checklist" className="text-white/58 transition hover:text-sky-200">50 пунктов безопасности</Link>}
             <Link href={ru ? '/methodology' : '/methodology-en'} className="text-white/58 transition hover:text-sky-200">{ru ? 'Методология' : 'Methodology'}</Link>
             <Link href={ru ? '/trust-center' : '/trust-center-en'} className="text-white/58 transition hover:text-sky-200">{ru ? 'Центр доверия' : 'Trust Center'}</Link>
           </div>
