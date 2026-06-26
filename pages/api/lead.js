@@ -1,6 +1,7 @@
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin'
 
 import { applyRateLimitHeaders, checkRateLimit, hasSpamHoneypot, isPayloadTooLarge } from '@/lib/rateLimit'
+import { cleanMultiline, cleanText, normalizeEmail, normalizePhone, rejectNonPost, setJsonSecurityHeaders, setNoStore } from '@/lib/apiSecurity'
 async function sendTelegramMessage(payload) {
   const token = process.env.TG_TOKEN
   const chatId = process.env.TG_CHAT_ID
@@ -38,11 +39,10 @@ async function sendTelegramMessage(payload) {
 }
 
 export default async function handler(req, res) {
-  console.log('/api/lead called:', req.method)
+  setNoStore(res)
+  setJsonSecurityHeaders(res)
 
-  if (req.method !== 'POST') {
-    return res.status(405).json({ ok: false, error: 'Method not allowed' })
-  }
+  if (rejectNonPost(req, res)) return
 
   const rate = checkRateLimit(req, { scope: 'lead', limit: 5, windowMs: 60 * 1000 })
   applyRateLimitHeaders(res, rate)
@@ -65,7 +65,10 @@ export default async function handler(req, res) {
   try {
     const body = req.body || {}
 
-    if (!body.name || !body.phone) {
+    const name = cleanText(body.name, 220)
+    const phone = normalizePhone(body.phone)
+
+    if (!name || !phone) {
       return res.status(400).json({
         ok: false,
         error: 'Name and phone are required'
@@ -73,13 +76,13 @@ export default async function handler(req, res) {
     }
 
     const payload = {
-      name: body.name || '',
-      company: body.company || '',
-      email: body.email || '',
-      phone: body.phone || '',
-      check_type: body.check_type || '',
-      comment: body.comment || '',
-      locale: body.locale || 'ru',
+      name,
+      company: cleanText(body.company, 220),
+      email: normalizeEmail(body.email),
+      phone,
+      check_type: cleanText(body.check_type, 160),
+      comment: cleanMultiline(body.comment, 2000),
+      locale: cleanText(body.locale, 8) || 'ru',
       source: 'heimdall-website-final'
     }
 
@@ -91,7 +94,7 @@ export default async function handler(req, res) {
 
     if (error) {
       console.error('Supabase error:', error)
-      return res.status(500).json({ ok: false, error: error.message })
+      return res.status(500).json({ ok: false, error: 'Lead storage failed' })
     }
 
     const telegram = await sendTelegramMessage(payload)
@@ -105,7 +108,7 @@ export default async function handler(req, res) {
     console.error('Lead API error:', error)
     return res.status(500).json({
       ok: false,
-      error: error.message || 'Internal server error'
+      error: 'Internal server error'
     })
   }
 }

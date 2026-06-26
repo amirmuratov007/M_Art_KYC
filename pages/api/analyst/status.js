@@ -1,4 +1,5 @@
 import { COOKIE_NAME, getAuthSecret, verifyAnalystSession } from '../../../lib/analystSession'
+import { rejectNonGet, setJsonSecurityHeaders, setNoStore } from '../../../lib/apiSecurity'
 
 function parseCookies(cookieHeader = '') {
   return cookieHeader.split(';').reduce((acc, item) => {
@@ -10,6 +11,11 @@ function parseCookies(cookieHeader = '') {
 }
 
 export default async function handler(req, res) {
+  setNoStore(res)
+  setJsonSecurityHeaders(res)
+
+  if (rejectNonGet(req, res)) return
+
   const cookies = parseCookies(req.headers.cookie || '')
   const session = await verifyAnalystSession(cookies[COOKIE_NAME], getAuthSecret(process.env))
   if (!session) return res.status(401).json({ ok: false })

@@ -1,4 +1,10 @@
 User-agent: *
 Allow: /
+Disallow: /api/
+Disallow: /admin-crm
+Disallow: /admin-client-checks
+Disallow: /analyst/
+Disallow: /account
+Disallow: /app
 
 Sitemap: https://www.heimdall-group.ru/sitemap.xml

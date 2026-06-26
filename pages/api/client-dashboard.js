@@ -1,18 +1,13 @@
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin'
-
-function setNoStore(res) {
-  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
-  res.setHeader('Pragma', 'no-cache')
-  res.setHeader('Expires', '0')
-}
+import { rejectNonGet, setJsonSecurityHeaders, setNoStore } from '@/lib/apiSecurity'
+import { applyRateLimitHeaders, checkRateLimit } from '@/lib/rateLimit'
 
 function getToken(req) {
   const authorization = req.headers.authorization || ''
   const bearer = authorization.startsWith('Bearer ') ? authorization.slice(7).trim() : ''
   const headerToken = req.headers['x-heimdall-client-token']
-  const queryToken = req.query?.token
 
-  return bearer || headerToken || queryToken || ''
+  return bearer || headerToken || ''
 }
 
 function isValidTokenFormat(token) {
@@ -35,9 +30,15 @@ function safeClientPayload(access) {
 
 export default async function handler(req, res) {
   setNoStore(res)
+  setJsonSecurityHeaders(res)
 
-  if (req.method !== 'GET') {
-    return res.status(405).json({ ok: false, error: 'Method not allowed' })
+  if (rejectNonGet(req, res)) return
+
+  const rate = checkRateLimit(req, { scope: 'client-dashboard', limit: 60, windowMs: 60 * 1000 })
+  applyRateLimitHeaders(res, rate)
+
+  if (!rate.ok) {
+    return res.status(429).json({ ok: false, error: 'Too many requests' })
   }
 
   const token = getToken(req)

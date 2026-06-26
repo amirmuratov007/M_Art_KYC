@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin'
 
 import { applyRateLimitHeaders, checkRateLimit, getClientIp, hasSpamHoneypot, isPayloadTooLarge } from '@/lib/rateLimit'
+import { cleanMultiline, cleanText, rejectNonPost, setJsonSecurityHeaders, setNoStore } from '@/lib/apiSecurity'
 function getAnonClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
@@ -16,10 +17,6 @@ function getAnonClient() {
       autoRefreshToken: false
     }
   })
-}
-
-function sanitize(value, maxLength = 2000) {
-  return String(value || '').trim().slice(0, maxLength)
 }
 
 async function verifyUser(req) {
@@ -100,11 +97,10 @@ async function saveLead(payload) {
 }
 
 export default async function handler(req, res) {
-  res.setHeader('Cache-Control', 'no-store, max-age=0')
+  setNoStore(res)
+  setJsonSecurityHeaders(res)
 
-  if (req.method !== 'POST') {
-    return res.status(405).json({ ok: false, error: 'Method not allowed' })
-  }
+  if (rejectNonPost(req, res)) return
 
   const ipRate = checkRateLimit(req, { scope: 'client-request-ip', limit: 20, windowMs: 60 * 1000 })
   applyRateLimitHeaders(res, ipRate)
@@ -155,13 +151,13 @@ export default async function handler(req, res) {
 
   const body = req.body || {}
 
-  const service = sanitize(body.service, 160)
-  const urgency = sanitize(body.urgency, 80)
-  const subject = sanitize(body.subject, 220)
-  const details = sanitize(body.details, 4000)
-  const company = sanitize(body.company || user.user_metadata?.company || '', 220)
-  const fullName = sanitize(body.fullName || user.user_metadata?.full_name || user.email || '', 220)
-  const contact = sanitize(body.contact || user.email || '', 220)
+  const service = cleanText(body.service, 160)
+  const urgency = cleanText(body.urgency, 80)
+  const subject = cleanText(body.subject, 220)
+  const details = cleanMultiline(body.details, 4000)
+  const company = cleanText(body.company || user.user_metadata?.company || '', 220)
+  const fullName = cleanText(body.fullName || user.user_metadata?.full_name || user.email || '', 220)
+  const contact = cleanText(body.contact || user.email || '', 220)
 
   if (!service || !subject || !details) {
     return res.status(400).json({

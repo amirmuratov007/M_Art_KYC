@@ -1,5 +1,6 @@
 import { COOKIE_NAME, createAnalystSession, getAuthSecret, analystCookieOptions } from '../../../lib/analystSession'
 import { applyRateLimitHeaders, checkRateLimit } from '../../../lib/rateLimit'
+import { rejectNonPost, setJsonSecurityHeaders, setNoStore } from '../../../lib/apiSecurity'
 
 function safeCompare(a, b) {
   if (typeof a !== 'string' || typeof b !== 'string') return false
@@ -22,10 +23,10 @@ function serializeCookie(name, value, options = {}) {
 }
 
 export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    res.setHeader('Allow', 'POST')
-    return res.status(405).json({ ok: false, error: 'Method not allowed' })
-  }
+  setNoStore(res)
+  setJsonSecurityHeaders(res)
+
+  if (rejectNonPost(req, res)) return
 
   const rate = checkRateLimit(req, { scope: 'analyst-login', limit: 8, windowMs: 60 * 1000 })
   applyRateLimitHeaders(res, rate)

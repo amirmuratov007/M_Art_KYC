@@ -1,6 +1,7 @@
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin'
 
 import { applyRateLimitHeaders, checkRateLimit, hasSpamHoneypot, isPayloadTooLarge } from '@/lib/rateLimit'
+import { cleanMultiline, cleanText, rejectNonPost, setJsonSecurityHeaders, setNoStore } from '@/lib/apiSecurity'
 async function sendTelegram(text) {
   const token = process.env.TELEGRAM_BOT_TOKEN
   const chatId = process.env.TELEGRAM_CHAT_ID
@@ -60,9 +61,10 @@ async function saveSupabase(payload) {
 }
 
 export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ ok: false, error: 'Method not allowed' })
-  }
+  setNoStore(res)
+  setJsonSecurityHeaders(res)
+
+  if (rejectNonPost(req, res)) return
 
   const rate = checkRateLimit(req, { scope: 'contact-request', limit: 5, windowMs: 60 * 1000 })
   applyRateLimitHeaders(res, rate)
@@ -82,7 +84,13 @@ export default async function handler(req, res) {
     return res.status(413).json({ ok: false, error: 'Слишком большой текст заявки' })
   }
 
-  const { name, company, contact, topic, message, language } = req.body || {}
+  const body = req.body || {}
+  const name = cleanText(body.name, 220)
+  const company = cleanText(body.company, 220)
+  const contact = cleanText(body.contact, 220)
+  const topic = cleanText(body.topic, 260)
+  const message = cleanMultiline(body.message, 2500)
+  const language = cleanText(body.language, 8)
 
   if (!name || !contact) {
     return res.status(400).json({

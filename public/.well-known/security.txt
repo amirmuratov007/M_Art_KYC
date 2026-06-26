@@ -1,0 +1,5 @@
+Contact: mailto:a.muradov@heimdall-group.ru
+Preferred-Languages: ru, en
+Canonical: https://www.heimdall-group.ru/.well-known/security.txt
+Policy: https://www.heimdall-group.ru/privacy
+Expires: 2027-06-26T00:00:00Z

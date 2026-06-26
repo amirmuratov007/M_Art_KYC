@@ -1,4 +1,5 @@
 import { COOKIE_NAME } from '../../../lib/analystSession'
+import { rejectNonPost, setJsonSecurityHeaders, setNoStore } from '../../../lib/apiSecurity'
 
 function serializeCookie(name, value, options = {}) {
   const parts = [`${name}=${encodeURIComponent(value)}`]
@@ -11,6 +12,11 @@ function serializeCookie(name, value, options = {}) {
 }
 
 export default function handler(req, res) {
+  setNoStore(res)
+  setJsonSecurityHeaders(res)
+
+  if (rejectNonPost(req, res)) return
+
   res.setHeader('Set-Cookie', serializeCookie(COOKIE_NAME, '', {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',

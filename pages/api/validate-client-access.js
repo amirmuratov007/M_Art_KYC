@@ -1,10 +1,6 @@
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin'
-
-function setNoStore(res) {
-  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
-  res.setHeader('Pragma', 'no-cache')
-  res.setHeader('Expires', '0')
-}
+import { rejectNonGet, setJsonSecurityHeaders, setNoStore } from '@/lib/apiSecurity'
+import { applyRateLimitHeaders, checkRateLimit } from '@/lib/rateLimit'
 
 function isValidTokenFormat(token) {
   return typeof token === 'string' && /^[a-f0-9]{64}$/i.test(token)
@@ -12,9 +8,15 @@ function isValidTokenFormat(token) {
 
 export default async function handler(req, res) {
   setNoStore(res)
+  setJsonSecurityHeaders(res)
 
-  if (req.method !== 'GET') {
-    return res.status(405).json({ ok: false, error: 'Method not allowed' })
+  if (rejectNonGet(req, res)) return
+
+  const rate = checkRateLimit(req, { scope: 'validate-client-access', limit: 30, windowMs: 60 * 1000 })
+  applyRateLimitHeaders(res, rate)
+
+  if (!rate.ok) {
+    return res.status(429).json({ ok: false, error: 'Too many requests' })
   }
 
   try {
