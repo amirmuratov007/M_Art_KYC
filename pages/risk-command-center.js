@@ -36,8 +36,8 @@ export default function RiskCommandCenterPage() {
   return (
     <>
       <Head>
-        <title>Risk Control Center | HEIMDALL</title>
-        <meta name="description" content="Risk Control Center HEIMDALL: единый контур управления рисками сделок, авансов, кандидатов, подрядчиков, бенефициаров, доступов и цифрового периметра." />
+        <title>Центр управления рисками | HEIMDALL</title>
+        <meta name="description" content="Центр управления рисками HEIMDALL: единый контур контроля сделок, авансов, кандидатов, подрядчиков, бенефициаров, доступов и цифрового периметра." />
         <link rel="canonical" href="https://www.heimdall-group.ru/risk-command-center" />
       </Head>
 
@@ -141,7 +141,7 @@ export default function RiskCommandCenterPage() {
         <HeimdallFooter language="ru" />
       </main>
 
-      <ContactModal open={contactOpen} onClose={() => setContactOpen(false)} language="ru" defaultTopic="Risk Control Center" />
+      <ContactModal open={contactOpen} onClose={() => setContactOpen(false)} language="ru" defaultTopic="Центр управления рисками" />
     </>
   )
 }

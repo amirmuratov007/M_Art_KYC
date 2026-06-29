@@ -37,7 +37,7 @@ const ruMenu = [
     items: [
       ['Комплексное сопровождение', '/business-support'],
       ['Служба безопасности на аутсорсе', '/security-outsourcing'],
-      ['Risk Control Center', '/risk-command-center'],
+      ['Центр управления рисками', '/risk-command-center'],
       ['Центр риск-аналитики', '/risk-intelligence'],
       ['Внутренние расследования', '/internal-investigations'],
       ['Единый прайс', '/pricing'],

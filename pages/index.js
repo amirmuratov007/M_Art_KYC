@@ -238,7 +238,7 @@ export default function HomePage() {
                 <ScanSearch className="h-4 w-4" /> Новый контур
               </div>
               <h2 className="mt-6 text-3xl font-semibold tracking-[-0.05em] sm:text-5xl">
-                Risk Control Center: единая точка контроля сделок, людей и цифровых рисков
+                Центр управления рисками: единая точка контроля сделок, людей и цифровых рисков
               </h2>
               <p className="mt-5 text-base leading-8 text-white/64 sm:text-lg">
                 Для собственника важен не список справок, а спокойная картина: где можно платить, кого можно допускать, какие связи опасны и что делать прямо сейчас. Мы собрали это в отдельный операционный формат.
