@@ -20,7 +20,10 @@ import {
   Bell,
   Newspaper,
   CheckCircle2,
-  Sparkles
+  Sparkles,
+  ClipboardCheck,
+  Radar,
+  ScanSearch
 } from 'lucide-react'
 
 const core = [
@@ -47,6 +50,13 @@ const trustProof = [
   ['Методология', 'Не просто справки из баз, а аналитический вывод с логикой риска.', '/methodology'],
   ['Источники данных', 'Открытые реестры, суды, медиа, корпоративные связи и комплаенс-сигналы.', '/data-sources'],
   ['Конфиденциальность', 'Задачи, документы и результаты проверки не раскрываются третьим лицам.', '/privacy']
+]
+
+const operatingSystem = [
+  ['Сделки и авансы', 'Проверяем компанию, владельцев, платежный маршрут, суды, санкционные связи и признаки номинальности до оплаты.', FileSearch],
+  ['Люди с доступом', 'Смотрим кандидатов, партнеров, подрядчиков и домашних сотрудников перед доступом к деньгам, детям, объектам и данным.', ShieldCheck],
+  ['Цифровой периметр', 'Ищем утечки, поддельные домены, открытые следы, риск подрядчиков и точки, через которые бизнес можно атаковать.', Radar],
+  ['Единый риск-реестр', 'Собираем выводы в понятную очередь решений: что остановить, что усилить, что мониторить и кому ограничить доступ.', ClipboardCheck]
 ]
 
 export default function HomePage() {
@@ -220,6 +230,42 @@ export default function HomePage() {
         </section>
 
         <HeimdallRiskTest language="ru" compact />
+
+        <section className="relative z-10 mx-auto max-w-7xl px-4 pb-16 sm:px-5 sm:pb-24">
+          <div className="grid gap-8 rounded-[42px] border border-white/10 bg-white/[0.045] p-6 backdrop-blur-2xl sm:p-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
+            <div>
+              <div className="inline-flex items-center gap-3 rounded-full border border-[#D6A84F]/25 bg-[#D6A84F]/10 px-4 py-2 text-sm uppercase tracking-[0.22em] text-[#F7D784]">
+                <ScanSearch className="h-4 w-4" /> Новый контур
+              </div>
+              <h2 className="mt-6 text-3xl font-semibold tracking-[-0.05em] sm:text-5xl">
+                Risk Control Center: единая точка контроля сделок, людей и цифровых рисков
+              </h2>
+              <p className="mt-5 text-base leading-8 text-white/64 sm:text-lg">
+                Для собственника важен не список справок, а спокойная картина: где можно платить, кого можно допускать, какие связи опасны и что делать прямо сейчас. Мы собрали это в отдельный операционный формат.
+              </p>
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                <Link href="/risk-command-center" className="inline-flex items-center justify-center gap-3 rounded-2xl bg-[#D6A84F] px-6 py-4 font-semibold text-[#050816]">
+                  Открыть центр рисков <ArrowRight className="h-4 w-4" />
+                </Link>
+                <Link href="/security-audit" className="inline-flex items-center justify-center gap-3 rounded-2xl border border-sky-300/20 bg-sky-300/10 px-6 py-4 font-semibold text-sky-100">
+                  Аудит безопасности
+                </Link>
+              </div>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {operatingSystem.map(([title, text, Icon]) => (
+                <div key={title} className="rounded-[28px] border border-white/10 bg-black/20 p-5">
+                  <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl border border-[#D6A84F]/25 bg-[#D6A84F]/10 text-[#F7D784]">
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <h3 className="text-xl font-semibold tracking-[-0.03em]">{title}</h3>
+                  <p className="mt-3 text-sm leading-7 text-white/58">{text}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
         <section className="relative z-10 mx-auto max-w-7xl px-4 pb-16 sm:px-5 sm:pb-24">
           <div className="grid gap-5 md:grid-cols-3">
             {trustProof.map(([title, text, href]) => (

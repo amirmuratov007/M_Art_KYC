@@ -41,6 +41,7 @@ export default function HeimdallFooter({ language = 'ru' }) {
             <Link href={ru ? '/journal' : '/journal-en'} className="text-white/58 transition hover:text-sky-200">Journal</Link>
             <a href="https://t.me/heimdall_risk" target="_blank" rel="noreferrer" className="text-white/58 transition hover:text-sky-200">{ru ? 'Telegram-канал' : 'Telegram channel'}</a>
             {ru && <Link href="/security-checklist" className="text-white/58 transition hover:text-sky-200">50 пунктов безопасности</Link>}
+            {ru && <Link href="/security-audit" className="text-white/58 transition hover:text-sky-200">Аудит безопасности</Link>}
             <Link href={ru ? '/methodology' : '/methodology-en'} className="text-white/58 transition hover:text-sky-200">{ru ? 'Методология' : 'Methodology'}</Link>
             <Link href={ru ? '/trust-center' : '/trust-center-en'} className="text-white/58 transition hover:text-sky-200">{ru ? 'Центр доверия' : 'Trust Center'}</Link>
           </div>
@@ -48,6 +49,7 @@ export default function HeimdallFooter({ language = 'ru' }) {
           <div className="grid content-start gap-3 text-sm">
             <div className="text-xs uppercase tracking-[0.22em] text-[#F7D784]">{ru ? 'Доверие' : 'Trust'}</div>
             <Link href={ru ? '/data-sources' : '/data-sources-en'} className="text-white/58 transition hover:text-sky-200">{ru ? 'Источники данных' : 'Data Sources'}</Link>
+            {ru && <Link href="/risk-command-center" className="text-white/58 transition hover:text-sky-200">Risk Control Center</Link>}
             <Link href={ru ? '/proverka-prodavca-pered-pokupkoy' : '/services-en'} className="text-white/58 transition hover:text-sky-200">{ru ? 'Проверка продавца' : 'Seller check'}</Link>
             <Link href={ru ? '/privacy' : '/privacy-en'} className="text-white/58 transition hover:text-sky-200">{ru ? 'Конфиденциальность' : 'Privacy'}</Link>
             <Link href={ru ? '/faq' : '/faq-en'} className="text-white/58 transition hover:text-sky-200">FAQ</Link>
@@ -60,6 +62,7 @@ export default function HeimdallFooter({ language = 'ru' }) {
             <Link href="/privacy" className="text-white/58 transition hover:text-sky-200">{ru ? 'Политика конфиденциальности' : 'Privacy policy'}</Link>
             <Link href="/requisites" className="text-white/58 transition hover:text-sky-200">{ru ? 'Реквизиты' : 'Company details'}</Link>
             <Link href="/nda-template" className="text-white/58 transition hover:text-sky-200">{ru ? 'Пример NDA' : 'NDA template'}</Link>
+            {ru && <Link href="/contact" className="text-white/58 transition hover:text-sky-200">Контакты</Link>}
             <Link href="/terms" className="text-white/58 transition hover:text-sky-200">{ru ? 'Условия сайта' : 'Terms'}</Link>
           </div>
         </div>

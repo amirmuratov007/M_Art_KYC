@@ -14,6 +14,7 @@ const ruMenu = [
       ['Проверка кандидатов', '/proverka-kandidatov'],
       ['Проверка бенефициаров', '/proverka-beneficiarov'],
       ['Покупка квартиры, дома или авто', '/proverka-prodavca-pered-pokupkoy'],
+      ['Аудит безопасности бизнеса', '/security-audit'],
       ['AML / KYC', '/aml-kyc-russia'],
       ['Due Diligence', '/due-diligence-russia'],
       ['Внутренние расследования', '/internal-investigations'],
@@ -36,6 +37,7 @@ const ruMenu = [
     items: [
       ['Комплексное сопровождение', '/business-support'],
       ['Служба безопасности на аутсорсе', '/security-outsourcing'],
+      ['Risk Control Center', '/risk-command-center'],
       ['Центр риск-аналитики', '/risk-intelligence'],
       ['Внутренние расследования', '/internal-investigations'],
       ['Единый прайс', '/pricing'],
@@ -53,6 +55,7 @@ const ruMenu = [
       ['Методология', '/methodology'],
       ['Центр доверия', '/trust-center'],
       ['Источники данных', '/data-sources'],
+      ['Контакты', '/contact'],
       ['FAQ', '/faq']
     ]
   }

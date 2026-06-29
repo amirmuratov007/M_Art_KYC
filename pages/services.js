@@ -4,7 +4,7 @@ import { useState } from 'react'
 import HeimdallNav from '@/components/HeimdallNav'
 import HeimdallFooter from '@/components/HeimdallFooter'
 import ContactModal from '@/components/ContactModal'
-import { ArrowRight, FileSearch, ShieldCheck, Network, UserSearch, Scale, Building2, CheckCircle2, AlertTriangle, LockKeyhole, ClipboardCheck, Home } from 'lucide-react'
+import { ArrowRight, FileSearch, ShieldCheck, Network, UserSearch, Scale, Building2, CheckCircle2, AlertTriangle, LockKeyhole, ClipboardCheck, Home, Gauge, Radar } from 'lucide-react'
 
 const services = [
   {
@@ -114,6 +114,33 @@ const caseLinks = [
   ['Санкционный риск', 'нет прямого совпадения, но риск есть', '/cases/sanctions-risk-without-direct-match']
 ]
 
+const decisionTracks = [
+  {
+    title: 'Нужно решить сегодня',
+    text: 'Быстрый скрининг перед авансом, задатком, наймом или подписанием. Вывод короткий: можно идти дальше, стоп, нужна глубокая проверка.',
+    href: '/contact',
+    icon: Gauge
+  },
+  {
+    title: 'Нужно разобрать сложную связку',
+    text: 'Бенефициары, посредники, семейные связи, номиналы, цепочки компаний, конфликт интересов и международные элементы.',
+    href: '/due-diligence-russia',
+    icon: Network
+  },
+  {
+    title: 'Нужно поставить риск на контроль',
+    text: 'Постоянный формат для собственника: реестр рисков, приоритеты, мониторинг, повторные проверки и закрытые задачи.',
+    href: '/risk-command-center',
+    icon: Radar
+  },
+  {
+    title: 'Нужно усилить безопасность',
+    text: 'Доступы, подрядчики, цифровой след, утечки, поддельные домены, фишинг, коммерческая тайна и базовая дисциплина процессов.',
+    href: '/security-audit',
+    icon: LockKeyhole
+  }
+]
+
 export default function ServicesPage() {
   const [contactOpen, setContactOpen] = useState(false)
   const [topic, setTopic] = useState('Общий запрос')
@@ -200,6 +227,30 @@ export default function ServicesPage() {
               </div>
             )
           })}
+        </section>
+
+        <section className="relative z-10 mx-auto max-w-7xl px-5 pb-24">
+          <div className="mb-10 max-w-4xl">
+            <div className="text-sm uppercase tracking-[0.24em] text-sky-300/80">Как выбрать</div>
+            <h2 className="mt-5 text-4xl font-semibold tracking-[-0.05em] md:text-6xl">Четыре входа вместо длинного выбора услуги</h2>
+            <p className="mt-5 max-w-3xl text-base leading-8 text-white/62">
+              Если непонятно, какую проверку заказать, начинайте от ситуации. Мы сами соберем правильный маршрут: быстрый скрининг, due diligence, риск-контроль или аудит безопасности.
+            </p>
+          </div>
+          <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+            {decisionTracks.map(({ title, text, href, icon: Icon }) => (
+              <Link key={title} href={href} className="group rounded-[32px] border border-white/10 bg-white/[0.045] p-6 backdrop-blur-2xl transition duration-500 hover:-translate-y-2 hover:border-sky-300/35 hover:bg-white/[0.07]">
+                <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl border border-sky-300/20 bg-sky-300/10 text-sky-100">
+                  <Icon className="h-6 w-6" />
+                </div>
+                <h3 className="text-2xl font-semibold tracking-[-0.04em]">{title}</h3>
+                <p className="mt-4 text-sm leading-7 text-white/58">{text}</p>
+                <div className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-sky-200">
+                  Перейти <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
+                </div>
+              </Link>
+            ))}
+          </div>
         </section>
 
         <section className="relative z-10 mx-auto max-w-7xl px-5 pb-24">
