@@ -37,7 +37,9 @@ export default async function handler(req, res) {
   }
 
   const admin = verifyAdminRequest(req, res, { scope: 'heimdall-sa' })
-  if (!admin.ok) return
+  if (!admin.ok) {
+    return res.status(admin.status).json({ ok: false, error: admin.error })
+  }
 
   const contentType = req.headers['content-type'] || ''
   if (!contentType.includes('multipart/form-data')) {
@@ -74,4 +76,3 @@ export default async function handler(req, res) {
     })
   }
 }
-
