@@ -1,5 +1,5 @@
-import RiskIntelligenceWorkspace from '@/components/analyst/RiskIntelligenceWorkspace'
+import HeimdallSaWorkspace from '@/components/analyst/HeimdallSaWorkspace'
 
 export default function RiskIntelligencePage() {
-  return <RiskIntelligenceWorkspace />
+  return <HeimdallSaWorkspace />
 }

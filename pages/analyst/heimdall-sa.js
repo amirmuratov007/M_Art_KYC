@@ -1,5 +1,6 @@
 import HeimdallSaWorkspace from '@/components/analyst/HeimdallSaWorkspace'
 
-export default function RiskIntelligenceObjectAliasPage() {
+export default function HeimdallSaPage() {
   return <HeimdallSaWorkspace />
 }
+
