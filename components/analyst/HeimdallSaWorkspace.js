@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { AnalystLayout } from '@/components/analyst/AnalystUI'
-import { AlertTriangle, CheckCircle2, Download, FileText, Loader2, Search, ShieldCheck, UploadCloud } from 'lucide-react'
+import { AlertTriangle, CheckCircle2, Download, FileText, Loader2, ShieldCheck, UploadCloud } from 'lucide-react'
 
 const ACCEPTED_FILES = '.pdf,.html,.htm,.docx,.txt,.csv,.json,.xml'
 const DEFAULT_HEIMDALL_SA_BASE_URL = 'http://127.0.0.1:5188'
@@ -19,7 +19,37 @@ function getFirst(...values) {
 function renderValue(value) {
   if (value === null || value === undefined || value === '') return 'Нет данных'
   if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') return String(value)
-  return JSON.stringify(value, null, 2)
+  if (Array.isArray(value)) return value.slice(0, 12).map(renderValue).join(', ')
+  if (value?.key !== undefined && value?.item !== undefined) {
+    const item = value.item
+    if (Array.isArray(item)) return `${value.key}: ${item.slice(0, 12).join(', ')}${item.length > 12 ? `, еще ${item.length - 12}` : ''}`
+    if (item && typeof item === 'object' && 'score' in item) {
+      const count = Array.isArray(item.snippets) ? item.snippets.length : 0
+      return `${value.key}: ${item.score} баллов${count ? `, найдено фрагментов: ${count}` : ''}`
+    }
+    return `${value.key}: ${renderValue(item)}`
+  }
+  if ('title' in value || 'url' in value) {
+    return [value.title, value.url, value.tone ? `тональность: ${value.tone}` : ''].filter(Boolean).join('\n')
+  }
+  if ('name' in value || 'kind' in value || 'chars' in value) {
+    return [value.name, value.kind, value.chars ? `${value.chars} символов` : '', value.duplicate_of ? `дубль: ${value.duplicate_of}` : ''].filter(Boolean).join(' · ')
+  }
+  if ('status' in value || 'message' in value || 'error' in value) {
+    return [value.status, value.message || value.error].filter(Boolean).join('\n')
+  }
+  if ('enabled' in value && Array.isArray(value.hits)) {
+    return `Найдено источников: ${value.hits.length}. Негатив: ${value.negative_count || 0}; позитив: ${value.positive_count || 0}; нейтрально: ${value.neutral_count || 0}.`
+  }
+  if ('stats' in value || 'consolidated' in value) {
+    const stats = value.stats || {}
+    return [value.name, stats.documents ? `документов: ${stats.documents}` : '', stats.facts ? `фактов: ${stats.facts}` : ''].filter(Boolean).join(' · ')
+  }
+  return Object.entries(value)
+    .filter(([, item]) => item !== undefined && item !== null && item !== '')
+    .slice(0, 10)
+    .map(([key, item]) => `${key}: ${typeof item === 'object' ? renderValue(item) : item}`)
+    .join('\n')
 }
 
 function absoluteUrl(baseUrl, value) {
@@ -44,7 +74,7 @@ async function readResponsePayload(response) {
 }
 
 function ResultList({ title, items }) {
-  const list = asArray(items)
+  const list = asArray(items).slice(0, 16)
   return (
     <section className="rounded-[28px] border border-white/10 bg-white/[0.045] p-5">
       <h3 className="text-lg font-semibold">{title}</h3>
@@ -52,7 +82,7 @@ function ResultList({ title, items }) {
         <div className="mt-4 grid gap-3">
           {list.map((item, index) => (
             <div key={index} className="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm leading-6 text-white/72">
-              <pre className="whitespace-pre-wrap break-words font-sans">{renderValue(item)}</pre>
+              <p className="whitespace-pre-wrap break-words">{renderValue(item)}</p>
             </div>
           ))}
         </div>
@@ -93,7 +123,7 @@ export default function HeimdallSaWorkspace() {
     ['Уровень риска', getFirst(analysis.risk_level, analysis.riskLevel, analysis.level, analysis.risk?.level, analysis.risk)],
     ['Документов', getFirst(analysis.document_count, analysis.documents_count, analysis.stats?.documents, analysis.documents?.length)],
     ['Дублей', getFirst(analysis.duplicate_count, analysis.duplicates_count, analysis.stats?.duplicates, analysis.duplicates?.length, analysis.duplicates)],
-    ['Класс нейросети', getFirst(analysis.neural_class, analysis.nn_class, analysis.class, analysis.predicted_class, analysis.model_class)]
+    ['Класс нейросети', getFirst(analysis.neural?.label, analysis.neural_class, analysis.nn_class, analysis.class, analysis.predicted_class, analysis.model_class)]
   ]
 
   async function handleSubmit(event) {
@@ -119,9 +149,11 @@ export default function HeimdallSaWorkspace() {
       form.append('use_sbis', useSbis ? 'true' : 'false')
       files.forEach((file) => form.append('files', file))
 
-      const heimdallSaBaseUrl = getClientHeimdallSaBaseUrl()
-      const response = await fetch(`${heimdallSaBaseUrl}/api/analyze`, {
+      const headers = secret ? { 'x-heimdall-admin-secret': secret } : {}
+      const response = await fetch('/api/heimdall-sa/analyze', {
         method: 'POST',
+        credentials: 'same-origin',
+        headers,
         body: form
       })
       const data = await readResponsePayload(response)
@@ -130,7 +162,7 @@ export default function HeimdallSaWorkspace() {
         throw new Error(data.error || data.details || 'Heimdall-SA вернул ошибку')
       }
 
-      setResult({ ...data, heimdall_sa_base_url: heimdallSaBaseUrl })
+      setResult(data)
     } catch (submitError) {
       setError(submitError.message)
     } finally {
@@ -286,16 +318,10 @@ export default function HeimdallSaWorkspace() {
           <div className="grid gap-6 xl:grid-cols-2">
             <ResultList title="Найденные факты" items={getFirst(analysis.facts, analysis.found_facts, analysis.key_facts)} />
             <ResultList title="Риск-сигналы" items={getFirst(analysis.risk_signals, analysis.signals, analysis.risks)} />
-            <ResultList title="Внешние источники" items={getFirst(analysis.open_sources, analysis.external_sources, analysis.sources)} />
+            <ResultList title="Внешние источники" items={getFirst(analysis.open_sources?.hits, analysis.external_sources, analysis.sources, analysis.open_sources)} />
             {getFirst(analysis.sbis, analysis.sbis_data, result.sbis) && <ResultList title="СБИС" items={getFirst(analysis.sbis, analysis.sbis_data, result.sbis)} />}
-            {result.structured_html && <ResultList title="Структурный HTML-разбор" items={result.structured_html} />}
-            <section className="rounded-[28px] border border-white/10 bg-white/[0.045] p-5 xl:col-span-2">
-              <div className="flex items-center gap-3">
-                <Search className="h-5 w-5 text-sky-300" />
-                <h3 className="text-lg font-semibold">Сырой ответ analysis</h3>
-              </div>
-              <pre className="mt-4 max-h-[520px] overflow-auto rounded-2xl border border-white/10 bg-black/30 p-4 text-xs leading-5 text-white/68">{JSON.stringify(analysis, null, 2)}</pre>
-            </section>
+            {result.structured_html?.length ? <ResultList title="Структурный HTML-разбор" items={result.structured_html} /> : null}
+            {analysis.documents?.length ? <ResultList title="Загруженные материалы" items={analysis.documents} /> : null}
           </div>
         )}
       </div>

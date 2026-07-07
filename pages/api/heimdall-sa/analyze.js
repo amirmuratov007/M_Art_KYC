@@ -1,4 +1,5 @@
 import { verifyAdminRequest } from '@/lib/adminAuth'
+import { COOKIE_NAME, getAuthSecret, verifyAnalystSession } from '@/lib/analystSession'
 import { getHeimdallSaBaseUrl } from '@/lib/heimdallSaConfig'
 
 export const config = {
@@ -17,6 +18,26 @@ function parseResponseText(text) {
   } catch (_) {
     return { error: text }
   }
+}
+
+function parseCookies(cookieHeader = '') {
+  return cookieHeader.split(';').reduce((acc, item) => {
+    const [key, ...valueParts] = item.trim().split('=')
+    if (!key) return acc
+    acc[key] = decodeURIComponent(valueParts.join('=') || '')
+    return acc
+  }, {})
+}
+
+async function verifyHeimdallSaAccess(req, res) {
+  const cookies = parseCookies(req.headers.cookie || '')
+  const analystSession = await verifyAnalystSession(cookies[COOKIE_NAME], getAuthSecret(process.env))
+
+  if (analystSession) {
+    return { ok: true, source: 'analyst-session' }
+  }
+
+  return verifyAdminRequest(req, res, { scope: 'heimdall-sa' })
 }
 
 function readBody(req) {
@@ -45,9 +66,9 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const admin = verifyAdminRequest(req, res, { scope: 'heimdall-sa' })
-  if (!admin.ok) {
-    return res.status(admin.status).json({ ok: false, error: admin.error })
+  const access = await verifyHeimdallSaAccess(req, res)
+  if (!access.ok) {
+    return res.status(access.status).json({ ok: false, error: access.error })
   }
 
   const contentType = req.headers['content-type'] || ''
