@@ -50,12 +50,11 @@ const securityHeaders = [
       "form-action 'self'",
       "frame-ancestors 'none'",
       "object-src 'none'",
-      "upgrade-insecure-requests",
       `script-src ${scriptSrc.join(' ')}`,
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob: https:",
       "font-src 'self' data:",
-      "connect-src 'self' https://*.supabase.co https://mc.yandex.ru https://www.google-analytics.com https://region1.google-analytics.com",
+      "connect-src 'self' http://127.0.0.1:5188 http://localhost:5188 http://45.141.78.148 https://sa.heimdall-group.ru https://*.supabase.co https://mc.yandex.ru https://www.google-analytics.com https://region1.google-analytics.com",
       "manifest-src 'self'",
       "worker-src 'self'",
       "frame-src 'self' https://mc.yandex.ru"
