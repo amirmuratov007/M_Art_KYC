@@ -3,6 +3,7 @@ import { AnalystLayout } from '@/components/analyst/AnalystUI'
 import { AlertTriangle, CheckCircle2, Download, FileText, Loader2, Search, ShieldCheck, UploadCloud } from 'lucide-react'
 
 const ACCEPTED_FILES = '.pdf,.html,.htm,.docx,.txt,.csv,.json,.xml'
+const DEFAULT_HEIMDALL_SA_BASE_URL = 'http://127.0.0.1:5188'
 
 function asArray(value) {
   if (!value) return []
@@ -25,6 +26,21 @@ function absoluteUrl(baseUrl, value) {
   if (!value) return ''
   if (/^https?:\/\//i.test(value)) return value
   return `${baseUrl}${value.startsWith('/') ? value : `/${value}`}`
+}
+
+function getClientHeimdallSaBaseUrl() {
+  const value = process.env.NEXT_PUBLIC_HEIMDALL_SA_BASE_URL || DEFAULT_HEIMDALL_SA_BASE_URL
+  return String(value).replace(/\/+$/, '')
+}
+
+async function readResponsePayload(response) {
+  const text = await response.text()
+  if (!text) return {}
+  try {
+    return JSON.parse(text)
+  } catch (_) {
+    return { error: text }
+  }
 }
 
 function ResultList({ title, items }) {
@@ -69,7 +85,7 @@ export default function HeimdallSaWorkspace() {
   }, [])
 
   const analysis = result?.analysis || {}
-  const baseUrl = result?.heimdall_sa_base_url || 'http://127.0.0.1:5188'
+  const baseUrl = result?.heimdall_sa_base_url || getClientHeimdallSaBaseUrl()
   const reportUrl = absoluteUrl(baseUrl, result?.report_url)
   const docxUrl = absoluteUrl(baseUrl, result?.docx_url)
 
@@ -103,18 +119,18 @@ export default function HeimdallSaWorkspace() {
       form.append('use_sbis', useSbis ? 'true' : 'false')
       files.forEach((file) => form.append('files', file))
 
-      const response = await fetch('/api/heimdall-sa/analyze', {
+      const heimdallSaBaseUrl = getClientHeimdallSaBaseUrl()
+      const response = await fetch(`${heimdallSaBaseUrl}/api/analyze`, {
         method: 'POST',
-        headers: secret ? { 'x-heimdall-admin-secret': secret } : {},
         body: form
       })
-      const data = await response.json()
+      const data = await readResponsePayload(response)
 
       if (!response.ok) {
         throw new Error(data.error || data.details || 'Heimdall-SA вернул ошибку')
       }
 
-      setResult(data)
+      setResult({ ...data, heimdall_sa_base_url: heimdallSaBaseUrl })
     } catch (submitError) {
       setError(submitError.message)
     } finally {

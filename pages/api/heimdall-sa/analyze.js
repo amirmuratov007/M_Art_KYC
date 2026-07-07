@@ -8,7 +8,16 @@ export const config = {
   }
 }
 
-const MAX_BYTES = 100 * 1024 * 1024
+const MAX_BYTES = 500 * 1024 * 1024
+
+function parseResponseText(text) {
+  if (!text) return {}
+  try {
+    return JSON.parse(text)
+  } catch (_) {
+    return { error: text }
+  }
+}
 
 function readBody(req) {
   return new Promise((resolve, reject) => {
@@ -59,7 +68,7 @@ export default async function handler(req, res) {
     })
 
     const text = await upstream.text()
-    const payload = text ? JSON.parse(text) : {}
+    const payload = parseResponseText(text)
 
     if (!upstream.ok) {
       return res.status(upstream.status).json(payload)
