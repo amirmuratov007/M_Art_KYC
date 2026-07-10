@@ -1,6 +1,7 @@
-import { verifyAdminRequest } from '@/lib/adminAuth'
-import { COOKIE_NAME, getAuthSecret, verifyAnalystSession } from '@/lib/analystSession'
+import { Transform } from 'stream'
+import { rejectCrossSiteRequest } from '@/lib/apiSecurity'
 import { getHeimdallSaBaseUrl } from '@/lib/heimdallSaConfig'
+import { verifyInternalRequest } from '@/lib/internalAccess'
 
 export const config = {
   api: {
@@ -10,54 +11,47 @@ export const config = {
 }
 
 const MAX_BYTES = 500 * 1024 * 1024
+const UPSTREAM_TIMEOUT_MS = 30 * 60 * 1000
 
 function parseResponseText(text) {
   if (!text) return {}
   try {
     return JSON.parse(text)
   } catch (_) {
-    return { error: text }
+    return { error: text.slice(0, 4000) }
   }
 }
 
-function parseCookies(cookieHeader = '') {
-  return cookieHeader.split(';').reduce((acc, item) => {
-    const [key, ...valueParts] = item.trim().split('=')
-    if (!key) return acc
-    acc[key] = decodeURIComponent(valueParts.join('=') || '')
-    return acc
-  }, {})
-}
+function createLimitedUploadStream(req) {
+  let size = 0
 
-async function verifyHeimdallSaAccess(req, res) {
-  const cookies = parseCookies(req.headers.cookie || '')
-  const analystSession = await verifyAnalystSession(cookies[COOKIE_NAME], getAuthSecret(process.env))
-
-  if (analystSession) {
-    return { ok: true, source: 'analyst-session' }
-  }
-
-  return verifyAdminRequest(req, res, { scope: 'heimdall-sa' })
-}
-
-function readBody(req) {
-  return new Promise((resolve, reject) => {
-    const chunks = []
-    let size = 0
-
-    req.on('data', (chunk) => {
+  const limiter = new Transform({
+    transform(chunk, encoding, callback) {
       size += chunk.length
       if (size > MAX_BYTES) {
-        reject(new Error('Слишком большой запрос'))
-        req.destroy()
+        callback(Object.assign(new Error('UPLOAD_TOO_LARGE'), { code: 'UPLOAD_TOO_LARGE' }))
         return
       }
-      chunks.push(chunk)
-    })
-
-    req.on('end', () => resolve(Buffer.concat(chunks)))
-    req.on('error', reject)
+      callback(null, chunk)
+    }
   })
+
+  req.pipe(limiter)
+  return limiter
+}
+
+function toProtectedReportUrl(value, baseUrl) {
+  if (!value || typeof value !== 'string') return ''
+
+  try {
+    const upstreamBase = new URL(baseUrl)
+    const resolved = new URL(value, upstreamBase)
+    if (resolved.origin !== upstreamBase.origin) return ''
+    const relativePath = `${resolved.pathname}${resolved.search}`
+    return `/api/heimdall-sa/report?path=${encodeURIComponent(relativePath)}`
+  } catch (_) {
+    return ''
+  }
 }
 
 export default async function handler(req, res) {
@@ -66,7 +60,9 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const access = await verifyHeimdallSaAccess(req, res)
+  if (rejectCrossSiteRequest(req, res)) return
+
+  const access = await verifyInternalRequest(req, res, { scope: 'heimdall-sa' })
   if (!access.ok) {
     return res.status(access.status).json({ ok: false, error: access.error })
   }
@@ -76,33 +72,51 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Ожидался multipart/form-data' })
   }
 
+  const contentLength = Number(req.headers['content-length'] || 0)
+  if (Number.isFinite(contentLength) && contentLength > MAX_BYTES) {
+    return res.status(413).json({ error: 'Общий размер загрузки превышает 500 МБ' })
+  }
+
   try {
-    const body = await readBody(req)
     const baseUrl = getHeimdallSaBaseUrl()
+    const headers = { 'content-type': contentType }
+    if (contentLength > 0) headers['content-length'] = String(contentLength)
+
     const upstream = await fetch(`${baseUrl}/api/analyze`, {
       method: 'POST',
-      headers: {
-        'content-type': contentType,
-        'content-length': String(body.length)
-      },
-      body
+      headers,
+      body: createLimitedUploadStream(req),
+      duplex: 'half',
+      signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS)
     })
 
     const text = await upstream.text()
     const payload = parseResponseText(text)
 
     if (!upstream.ok) {
-      return res.status(upstream.status).json(payload)
+      return res.status(upstream.status).json({
+        error: payload.error || payload.details || `Heimdall-SA вернул ошибку ${upstream.status}`
+      })
     }
 
+    const { structured_html: structuredHtml, ...safePayload } = payload
     return res.status(200).json({
-      ...payload,
-      heimdall_sa_base_url: baseUrl
+      ...safePayload,
+      structured_html_available: Boolean(structuredHtml),
+      report_url: toProtectedReportUrl(payload.report_url, baseUrl),
+      docx_url: toProtectedReportUrl(payload.docx_url, baseUrl)
     })
   } catch (error) {
+    if (error?.code === 'UPLOAD_TOO_LARGE' || error?.cause?.code === 'UPLOAD_TOO_LARGE') {
+      return res.status(413).json({ error: 'Общий размер загрузки превышает 500 МБ' })
+    }
+
+    if (error?.name === 'TimeoutError' || error?.name === 'AbortError') {
+      return res.status(504).json({ error: 'Heimdall-SA не завершил проверку за 30 минут' })
+    }
+
     return res.status(502).json({
-      error: 'Heimdall-SA недоступен или вернул некорректный ответ',
-      details: error.message
+      error: 'Heimdall-SA недоступен или вернул некорректный ответ'
     })
   }
 }

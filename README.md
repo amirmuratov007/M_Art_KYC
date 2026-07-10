@@ -24,22 +24,14 @@ HEIMDALL_ANALYST_LOGIN=
 HEIMDALL_ANALYST_PASSWORD=
 HEIMDALL_ANALYST_SECRET=
 
+HEIMDALL_SA_BASE_URL=http://127.0.0.1:5188
+
 TELEGRAM_BOT_TOKEN=
 TELEGRAM_CHAT_ID=
 SUPABASE_LEADS_TABLE=heimdall_leads
 ```
 
 Legacy `TG_TOKEN` and `TG_CHAT_ID` are still supported by some API routes, but use `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` for new deployments.
-
-Optional AI analysis variables:
-
-```env
-AI_PROVIDER=
-ANTHROPIC_API_KEY=
-ANTHROPIC_MODEL=
-DEEPSEEK_API_KEY=
-DEEPSEEK_MODEL=
-```
 
 ## Supabase SQL
 
@@ -53,6 +45,6 @@ Apply the SQL files from `supabase/` in this order when enabling all product are
 
 ## Security notes
 
-Do not pass `HEIMDALL_ADMIN_SECRET` in query strings. Admin API routes accept it via `x-heimdall-admin-secret` or `Authorization: Bearer ...`.
+The browser uses the signed `heimdall_analyst_session` httpOnly cookie for CRM, client checks and Heimdall-SA. `HEIMDALL_ADMIN_SECRET` is only a server-to-server fallback and must never be entered or stored in the browser.
 
-Keep `SUPABASE_SERVICE_ROLE_KEY`, Telegram credentials, admin credentials and AI provider keys server-side only.
+Keep `SUPABASE_SERVICE_ROLE_KEY`, Telegram credentials, admin credentials and Heimdall-SA settings server-side only.

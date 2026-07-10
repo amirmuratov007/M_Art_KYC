@@ -1,5 +1,6 @@
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin'
-import { verifyAdminRequest } from '@/lib/adminAuth'
+import { verifyInternalRequest } from '@/lib/internalAccess'
+import { rejectCrossSiteRequest } from '@/lib/apiSecurity'
 
 const CRM_META_TABLE = 'heimdall_crm_meta'
 
@@ -524,9 +525,11 @@ async function updateLeadMeta(req, res, supabase) {
 export default async function handler(req, res) {
   setNoStore(res)
 
-  const admin = verifyAdminRequest(req, res, { scope: 'admin-crm' })
-  if (!admin.ok) {
-    return res.status(admin.status).json({ ok: false, error: admin.error })
+  if (rejectCrossSiteRequest(req, res)) return
+
+  const access = await verifyInternalRequest(req, res, { scope: 'admin-crm' })
+  if (!access.ok) {
+    return res.status(access.status).json({ ok: false, error: access.error })
   }
 
   let supabase

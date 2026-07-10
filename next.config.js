@@ -9,6 +9,20 @@ const scriptSrc = [
   'https://yastatic.net'
 ]
 
+const connectSrc = [
+  "'self'",
+  ...(process.env.NODE_ENV === 'production' ? [] : ['http://127.0.0.1:5188', 'http://localhost:5188']),
+  'https://*.supabase.co',
+  'https://mc.yandex.ru',
+  'https://www.google-analytics.com',
+  'https://region1.google-analytics.com'
+]
+
+const privatePageHeaders = [
+  { key: 'Cache-Control', value: 'private, no-store, max-age=0' },
+  { key: 'X-Robots-Tag', value: 'noindex, nofollow, noarchive' }
+]
+
 const securityHeaders = [
   {
     key: 'Strict-Transport-Security',
@@ -54,7 +68,7 @@ const securityHeaders = [
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob: https:",
       "font-src 'self' data:",
-      "connect-src 'self' http://127.0.0.1:5188 http://localhost:5188 http://45.141.78.148 https://sa.heimdall-group.ru https://*.supabase.co https://mc.yandex.ru https://www.google-analytics.com https://region1.google-analytics.com",
+      `connect-src ${connectSrc.join(' ')}`,
       "manifest-src 'self'",
       "worker-src 'self'",
       "frame-src 'self' https://mc.yandex.ru"
@@ -88,28 +102,37 @@ const nextConfig = {
         ]
       },
       {
+        source: '/analyst/:path*',
+        headers: privatePageHeaders
+      },
+      {
         source: '/admin-crm',
-        headers: [
-          {
-            key: 'X-Robots-Tag',
-            value: 'noindex, nofollow, noarchive'
-          }
-        ]
+        headers: privatePageHeaders
       },
       {
         source: '/admin-client-checks',
-        headers: [
-          {
-            key: 'X-Robots-Tag',
-            value: 'noindex, nofollow, noarchive'
-          }
-        ]
+        headers: privatePageHeaders
       }
     ]
   },
 
   async redirects() {
     return [
+      {
+        source: '/analyst/risk-intelligence',
+        destination: '/analyst/heimdall-sa',
+        permanent: false
+      },
+      {
+        source: '/analyst/risk-intelligence/:path*',
+        destination: '/analyst/heimdall-sa',
+        permanent: false
+      },
+      {
+        source: '/analyst/ai/:path*',
+        destination: '/analyst/heimdall-sa',
+        permanent: false
+      },
       {
         source: '/.well-known/change-password',
         destination: '/account',

@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin'
 
 import { applyRateLimitHeaders, checkRateLimit, getClientIp, hasSpamHoneypot, isPayloadTooLarge } from '@/lib/rateLimit'
-import { cleanMultiline, cleanText, rejectNonPost, setJsonSecurityHeaders, setNoStore } from '@/lib/apiSecurity'
+import { cleanMultiline, cleanText, rejectCrossSiteRequest, rejectNonPost, setJsonSecurityHeaders, setNoStore } from '@/lib/apiSecurity'
 function getAnonClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
@@ -101,6 +101,7 @@ export default async function handler(req, res) {
   setJsonSecurityHeaders(res)
 
   if (rejectNonPost(req, res)) return
+  if (rejectCrossSiteRequest(req, res)) return
 
   const ipRate = checkRateLimit(req, { scope: 'client-request-ip', limit: 20, windowMs: 60 * 1000 })
   applyRateLimitHeaders(res, ipRate)
@@ -206,18 +207,11 @@ export default async function handler(req, res) {
   ])
 
   if (telegramResult.ok || supabaseResult.ok) {
-    return res.status(200).json({
-      ok: true,
-      telegram: telegramResult,
-      supabase: supabaseResult
-    })
+    return res.status(200).json({ ok: true })
   }
 
   return res.status(500).json({
     ok: false,
-    error: [
-      `Telegram: ${telegramResult.error}`,
-      `Supabase: ${supabaseResult.error}`
-    ].join(' | ')
+    error: 'Не удалось отправить запрос. Попробуйте еще раз позже.'
   })
 }

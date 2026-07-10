@@ -57,7 +57,6 @@ export default function AdminCrmPage() {
   const [companyForm, setCompanyForm] = useState(emptyCompany)
   const [checkForm, setCheckForm] = useState(emptyCheck)
   const [query, setQuery] = useState('')
-  const [secret, setSecret] = useState('')
   const [leads, setLeads] = useState([])
   const [message, setMessage] = useState('')
   const [loadingLeads, setLoadingLeads] = useState(false)
@@ -67,7 +66,6 @@ export default function AdminCrmPage() {
     const saved = loadCompanies()
     setCompanies(saved)
     setActiveId(saved[0]?.id || '')
-    setSecret(window.sessionStorage.getItem('heimdall_admin_secret') || '')
   }, [])
 
   useEffect(() => {
@@ -92,14 +90,11 @@ export default function AdminCrmPage() {
   }, [companies, query])
 
   function apiHeaders() {
-    return {
-      'Content-Type': 'application/json',
-      ...(secret ? { 'x-heimdall-admin-secret': secret } : {})
-    }
+    return { 'Content-Type': 'application/json' }
   }
 
   async function persistCompany(company) {
-    if (!secret || !company?.id) return
+    if (!company?.id) return
     try {
       const response = await fetch('/api/company-crm', {
         method: 'POST',
@@ -117,8 +112,7 @@ export default function AdminCrmPage() {
     setSyncingCompanies(true)
     setMessage('')
     try {
-      if (secret) window.sessionStorage.setItem('heimdall_admin_secret', secret)
-      const response = await fetch('/api/company-crm', { headers: secret ? { 'x-heimdall-admin-secret': secret } : {} })
+      const response = await fetch('/api/company-crm', { credentials: 'same-origin' })
       const data = await response.json()
       if (!response.ok) throw new Error(data.error || 'Не удалось загрузить CRM с сервера')
       const loaded = data.companies || []
@@ -133,11 +127,11 @@ export default function AdminCrmPage() {
   }
 
   async function removeCompanyFromServer(id) {
-    if (!secret || !id) return
+    if (!id) return
     try {
       await fetch(`/api/company-crm?id=${encodeURIComponent(id)}`, {
         method: 'DELETE',
-        headers: secret ? { 'x-heimdall-admin-secret': secret } : {}
+        credentials: 'same-origin'
       })
     } catch (_) {}
   }
@@ -207,9 +201,8 @@ export default function AdminCrmPage() {
     setMessage('')
     setLoadingLeads(true)
     try {
-      if (secret) window.sessionStorage.setItem('heimdall_admin_secret', secret)
       const response = await fetch('/api/admin-crm?limit=50', {
-        headers: secret ? { 'x-heimdall-admin-secret': secret } : {}
+        credentials: 'same-origin'
       })
       const data = await response.json()
       if (!response.ok) throw new Error(data.error || 'Не удалось загрузить заявки')
@@ -253,7 +246,7 @@ export default function AdminCrmPage() {
           <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-5 py-5">
             <HeimdallLogo />
             <div className="flex flex-wrap gap-3">
-              <Link href="/analyst/risk-intelligence" className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm">Проверка Heimdall-SA</Link>
+              <Link href="/analyst/heimdall-sa" className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm">Проверка Heimdall-SA</Link>
               <button onClick={loadCompanyCards} disabled={syncingCompanies} className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm disabled:opacity-60">
                 {syncingCompanies ? 'Синхронизация...' : 'Синхронизировать CRM'}
               </button>
@@ -367,7 +360,7 @@ export default function AdminCrmPage() {
                           {['Новая проверка', 'Собираем данные', 'На анализе', 'Справка готова', 'Закрыто'].map((item) => <option key={item}>{item}</option>)}
                         </select>
                         <input value={check.riskLevel || ''} onChange={(event) => updateCheck(check.id, { riskLevel: event.target.value })} className="rounded-xl border border-white/10 bg-black/25 px-4 py-3 text-sm outline-none" placeholder="Риск" />
-                        <Link href={`/analyst/risk-intelligence?subject=${encodeURIComponent(check.subject)}`} className="inline-flex items-center justify-center gap-2 rounded-xl border border-sky-300/25 bg-sky-300/10 px-4 py-3 text-sm font-semibold text-sky-100">
+                        <Link href={`/analyst/heimdall-sa?subject=${encodeURIComponent(check.subject)}`} className="inline-flex items-center justify-center gap-2 rounded-xl border border-sky-300/25 bg-sky-300/10 px-4 py-3 text-sm font-semibold text-sky-100">
                           <ShieldCheck className="h-4 w-4" />
                           Проверить
                         </Link>
@@ -392,7 +385,6 @@ export default function AdminCrmPage() {
                   <p className="mt-2 text-sm text-white/50">Заявку можно перенести в отдельную карточку компании и дальше вести проверки внутри нее.</p>
                 </div>
                 <div className="flex flex-wrap gap-3">
-                  <input value={secret} onChange={(event) => setSecret(event.target.value)} type="password" className="rounded-xl border border-white/10 bg-black/25 px-4 py-3 text-sm outline-none" placeholder="HEIMDALL_ADMIN_SECRET" />
                   <button onClick={loadLeads} disabled={loadingLeads} className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/10 px-4 py-3 text-sm font-semibold disabled:opacity-60">
                     {loadingLeads ? <RefreshCw className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
                     Загрузить

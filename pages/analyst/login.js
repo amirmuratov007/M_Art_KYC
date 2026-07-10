@@ -23,9 +23,10 @@ export default function AnalystLoginPage() {
       if (!response.ok || !data.ok) {
         throw new Error(data.error || 'Не удалось войти.')
       }
-      const next = typeof router.query.next === 'string' && router.query.next.startsWith('/analyst')
-        ? router.query.next
-        : '/analyst/risk-intelligence'
+      const requestedNext = typeof router.query.next === 'string' ? router.query.next : ''
+      const next = ['/analyst', '/admin-crm', '/admin-client-checks'].some((prefix) => requestedNext === prefix || requestedNext.startsWith(`${prefix}/`) || requestedNext.startsWith(`${prefix}?`))
+        ? requestedNext
+        : '/analyst/heimdall-sa'
       router.replace(next)
     } catch (err) {
       setError(err.message || 'Не удалось войти.')

@@ -3,6 +3,7 @@ import { getSupabaseAdmin } from '@/lib/supabaseAdmin'
 import {
   cleanText,
   clientError,
+  rejectCrossSiteRequest,
   rejectNonPost,
   setJsonSecurityHeaders,
   setNoStore
@@ -31,6 +32,7 @@ export default async function handler(req, res) {
   setJsonSecurityHeaders(res)
 
   if (rejectNonPost(req, res)) return
+  if (rejectCrossSiteRequest(req, res)) return
 
   const rateLimit = checkRateLimit(req, {
     scope: 'analytics-event',

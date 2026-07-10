@@ -1,13 +1,12 @@
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin'
 
 import { applyRateLimitHeaders, checkRateLimit, hasSpamHoneypot, isPayloadTooLarge } from '@/lib/rateLimit'
-import { cleanMultiline, cleanText, normalizeEmail, normalizePhone, rejectNonPost, setJsonSecurityHeaders, setNoStore } from '@/lib/apiSecurity'
+import { cleanMultiline, cleanText, normalizeEmail, normalizePhone, rejectCrossSiteRequest, rejectNonPost, setJsonSecurityHeaders, setNoStore } from '@/lib/apiSecurity'
 async function sendTelegramMessage(payload) {
-  const token = process.env.TG_TOKEN
-  const chatId = process.env.TG_CHAT_ID
+  const token = process.env.TELEGRAM_BOT_TOKEN || process.env.TG_TOKEN
+  const chatId = process.env.TELEGRAM_CHAT_ID || process.env.TG_CHAT_ID
 
   if (!token || !chatId) {
-    console.log('Telegram skipped: TG_TOKEN or TG_CHAT_ID missing')
     return { ok: false, skipped: true }
   }
 
@@ -33,9 +32,8 @@ async function sendTelegramMessage(payload) {
     })
   })
 
-  const result = await response.json()
-  console.log('Telegram result:', result)
-  return result
+  const result = await response.json().catch(() => ({}))
+  return { ok: response.ok && result.ok !== false }
 }
 
 export default async function handler(req, res) {
@@ -43,6 +41,7 @@ export default async function handler(req, res) {
   setJsonSecurityHeaders(res)
 
   if (rejectNonPost(req, res)) return
+  if (rejectCrossSiteRequest(req, res)) return
 
   const rate = checkRateLimit(req, { scope: 'lead', limit: 5, windowMs: 60 * 1000 })
   applyRateLimitHeaders(res, rate)
@@ -93,7 +92,6 @@ export default async function handler(req, res) {
       .insert(payload)
 
     if (error) {
-      console.error('Supabase error:', error)
       return res.status(500).json({ ok: false, error: 'Lead storage failed' })
     }
 
@@ -102,10 +100,9 @@ export default async function handler(req, res) {
     return res.status(200).json({
       ok: true,
       saved: true,
-      telegram
+      notified: Boolean(telegram?.ok)
     })
   } catch (error) {
-    console.error('Lead API error:', error)
     return res.status(500).json({
       ok: false,
       error: 'Internal server error'

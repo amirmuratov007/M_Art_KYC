@@ -1,5 +1,6 @@
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin'
-import { verifyAdminRequest } from '@/lib/adminAuth'
+import { verifyInternalRequest } from '@/lib/internalAccess'
+import { rejectCrossSiteRequest } from '@/lib/apiSecurity'
 
 function setNoStore(res) {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
@@ -93,9 +94,11 @@ async function resolveUserByEmail(supabase, email) {
 export default async function handler(req, res) {
   setNoStore(res)
 
-  const admin = verifyAdminRequest(req, res, { scope: 'admin-client-checks' })
-  if (!admin.ok) {
-    return res.status(admin.status).json({ ok: false, error: admin.error })
+  if (rejectCrossSiteRequest(req, res)) return
+
+  const access = await verifyInternalRequest(req, res, { scope: 'admin-client-checks' })
+  if (!access.ok) {
+    return res.status(access.status).json({ ok: false, error: access.error })
   }
 
   let supabase

@@ -1,6 +1,6 @@
 import Head from 'next/head'
 import { useRouter } from 'next/router'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import HeimdallNav from '@/components/HeimdallNav'
 import {
   AlertTriangle,
@@ -70,7 +70,6 @@ function inputClass(extra = '') {
 
 export default function AdminClientChecksPage() {
   const router = useRouter()
-  const [secret, setSecret] = useState('')
   const [email, setEmail] = useState('')
   const [accountForm, setAccountForm] = useState(emptyAccountForm)
   const [userInfo, setUserInfo] = useState(null)
@@ -83,19 +82,13 @@ export default function AdminClientChecksPage() {
   const isEditing = Boolean(form.id)
 
   useEffect(() => {
-    const saved = window.sessionStorage.getItem('heimdall_admin_secret') || ''
-    setSecret(saved)
-    window.localStorage.removeItem('heimdall_admin_secret')
-  }, [])
-
-  useEffect(() => {
     const emailFromQuery = typeof router.query?.email === 'string' ? router.query.email : ''
     if (emailFromQuery) setEmail(emailFromQuery)
   }, [router.query?.email])
 
   useEffect(() => {
     const emailFromQuery = typeof router.query?.email === 'string' ? router.query.email : ''
-    if (!emailFromQuery || !secret) return
+    if (!emailFromQuery) return
 
     const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailFromQuery)
     if (!isEmail) return
@@ -106,12 +99,9 @@ export default function AdminClientChecksPage() {
     }, 150)
 
     return () => window.clearTimeout(timer)
-  }, [router.query?.email, secret])
+  }, [router.query?.email])
 
-  const headers = useMemo(() => ({
-    'Content-Type': 'application/json',
-    'x-heimdall-admin-secret': secret
-  }), [secret])
+  const headers = { 'Content-Type': 'application/json' }
 
   function update(key, value) {
     setForm((current) => ({ ...current, [key]: value }))
@@ -132,13 +122,6 @@ export default function AdminClientChecksPage() {
     updateAccount('password', `HMD-${suffix}`)
   }
 
-  function saveSecret() {
-    window.sessionStorage.setItem('heimdall_admin_secret', secret)
-    window.localStorage.removeItem('heimdall_admin_secret')
-    setMessage('Админ-ключ сохранен до закрытия вкладки.')
-    setError('')
-  }
-
   function resetForm(keepUser = true) {
     setForm({
       ...emptyForm,
@@ -149,6 +132,7 @@ export default function AdminClientChecksPage() {
   async function apiRequest(path, options = {}) {
     const response = await fetch(path, {
       ...options,
+      credentials: 'same-origin',
       headers: {
         ...headers,
         ...(options.headers || {})
@@ -166,11 +150,6 @@ export default function AdminClientChecksPage() {
 
   async function findUserByEmail(event) {
     event.preventDefault()
-
-    if (!secret) {
-      setError('Сначала укажите HEIMDALL_ADMIN_SECRET')
-      return
-    }
 
     if (!email) {
       setError('Укажите email клиента')
@@ -196,11 +175,6 @@ export default function AdminClientChecksPage() {
 
   async function createClientAccount(event) {
     event.preventDefault()
-
-    if (!secret) {
-      setError('Сначала укажите HEIMDALL_ADMIN_SECRET')
-      return
-    }
 
     if (!accountForm.email || !accountForm.password) {
       setError('Укажите email и временный пароль клиента')
@@ -236,11 +210,6 @@ export default function AdminClientChecksPage() {
   }
 
   async function loadChecks(userId = form.user_id, withLoader = true) {
-    if (!secret) {
-      setError('Сначала укажите HEIMDALL_ADMIN_SECRET')
-      return
-    }
-
     if (!userId) {
       setError('Сначала найдите клиента по email. Клиент должен быть зарегистрирован в /account.')
       return
@@ -264,11 +233,6 @@ export default function AdminClientChecksPage() {
 
   async function submitCheck(event) {
     event.preventDefault()
-
-    if (!secret) {
-      setError('Сначала укажите HEIMDALL_ADMIN_SECRET')
-      return
-    }
 
     setLoading(true)
     setError('')
@@ -368,30 +332,11 @@ export default function AdminClientChecksPage() {
             <div className="rounded-[42px] border border-white/10 bg-white/[0.045] p-7 backdrop-blur-2xl md:p-10">
               <div className="flex items-center gap-3 text-sm uppercase tracking-[0.24em] text-sky-300/80">
                 <LockKeyhole className="h-4 w-4" />
-                Доступ
+                Защищённая сессия
               </div>
 
-              <label className="mt-7 block text-sm text-white/55">HEIMDALL_ADMIN_SECRET</label>
-              <div className="mt-3 grid gap-3 sm:grid-cols-[1fr_auto]">
-                <input
-                  type="password"
-                  value={secret}
-                  onChange={(event) => setSecret(event.target.value)}
-                  placeholder="Админ-ключ из Vercel"
-                  className={inputClass()}
-                />
-                <button
-                  type="button"
-                  onClick={saveSecret}
-                  className="inline-flex items-center justify-center gap-2 rounded-2xl border border-sky-300/20 bg-sky-300/10 px-5 py-4 font-semibold text-sky-100"
-                >
-                  <Save className="h-4 w-4" />
-                  Сохранить
-                </button>
-              </div>
-
-              <div className="mt-6 rounded-3xl border border-amber-300/15 bg-amber-300/10 p-5 text-sm leading-7 text-amber-100/85">
-                Эта страница не добавлена в меню и закрыта через серверную проверку ключа. Не передавай ссылку и ключ клиентам.
+              <div className="mt-6 rounded-2xl border border-emerald-300/20 bg-emerald-300/10 p-5 text-sm leading-7 text-emerald-100/85">
+                Доступ подтверждён входом в консоль аналитика. Административные ключи не хранятся и не передаются в браузере.
               </div>
             </div>
 

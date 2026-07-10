@@ -1,4 +1,5 @@
-const CACHE_NAME = 'heimdall-safe-cache-v4'
+const CACHE_NAME = 'heimdall-safe-cache-v5'
+const PRIVATE_PREFIXES = ['/api/', '/analyst', '/admin-', '/account', '/app']
 
 self.addEventListener('install', (event) => {
   self.skipWaiting()
@@ -17,10 +18,7 @@ self.addEventListener('fetch', (event) => {
   if (!request.url.startsWith(self.location.origin)) return
 
   const url = new URL(request.url)
-  if (url.pathname.startsWith('/analyst')) {
-    event.respondWith(fetch(request))
-    return
-  }
+  if (PRIVATE_PREFIXES.some((prefix) => url.pathname.startsWith(prefix))) return
 
   event.respondWith(fetch(request).catch(() => new Response('', { status: 504 })))
 })

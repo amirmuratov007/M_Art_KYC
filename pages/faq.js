@@ -20,7 +20,7 @@ export default function FAQPage() {
       <Head>
         <title>FAQ | HEIMDALL</title>
         <meta name="description" content="Частые вопросы о проверках HEIMDALL: сроки, отчеты, due diligence, проверка кандидатов, конфиденциальность и сопровождение бизнеса." />
-        <link rel="canonical" href="https://heimdall-group.ru/faq" />
+        <link rel="canonical" href="https://www.heimdall-group.ru/faq" />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
           '@context': 'https://schema.org',
           '@type': 'FAQPage',

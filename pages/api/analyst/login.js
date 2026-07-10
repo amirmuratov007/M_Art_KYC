@@ -1,6 +1,6 @@
 import { COOKIE_NAME, createAnalystSession, getAuthSecret, analystCookieOptions } from '../../../lib/analystSession'
 import { applyRateLimitHeaders, checkRateLimit } from '../../../lib/rateLimit'
-import { rejectNonPost, setJsonSecurityHeaders, setNoStore } from '../../../lib/apiSecurity'
+import { rejectCrossSiteRequest, rejectNonPost, setJsonSecurityHeaders, setNoStore } from '../../../lib/apiSecurity'
 
 function safeCompare(a, b) {
   if (typeof a !== 'string' || typeof b !== 'string') return false
@@ -27,6 +27,7 @@ export default async function handler(req, res) {
   setJsonSecurityHeaders(res)
 
   if (rejectNonPost(req, res)) return
+  if (rejectCrossSiteRequest(req, res)) return
 
   const rate = checkRateLimit(req, { scope: 'analyst-login', limit: 8, windowMs: 60 * 1000 })
   applyRateLimitHeaders(res, rate)

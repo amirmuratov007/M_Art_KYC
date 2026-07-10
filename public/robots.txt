@@ -3,8 +3,9 @@ Allow: /
 Disallow: /api/
 Disallow: /admin-crm
 Disallow: /admin-client-checks
-Disallow: /analyst/
+Disallow: /analyst
 Disallow: /account
-Disallow: /app
+Disallow: /app$
+Disallow: /app/
 
 Sitemap: https://www.heimdall-group.ru/sitemap.xml

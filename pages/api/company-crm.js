@@ -1,4 +1,5 @@
-import { verifyAdminRequest } from '@/lib/adminAuth'
+import { verifyInternalRequest } from '@/lib/internalAccess'
+import { rejectCrossSiteRequest } from '@/lib/apiSecurity'
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin'
 
 const TABLE = 'heimdall_company_crm'
@@ -39,9 +40,11 @@ function toClient(row) {
 }
 
 export default async function handler(req, res) {
-  const admin = verifyAdminRequest(req, res, { scope: 'company-crm' })
-  if (!admin.ok) {
-    return res.status(admin.status).json({ ok: false, error: admin.error })
+  if (rejectCrossSiteRequest(req, res)) return
+
+  const access = await verifyInternalRequest(req, res, { scope: 'company-crm' })
+  if (!access.ok) {
+    return res.status(access.status).json({ ok: false, error: access.error })
   }
 
   let supabase
@@ -89,4 +92,3 @@ export default async function handler(req, res) {
   res.setHeader('Allow', 'GET, POST, PUT, DELETE')
   return res.status(405).json({ ok: false, error: 'Method not allowed' })
 }
-

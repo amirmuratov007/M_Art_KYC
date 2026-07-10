@@ -1,9 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { AnalystLayout } from '@/components/analyst/AnalystUI'
-import { AlertTriangle, CheckCircle2, Download, FileText, Loader2, ShieldCheck, UploadCloud } from 'lucide-react'
+import { AlertTriangle, CheckCircle2, Download, FileText, Loader2, ShieldCheck, UploadCloud, XCircle } from 'lucide-react'
 
 const ACCEPTED_FILES = '.pdf,.html,.htm,.docx,.txt,.csv,.json,.xml'
-const DEFAULT_HEIMDALL_SA_BASE_URL = 'http://127.0.0.1:5188'
+const ACCEPTED_EXTENSIONS = new Set(ACCEPTED_FILES.split(','))
+const MAX_UPLOAD_BYTES = 500 * 1024 * 1024
+const MAX_FILES = 50
 
 function asArray(value) {
   if (!value) return []
@@ -52,15 +54,26 @@ function renderValue(value) {
     .join('\n')
 }
 
-function absoluteUrl(baseUrl, value) {
-  if (!value) return ''
-  if (/^https?:\/\//i.test(value)) return value
-  return `${baseUrl}${value.startsWith('/') ? value : `/${value}`}`
+function formatBytes(bytes) {
+  if (!bytes) return '0 Б'
+  const units = ['Б', 'КБ', 'МБ', 'ГБ']
+  const index = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1)
+  const value = bytes / (1024 ** index)
+  return `${value >= 10 || index === 0 ? Math.round(value) : value.toFixed(1)} ${units[index]}`
 }
 
-function getClientHeimdallSaBaseUrl() {
-  const value = process.env.NEXT_PUBLIC_HEIMDALL_SA_BASE_URL || DEFAULT_HEIMDALL_SA_BASE_URL
-  return String(value).replace(/\/+$/, '')
+function validateFiles(nextFiles) {
+  if (nextFiles.length > MAX_FILES) return `Можно загрузить не более ${MAX_FILES} файлов за одну проверку.`
+
+  const unsupported = nextFiles.find((file) => {
+    const extension = `.${file.name.split('.').pop()?.toLowerCase() || ''}`
+    return !ACCEPTED_EXTENSIONS.has(extension)
+  })
+  if (unsupported) return `Формат файла «${unsupported.name}» не поддерживается.`
+
+  const totalBytes = nextFiles.reduce((sum, file) => sum + file.size, 0)
+  if (totalBytes > MAX_UPLOAD_BYTES) return 'Общий размер файлов превышает 500 МБ.'
+  return ''
 }
 
 async function readResponsePayload(response) {
@@ -99,25 +112,24 @@ export default function HeimdallSaWorkspace() {
   const [files, setFiles] = useState([])
   const [useOpenSources, setUseOpenSources] = useState(true)
   const [useSbis, setUseSbis] = useState(false)
-  const [secret, setSecret] = useState('')
-  const [savingSecret, setSavingSecret] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [result, setResult] = useState(null)
+  const requestController = useRef(null)
 
   useEffect(() => {
     if (typeof window === 'undefined') return
-    const saved = window.sessionStorage.getItem('heimdall_admin_secret') || ''
     const params = new URLSearchParams(window.location.search)
-    setSecret(saved)
     setSubject(params.get('subject') || '')
     setRawText(params.get('raw_text') || '')
   }, [])
 
+  useEffect(() => () => requestController.current?.abort(), [])
+
   const analysis = result?.analysis || {}
-  const baseUrl = result?.heimdall_sa_base_url || getClientHeimdallSaBaseUrl()
-  const reportUrl = absoluteUrl(baseUrl, result?.report_url)
-  const docxUrl = absoluteUrl(baseUrl, result?.docx_url)
+  const reportUrl = result?.report_url || ''
+  const docxUrl = result?.docx_url || ''
+  const totalFileBytes = files.reduce((sum, file) => sum + file.size, 0)
 
   const stats = [
     ['Уровень риска', getFirst(analysis.risk_level, analysis.riskLevel, analysis.level, analysis.risk?.level, analysis.risk)],
@@ -138,9 +150,8 @@ export default function HeimdallSaWorkspace() {
 
     try {
       setLoading(true)
-      if (savingSecret && typeof window !== 'undefined') {
-        window.sessionStorage.setItem('heimdall_admin_secret', secret)
-      }
+      const controller = new AbortController()
+      requestController.current = controller
 
       const form = new FormData()
       form.append('subject', subject)
@@ -149,12 +160,11 @@ export default function HeimdallSaWorkspace() {
       form.append('use_sbis', useSbis ? 'true' : 'false')
       files.forEach((file) => form.append('files', file))
 
-      const headers = secret ? { 'x-heimdall-admin-secret': secret } : {}
       const response = await fetch('/api/heimdall-sa/analyze', {
         method: 'POST',
         credentials: 'same-origin',
-        headers,
-        body: form
+        body: form,
+        signal: controller.signal
       })
       const data = await readResponsePayload(response)
 
@@ -164,10 +174,28 @@ export default function HeimdallSaWorkspace() {
 
       setResult(data)
     } catch (submitError) {
-      setError(submitError.message)
+      setError(submitError.name === 'AbortError' ? 'Проверка остановлена.' : submitError.message)
     } finally {
+      requestController.current = null
       setLoading(false)
     }
+  }
+
+  function handleFiles(event) {
+    const nextFiles = Array.from(event.target.files || [])
+    const validationError = validateFiles(nextFiles)
+    if (validationError) {
+      event.target.value = ''
+      setFiles([])
+      setError(validationError)
+      return
+    }
+    setError('')
+    setFiles(nextFiles)
+  }
+
+  function cancelRequest() {
+    requestController.current?.abort()
   }
 
   return (
@@ -196,6 +224,7 @@ export default function HeimdallSaWorkspace() {
                 <input
                   value={subject}
                   onChange={(event) => setSubject(event.target.value)}
+                  maxLength={300}
                   className="rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none transition focus:border-sky-300/50"
                   placeholder="ФИО, компания, ИНН, контрагент или кандидат"
                 />
@@ -206,6 +235,7 @@ export default function HeimdallSaWorkspace() {
                 <textarea
                   value={rawText}
                   onChange={(event) => setRawText(event.target.value)}
+                  maxLength={2000000}
                   rows={12}
                   className="resize-y rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none transition focus:border-sky-300/50"
                   placeholder="Вставь сюда выгрузку, переписку, реквизиты, факты, найденные данные или заметки аналитика."
@@ -217,14 +247,18 @@ export default function HeimdallSaWorkspace() {
                   <UploadCloud className="h-5 w-5 text-sky-300" />
                   <div>
                     <div className="font-semibold">Файлы PDF / HTML / DOCX / TXT / CSV / JSON / XML</div>
-                    <div className="mt-1 text-xs text-white/45">{files.length ? files.map((file) => file.name).join(', ') : 'Можно загрузить несколько файлов сразу'}</div>
+                    <div className="mt-1 text-xs text-white/45">
+                      {files.length
+                        ? `${files.length} файл(а), ${formatBytes(totalFileBytes)}: ${files.slice(0, 4).map((file) => file.name).join(', ')}${files.length > 4 ? ` и еще ${files.length - 4}` : ''}`
+                        : 'До 50 файлов, общий размер до 500 МБ'}
+                    </div>
                   </div>
                 </div>
                 <input
                   type="file"
                   accept={ACCEPTED_FILES}
                   multiple
-                  onChange={(event) => setFiles(Array.from(event.target.files || []))}
+                  onChange={handleFiles}
                   className="mt-4 block w-full text-sm text-white/65 file:mr-4 file:rounded-xl file:border-0 file:bg-white/10 file:px-4 file:py-2 file:text-white"
                 />
               </label>
@@ -240,38 +274,34 @@ export default function HeimdallSaWorkspace() {
                 </label>
               </div>
 
-              <div className="grid gap-3 rounded-2xl border border-white/10 bg-black/20 p-4">
-                <label className="grid gap-2">
-                  <span className="text-sm font-semibold text-white/70">HEIMDALL_ADMIN_SECRET</span>
-                  <input
-                    value={secret}
-                    onChange={(event) => setSecret(event.target.value)}
-                    type="password"
-                    className="rounded-xl border border-white/10 bg-black/35 px-4 py-3 text-white outline-none focus:border-sky-300/50"
-                    placeholder="Нужен для доступа к серверному прокси"
-                  />
-                </label>
-                <label className="flex items-center gap-3 text-xs text-white/50">
-                  <input type="checkbox" checked={savingSecret} onChange={(event) => setSavingSecret(event.target.checked)} className="h-4 w-4 accent-sky-400" />
-                  Запомнить в sessionStorage только на время этой сессии браузера
-                </label>
+              <div className="flex items-start gap-3 rounded-2xl border border-emerald-300/20 bg-emerald-300/10 p-4 text-sm leading-6 text-emerald-100/85">
+                <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0" />
+                Доступ подтверждается защищённой сессией аналитика. Ключи Heimdall-SA и СБИС не передаются в браузер.
               </div>
 
               {error && (
-                <div className="flex items-start gap-3 rounded-2xl border border-red-300/25 bg-red-300/10 p-4 text-sm text-red-100">
+                <div role="alert" aria-live="polite" className="flex items-start gap-3 rounded-2xl border border-red-300/25 bg-red-300/10 p-4 text-sm text-red-100">
                   <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
                   {error}
                 </div>
               )}
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="inline-flex items-center justify-center gap-3 rounded-2xl bg-sky-400 px-6 py-4 font-semibold text-black transition hover:bg-sky-300 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <ShieldCheck className="h-5 w-5" />}
-                Сформировать справку
-              </button>
+              <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="inline-flex items-center justify-center gap-3 rounded-2xl bg-sky-400 px-6 py-4 font-semibold text-black transition hover:bg-sky-300 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <ShieldCheck className="h-5 w-5" />}
+                  {loading ? 'Формируем справку...' : 'Сформировать справку'}
+                </button>
+                {loading && (
+                  <button type="button" onClick={cancelRequest} className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-sm font-semibold text-white/75">
+                    <XCircle className="h-4 w-4" />
+                    Остановить
+                  </button>
+                )}
+              </div>
             </div>
           </section>
 
@@ -297,13 +327,13 @@ export default function HeimdallSaWorkspace() {
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2">
                   {reportUrl && (
-                    <a href={reportUrl} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/10 px-5 py-4 font-semibold">
+                    <a href={reportUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/10 px-5 py-4 font-semibold">
                       <FileText className="h-5 w-5" />
                       HTML-справка
                     </a>
                   )}
                   {docxUrl && (
-                    <a href={docxUrl} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/10 px-5 py-4 font-semibold">
+                    <a href={docxUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/10 px-5 py-4 font-semibold">
                       <Download className="h-5 w-5" />
                       Word-справка
                     </a>
@@ -320,7 +350,6 @@ export default function HeimdallSaWorkspace() {
             <ResultList title="Риск-сигналы" items={getFirst(analysis.risk_signals, analysis.signals, analysis.risks)} />
             <ResultList title="Внешние источники" items={getFirst(analysis.open_sources?.hits, analysis.external_sources, analysis.sources, analysis.open_sources)} />
             {getFirst(analysis.sbis, analysis.sbis_data, result.sbis) && <ResultList title="СБИС" items={getFirst(analysis.sbis, analysis.sbis_data, result.sbis)} />}
-            {result.structured_html?.length ? <ResultList title="Структурный HTML-разбор" items={result.structured_html} /> : null}
             {analysis.documents?.length ? <ResultList title="Загруженные материалы" items={analysis.documents} /> : null}
           </div>
         )}

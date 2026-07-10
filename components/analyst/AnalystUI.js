@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import Head from 'next/head'
 import HeimdallLogo from '@/components/HeimdallLogo'
-import { LayoutDashboard, FolderKanban, PlusCircle, ArrowRight, FileText, UploadCloud, Network } from 'lucide-react'
+import { LayoutDashboard, FolderKanban, PlusCircle, ArrowRight, FileText, UploadCloud, ShieldCheck, Building2, UsersRound, LogOut } from 'lucide-react'
 
 export function AnalystLayout({ title, children }) {
   return (
@@ -21,9 +21,9 @@ export function AnalystLayout({ title, children }) {
             <HeimdallLogo />
             <div className="hidden items-center gap-3 md:flex">
               <Link href="/analyst" className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm">Панель</Link>
-              <Link href="/analyst/cases" className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm">Проверки</Link>
-              <Link href="/analyst/risk-intelligence" className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm">Центр риск-аналитики</Link>
-              <Link href="/analyst/new-case" className="rounded-full bg-sky-500 px-4 py-2 text-sm font-semibold">Новая проверка</Link>
+              <Link href="/admin-crm" className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm">CRM</Link>
+              <Link href="/analyst/heimdall-sa" className="rounded-full bg-sky-500 px-4 py-2 text-sm font-semibold">Heimdall-SA</Link>
+              <Link href="/analyst/logout" aria-label="Выйти" title="Выйти" className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/65"><LogOut className="h-4 w-4" /></Link>
             </div>
           </div>
         </header>
@@ -34,8 +34,10 @@ export function AnalystLayout({ title, children }) {
             <nav className="grid gap-2">
               {[
                 ['Панель', '/analyst', LayoutDashboard],
+                ['CRM компаний', '/admin-crm', Building2],
+                ['Проверка Heimdall-SA', '/analyst/heimdall-sa', ShieldCheck],
+                ['Клиентские кабинеты', '/admin-client-checks', UsersRound],
                 ['Проверки', '/analyst/cases', FolderKanban],
-                ['Центр риск-аналитики', '/analyst/risk-intelligence', Network],
                 ['Новая проверка', '/analyst/new-case', PlusCircle]
               ].map(([name, href, Icon]) => (
                 <Link key={href} href={href} className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm text-white/70 transition hover:bg-white/7 hover:text-[#F7D784]">

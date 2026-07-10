@@ -1,18 +1,19 @@
 
 import crypto from 'crypto'
-import { verifyAdminRequest } from '@/lib/adminAuth'
+import { verifyInternalRequest } from '@/lib/internalAccess'
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin'
-import { cleanText, normalizeEmail, rejectNonPost, setJsonSecurityHeaders, setNoStore } from '@/lib/apiSecurity'
+import { cleanText, normalizeEmail, rejectCrossSiteRequest, rejectNonPost, setJsonSecurityHeaders, setNoStore } from '@/lib/apiSecurity'
 
 export default async function handler(req, res) {
   setNoStore(res)
   setJsonSecurityHeaders(res)
 
   if (rejectNonPost(req, res)) return
+  if (rejectCrossSiteRequest(req, res)) return
 
-  const admin = verifyAdminRequest(req, res, { scope: 'create-client-access-link' })
-  if (!admin.ok) {
-    return res.status(admin.status).json({ ok: false, error: admin.error })
+  const access = await verifyInternalRequest(req, res, { scope: 'create-client-access-link' })
+  if (!access.ok) {
+    return res.status(access.status).json({ ok: false, error: access.error })
   }
 
   try {
@@ -55,7 +56,7 @@ export default async function handler(req, res) {
     return res.status(201).json({
       ok: true,
       access: data,
-      url: `https://heimdall-group.ru/app?token=${token}`
+      url: `https://www.heimdall-group.ru/app?token=${token}`
     })
   } catch (error) {
     return res.status(500).json({ ok: false, error: error.message || 'Access link creation failed' })

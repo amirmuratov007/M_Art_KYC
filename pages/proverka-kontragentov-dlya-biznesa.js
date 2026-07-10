@@ -16,7 +16,7 @@ export default function ProverkaKontragentaBusiness() {
 
         <link
           rel="canonical"
-          href="https://heimdall-group.ru/proverka-kontragentov-dlya-biznesa"
+          href="https://www.heimdall-group.ru/proverka-kontragentov-dlya-biznesa"
         />
       </Head>
 

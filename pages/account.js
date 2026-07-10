@@ -416,6 +416,7 @@ export default function AccountPage() {
     <>
       <Head>
         <title>Личный кабинет | HEIMDALL</title>
+        <meta name="robots" content="noindex,nofollow,noarchive" />
         <meta name="description" content="Личный кабинет клиента HEIMDALL: проверки, статусы, отчеты, документы и новые запросы." />
         <link rel="canonical" href="https://www.heimdall-group.ru/account" />
       </Head>

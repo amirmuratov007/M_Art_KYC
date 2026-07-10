@@ -1,4 +1,6 @@
+import crypto from 'crypto'
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin'
+import { verifyInternalRequest } from '@/lib/internalAccess'
 import {
   cleanText,
   clientError,
@@ -13,7 +15,14 @@ function getAuthToken(req) {
     return header.slice(7).trim()
   }
 
-  return cleanText(req.headers['x-analytics-token'] || req.query.token || '', 300)
+  return cleanText(req.headers['x-analytics-token'] || '', 300)
+}
+
+function safeTokenEqual(received, expected) {
+  const a = Buffer.from(String(received || ''), 'utf8')
+  const b = Buffer.from(String(expected || ''), 'utf8')
+  if (!a.length || a.length !== b.length) return false
+  return crypto.timingSafeEqual(a, b)
 }
 
 function countBy(items, keySelector, limit = 10) {
@@ -52,8 +61,9 @@ export default async function handler(req, res) {
   const expectedToken = process.env.ANALYTICS_READ_TOKEN || process.env.HEIMDALL_ADMIN_SECRET
   const token = getAuthToken(req)
 
-  if (!expectedToken || token !== expectedToken) {
-    return res.status(401).json(clientError('Unauthorized'))
+  if (!safeTokenEqual(token, expectedToken)) {
+    const access = await verifyInternalRequest(req, res, { scope: 'analytics-summary' })
+    if (!access.ok) return res.status(401).json(clientError('Unauthorized'))
   }
 
   const days = Math.min(Math.max(Number(req.query.days || 7), 1), 90)

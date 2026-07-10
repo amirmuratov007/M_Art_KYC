@@ -1,7 +1,7 @@
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin'
 
 import { applyRateLimitHeaders, checkRateLimit, hasSpamHoneypot, isPayloadTooLarge } from '@/lib/rateLimit'
-import { cleanMultiline, cleanText, rejectNonPost, setJsonSecurityHeaders, setNoStore } from '@/lib/apiSecurity'
+import { cleanMultiline, cleanText, rejectCrossSiteRequest, rejectNonPost, setJsonSecurityHeaders, setNoStore } from '@/lib/apiSecurity'
 async function sendTelegram(text) {
   const token = process.env.TELEGRAM_BOT_TOKEN
   const chatId = process.env.TELEGRAM_CHAT_ID
@@ -65,6 +65,7 @@ export default async function handler(req, res) {
   setJsonSecurityHeaders(res)
 
   if (rejectNonPost(req, res)) return
+  if (rejectCrossSiteRequest(req, res)) return
 
   const rate = checkRateLimit(req, { scope: 'contact-request', limit: 5, windowMs: 60 * 1000 })
   applyRateLimitHeaders(res, rate)
@@ -126,18 +127,11 @@ export default async function handler(req, res) {
   ])
 
   if (telegramResult.ok || supabaseResult.ok) {
-    return res.status(200).json({
-      ok: true,
-      telegram: telegramResult,
-      supabase: supabaseResult
-    })
+    return res.status(200).json({ ok: true })
   }
 
   return res.status(500).json({
     ok: false,
-    error: [
-      `Telegram: ${telegramResult.error}`,
-      `Supabase: ${supabaseResult.error}`
-    ].join(' | ')
+    error: 'Не удалось отправить заявку. Попробуйте еще раз позже.'
   })
 }

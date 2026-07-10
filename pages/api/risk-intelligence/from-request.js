@@ -1,4 +1,5 @@
-import { verifyAdminRequest } from '@/lib/adminAuth'
+import { verifyInternalRequest } from '@/lib/internalAccess'
+import { rejectCrossSiteRequest } from '@/lib/apiSecurity'
 import { createRiskObject, findRiskObjectBySourceRequest } from '@/lib/riskIntelligenceStore'
 
 function setNoStore(res) {
@@ -35,13 +36,15 @@ function mapObjectType(lead = {}) {
 export default async function handler(req, res) {
   setNoStore(res)
 
-  const admin = verifyAdminRequest(req, res, { scope: 'risk-intelligence-from-request' })
-  if (!admin.ok) return res.status(admin.status).json({ ok: false, error: admin.error })
-
   if (req.method !== 'POST') {
     res.setHeader('Allow', ['POST'])
     return res.status(405).json({ ok: false, error: 'Method not allowed' })
   }
+
+  if (rejectCrossSiteRequest(req, res)) return
+
+  const access = await verifyInternalRequest(req, res, { scope: 'risk-intelligence-from-request' })
+  if (!access.ok) return res.status(access.status).json({ ok: false, error: access.error })
 
   try {
     const body = req.body || {}
