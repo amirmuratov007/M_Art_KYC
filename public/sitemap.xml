@@ -899,5 +899,35 @@
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
+  <url>
+    <loc>https://www.heimdall-group.ru/journal/udalennyy-naym-dipfeyki-proverka-lichnosti</loc>
+    <lastmod>2026-07-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.heimdall-group.ru/journal/lozhnopolozhitelnyy-risk-oshibki-v-proverke</loc>
+    <lastmod>2026-07-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.heimdall-group.ru/journal/kriticheskiy-podryadchik-zavisimost-ot-oblaka</loc>
+    <lastmod>2026-07-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.heimdall-group.ru/journal/falshivyy-pokupatel-marketpleys-ssylka-na-oplatu</loc>
+    <lastmod>2026-07-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.heimdall-group.ru/journal/pravilo-oproverzheniya-v-proverke</loc>
+    <lastmod>2026-07-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
 
 </urlset>
