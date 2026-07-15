@@ -2,6 +2,7 @@ import { Transform } from 'stream'
 import { rejectCrossSiteRequest } from '@/lib/apiSecurity'
 import { getHeimdallSaBaseUrl } from '@/lib/heimdallSaConfig'
 import { verifyInternalRequest } from '@/lib/internalAccess'
+import { createHeimdallSaSignedHeaders } from '@/lib/heimdallSaAuth'
 
 export const config = {
   api: {
@@ -79,10 +80,19 @@ export default async function handler(req, res) {
 
   try {
     const baseUrl = getHeimdallSaBaseUrl()
-    const headers = { 'content-type': contentType }
+    const requestPath = '/api/analyze'
+    const headers = {
+      'content-type': contentType,
+      ...createHeimdallSaSignedHeaders({
+        method: 'POST',
+        path: requestPath,
+        contentLength,
+        contentType
+      })
+    }
     if (contentLength > 0) headers['content-length'] = String(contentLength)
 
-    const upstream = await fetch(`${baseUrl}/api/analyze`, {
+    const upstream = await fetch(`${baseUrl}${requestPath}`, {
       method: 'POST',
       headers,
       body: createLimitedUploadStream(req),

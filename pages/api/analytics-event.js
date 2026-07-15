@@ -14,17 +14,17 @@ import {
   getClientIp,
   isPayloadTooLarge
 } from '@/lib/rateLimit'
+import {
+  isLikelyBot,
+  isPrivateAnalyticsPath,
+  normalizeAnalyticsPath,
+  sanitizeAnalyticsReferrer
+} from '@/lib/analyticsPrivacy'
 
 function hashIp(ip) {
-  const salt = process.env.ANALYTICS_HASH_SALT || process.env.HEIMDALL_ANALYST_SECRET || 'heimdall-analytics'
-  return crypto.createHash('sha256').update(`${salt}:${ip || 'unknown'}`).digest('hex').slice(0, 40)
-}
-
-function normalizePath(value) {
-  const path = cleanText(value, 500)
-  if (!path || !path.startsWith('/')) return '/'
-  if (path.startsWith('//')) return '/'
-  return path
+  const salt = process.env.ANALYTICS_HASH_SALT || process.env.HEIMDALL_ANALYST_SECRET || ''
+  if (!salt) return ''
+  return crypto.createHmac('sha256', salt).update(ip || 'unknown').digest('hex').slice(0, 40)
 }
 
 export default async function handler(req, res) {
@@ -51,16 +51,22 @@ export default async function handler(req, res) {
 
   const body = req.body || {}
   const userAgent = cleanText(req.headers['user-agent'] || '', 500)
+  const path = normalizeAnalyticsPath(body.path)
+
+  if (isLikelyBot(userAgent) || isPrivateAnalyticsPath(path)) {
+    return res.status(200).json({ ok: true, stored: false })
+  }
+
   const ipHash = hashIp(getClientIp(req))
 
   const event = {
-    path: normalizePath(body.path),
-    title: cleanText(body.title, 250),
-    referrer: cleanText(body.referrer, 500),
+    path,
+    title: '',
+    referrer: sanitizeAnalyticsReferrer(body.referrer),
     language: cleanText(body.language, 40),
     timezone: cleanText(body.timezone, 80),
     screen: cleanText(body.screen, 40),
-    user_agent: userAgent,
+    user_agent: '',
     ip_hash: ipHash
   }
 

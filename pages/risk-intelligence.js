@@ -10,7 +10,7 @@ export default function RiskIntelligencePublicPage() {
           <p className="mt-7 text-xl leading-9 text-white/66">Мы собираем разрозненные данные, факты, связи и признаки риска в единую аналитическую картину, чтобы бизнес принимал решения до того, как риск станет ущербом.</p>
           <div className="mt-9 flex flex-wrap gap-4">
             <a href="#lead" className="rounded-full bg-sky-500 px-6 py-3 text-sm font-semibold text-white">Оставить заявку</a>
-            <a href="/analyst/risk-intelligence" className="rounded-full border border-white/10 bg-white/5 px-6 py-3 text-sm text-white/80">Внутренний центр</a>
+            <a href="/analyst/heimdall-sa" className="rounded-full border border-white/10 bg-white/5 px-6 py-3 text-sm text-white/80">Внутренний центр</a>
           </div>
         </div>
 

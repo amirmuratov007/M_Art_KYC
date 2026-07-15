@@ -2,6 +2,7 @@ import path from 'path'
 import { Readable } from 'stream'
 import { getHeimdallSaBaseUrl } from '@/lib/heimdallSaConfig'
 import { verifyInternalRequest } from '@/lib/internalAccess'
+import { createHeimdallSaSignedHeaders } from '@/lib/heimdallSaAuth'
 
 const ALLOWED_EXTENSIONS = new Set(['.html', '.htm', '.docx', '.pdf'])
 
@@ -46,6 +47,7 @@ export default async function handler(req, res) {
   try {
     const baseUrl = getHeimdallSaBaseUrl()
     const upstream = await fetch(new URL(reportPath, `${baseUrl}/`), {
+      headers: createHeimdallSaSignedHeaders({ method: 'GET', path: reportPath }),
       signal: AbortSignal.timeout(60 * 1000)
     })
 

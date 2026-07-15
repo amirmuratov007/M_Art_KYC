@@ -1,24 +1,13 @@
 import { useEffect, useRef } from 'react'
 import { useRouter } from 'next/router'
-
-function normalizePath(url) {
-  if (typeof window === 'undefined') return '/'
-
-  try {
-    const parsed = new URL(url || window.location.href, window.location.origin)
-    return `${parsed.pathname}${parsed.search}` || '/'
-  } catch (_) {
-    return window.location.pathname + window.location.search || '/'
-  }
-}
+import { isPrivateAnalyticsPath, normalizeAnalyticsPath, sanitizeAnalyticsReferrer } from '@/lib/analyticsPrivacy'
 
 function sendInternalPageview(path) {
   if (typeof window === 'undefined') return
 
   const payload = {
     path,
-    title: document.title || '',
-    referrer: document.referrer || '',
+    referrer: sanitizeAnalyticsReferrer(document.referrer),
     language: navigator.language || '',
     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || '',
     screen: window.screen ? `${window.screen.width}x${window.screen.height}` : ''
@@ -45,18 +34,24 @@ function sendInternalPageview(path) {
 }
 
 function sendExternalPageview(path, analyticsAllowed) {
-  if (typeof window === 'undefined' || !analyticsAllowed) return
+  if (typeof window === 'undefined' || !analyticsAllowed) return false
 
   const gaId = process.env.NEXT_PUBLIC_GA_ID
   const ymId = process.env.NEXT_PUBLIC_YM_ID
 
   if (gaId && window.gtag) {
-    window.gtag('config', gaId, { page_path: path })
+    window.gtag('event', 'page_view', {
+      page_location: `${window.location.origin}${path}`,
+      page_path: path,
+      page_title: document.title || 'HEIMDALL'
+    })
   }
 
   if (ymId && window.ym) {
-    window.ym(Number(ymId), 'hit', path)
+    window.ym(Number(ymId), 'hit', path, { title: '' })
   }
+
+  return (!gaId || Boolean(window.gtag)) && (!ymId || Boolean(window.ym))
 }
 
 export default function HeimdallAnalytics({ analyticsAllowed = false }) {
@@ -66,22 +61,22 @@ export default function HeimdallAnalytics({ analyticsAllowed = false }) {
 
   useEffect(() => {
     const track = (url) => {
-      const path = normalizePath(url)
+      const path = normalizeAnalyticsPath(url)
+      if (!analyticsAllowed || isPrivateAnalyticsPath(path)) return
 
       if (lastInternalPath.current !== path) {
         lastInternalPath.current = path
         sendInternalPageview(path)
       }
 
-      if (analyticsAllowed && lastExternalPath.current !== path) {
+      if (lastExternalPath.current !== path && sendExternalPageview(path, analyticsAllowed)) {
         lastExternalPath.current = path
-        sendExternalPageview(path, analyticsAllowed)
       }
     }
 
     const timer = window.setTimeout(() => {
-      track(window.location.href)
-    }, 500)
+      track(window.location.pathname)
+    }, 700)
 
     router.events.on('routeChangeComplete', track)
 

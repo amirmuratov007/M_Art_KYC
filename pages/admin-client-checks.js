@@ -2,6 +2,7 @@ import Head from 'next/head'
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
 import HeimdallNav from '@/components/HeimdallNav'
+import { normalizeSafeReportUrl } from '@/lib/safeUrl'
 import {
   AlertTriangle,
   ArrowRight,
@@ -221,7 +222,7 @@ export default function AdminClientChecksPage() {
 
     try {
       const result = await apiRequest(`/api/admin-client-checks?user_id=${encodeURIComponent(userId)}`)
-      setChecks(result.checks || [])
+      setChecks((result.checks || []).map((item) => ({ ...item, report_url: normalizeSafeReportUrl(item.report_url) })))
       if (withLoader) setMessage('Проверки клиента загружены.')
     } catch (error) {
       setError(error.message || 'Не удалось загрузить проверки')

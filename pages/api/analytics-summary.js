@@ -8,6 +8,7 @@ import {
   setJsonSecurityHeaders,
   setNoStore
 } from '@/lib/apiSecurity'
+import { isPrivateAnalyticsPath, normalizeAnalyticsPath, sanitizeAnalyticsReferrer } from '@/lib/analyticsPrivacy'
 
 function getAuthToken(req) {
   const header = cleanText(req.headers.authorization || '', 300)
@@ -52,6 +53,15 @@ function startOfMoscowDay(date = new Date()) {
   return new Date(Date.UTC(Number(values.year), Number(values.month) - 1, Number(values.day)) - 3 * 60 * 60 * 1000)
 }
 
+function moscowDateKey(dateValue) {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Europe/Moscow',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  }).format(new Date(dateValue))
+}
+
 export default async function handler(req, res) {
   setNoStore(res)
   setJsonSecurityHeaders(res)
@@ -82,7 +92,13 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true, storageReady: false, views: 0, message: 'Analytics storage is not ready' })
     }
 
-    const rows = data || []
+    const rows = (data || [])
+      .map((row) => ({
+        ...row,
+        path: normalizeAnalyticsPath(row.path),
+        referrer: sanitizeAnalyticsReferrer(row.referrer)
+      }))
+      .filter((row) => !isPrivateAnalyticsPath(row.path))
     const todayStart = startOfMoscowDay()
     const yesterdayStart = new Date(todayStart.getTime() - 24 * 60 * 60 * 1000)
     const uniqueVisitors = new Set(rows.map((row) => row.ip_hash).filter(Boolean)).size
@@ -110,6 +126,8 @@ export default async function handler(req, res) {
         }
       }, 10),
       languages: countBy(rows, (row) => row.language || 'unknown', 10),
+      dailyViews: countBy(rows, (row) => moscowDateKey(row.created_at), days)
+        .sort((a, b) => a.name.localeCompare(b.name)),
       generatedAt: new Date().toISOString()
     })
   } catch (error) {

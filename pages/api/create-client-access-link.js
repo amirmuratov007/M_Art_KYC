@@ -56,7 +56,7 @@ export default async function handler(req, res) {
     return res.status(201).json({
       ok: true,
       access: data,
-      url: `https://www.heimdall-group.ru/app?token=${token}`
+      url: `https://www.heimdall-group.ru/app#token=${token}`
     })
   } catch (error) {
     return res.status(500).json({ ok: false, error: error.message || 'Access link creation failed' })

@@ -1,6 +1,7 @@
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin'
 import { verifyInternalRequest } from '@/lib/internalAccess'
 import { rejectCrossSiteRequest } from '@/lib/apiSecurity'
+import { normalizeSafeReportUrl } from '@/lib/safeUrl'
 
 function setNoStore(res) {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
@@ -33,7 +34,7 @@ function normalizePayload(body = {}) {
     status: normalizeStatus(body.status),
     risk_score: toIntegerOrNull(body.risk_score),
     summary: sanitize(body.summary, 4000),
-    report_url: sanitize(body.report_url, 1000) || null
+    report_url: normalizeSafeReportUrl(body.report_url) || null
   }
 }
 

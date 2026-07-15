@@ -1,5 +1,5 @@
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin'
-import { rejectNonGet, setJsonSecurityHeaders, setNoStore } from '@/lib/apiSecurity'
+import { cleanText, rejectCrossSiteRequest, rejectNonPost, setJsonSecurityHeaders, setNoStore } from '@/lib/apiSecurity'
 import { applyRateLimitHeaders, checkRateLimit } from '@/lib/rateLimit'
 
 function isValidTokenFormat(token) {
@@ -10,7 +10,8 @@ export default async function handler(req, res) {
   setNoStore(res)
   setJsonSecurityHeaders(res)
 
-  if (rejectNonGet(req, res)) return
+  if (rejectNonPost(req, res)) return
+  if (rejectCrossSiteRequest(req, res)) return
 
   const rate = checkRateLimit(req, { scope: 'validate-client-access', limit: 30, windowMs: 60 * 1000 })
   applyRateLimitHeaders(res, rate)
@@ -20,7 +21,10 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { token } = req.query || {}
+    const authorization = cleanText(req.headers.authorization || '', 300)
+    const token = authorization.toLowerCase().startsWith('bearer ')
+      ? authorization.slice(7).trim()
+      : cleanText(req.headers['x-client-access-token'] || '', 100)
 
     if (!isValidTokenFormat(token)) {
       return res.status(400).json({ ok: false, error: 'Missing or invalid access token' })
@@ -46,14 +50,6 @@ export default async function handler(req, res) {
       return res.status(403).json({ ok: false, error: 'Access link expired' })
     }
 
-    await supabase
-      .from('client_access_links')
-      .update({
-        last_opened_at: new Date().toISOString(),
-        open_count: (data.open_count || 0) + 1
-      })
-      .eq('id', data.id)
-
     return res.status(200).json({
       ok: true,
       client: {
@@ -65,6 +61,6 @@ export default async function handler(req, res) {
       }
     })
   } catch (error) {
-    return res.status(500).json({ ok: false, error: error.message || 'Access validation failed' })
+    return res.status(500).json({ ok: false, error: 'Access validation failed' })
   }
 }

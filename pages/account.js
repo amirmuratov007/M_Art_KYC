@@ -6,6 +6,7 @@ import HeimdallNav from '@/components/HeimdallNav'
 import PWAInstallButton from '@/components/PWAInstallButton'
 import { getSupabaseBrowserClient } from '@/lib/supabaseClient'
 import { useHeimdallAuth } from '@/components/HeimdallAuthProvider'
+import { normalizeSafeReportUrl } from '@/lib/safeUrl'
 import {
   ArrowRight,
   CheckCircle2,
@@ -261,7 +262,7 @@ export default function AccountPage() {
       setChecks([])
     } else {
       setError('')
-      setChecks(data || [])
+      setChecks((data || []).map((item) => ({ ...item, report_url: normalizeSafeReportUrl(item.report_url) })))
     }
 
     setChecksLoading(false)

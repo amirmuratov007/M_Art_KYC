@@ -11,7 +11,6 @@ const scriptSrc = [
 
 const connectSrc = [
   "'self'",
-  ...(process.env.NODE_ENV === 'production' ? [] : ['http://127.0.0.1:5188', 'http://localhost:5188']),
   'https://*.supabase.co',
   'https://mc.yandex.ru',
   'https://www.google-analytics.com',
@@ -20,7 +19,8 @@ const connectSrc = [
 
 const privatePageHeaders = [
   { key: 'Cache-Control', value: 'private, no-store, max-age=0' },
-  { key: 'X-Robots-Tag', value: 'noindex, nofollow, noarchive' }
+  { key: 'X-Robots-Tag', value: 'noindex, nofollow, noarchive' },
+  { key: 'Referrer-Policy', value: 'no-referrer' }
 ]
 
 const securityHeaders = [
@@ -31,6 +31,10 @@ const securityHeaders = [
   {
     key: 'X-Content-Type-Options',
     value: 'nosniff'
+  },
+  {
+    key: 'X-Permitted-Cross-Domain-Policies',
+    value: 'none'
   },
   {
     key: 'X-Frame-Options',
@@ -112,6 +116,14 @@ const nextConfig = {
       {
         source: '/admin-client-checks',
         headers: privatePageHeaders
+      },
+      {
+        source: '/account',
+        headers: privatePageHeaders
+      },
+      {
+        source: '/app/:path*',
+        headers: privatePageHeaders
       }
     ]
   },
@@ -130,6 +142,36 @@ const nextConfig = {
       },
       {
         source: '/analyst/ai/:path*',
+        destination: '/analyst/heimdall-sa',
+        permanent: false
+      },
+      {
+        source: '/analyst/risk-intelligence-en',
+        destination: '/analyst/heimdall-sa',
+        permanent: false
+      },
+      {
+        source: '/analyst/risk-intelligence-en/:path*',
+        destination: '/analyst/heimdall-sa',
+        permanent: false
+      },
+      {
+        source: '/analyst/cases',
+        destination: '/admin-crm',
+        permanent: false
+      },
+      {
+        source: '/analyst/cases/:path*',
+        destination: '/admin-crm',
+        permanent: false
+      },
+      {
+        source: '/analyst/new-case',
+        destination: '/analyst/heimdall-sa',
+        permanent: false
+      },
+      {
+        source: '/analyst/report/:path*',
         destination: '/analyst/heimdall-sa',
         permanent: false
       },

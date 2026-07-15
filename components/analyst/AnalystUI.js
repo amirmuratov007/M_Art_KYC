@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import Head from 'next/head'
 import HeimdallLogo from '@/components/HeimdallLogo'
-import { LayoutDashboard, FolderKanban, PlusCircle, ArrowRight, FileText, UploadCloud, ShieldCheck, Building2, UsersRound, LogOut } from 'lucide-react'
+import { LayoutDashboard, ArrowRight, FileText, UploadCloud, ShieldCheck, Building2, UsersRound, LogOut, BarChart3 } from 'lucide-react'
 
 export function AnalystLayout({ title, children }) {
   return (
@@ -37,8 +37,7 @@ export function AnalystLayout({ title, children }) {
                 ['CRM компаний', '/admin-crm', Building2],
                 ['Проверка Heimdall-SA', '/analyst/heimdall-sa', ShieldCheck],
                 ['Клиентские кабинеты', '/admin-client-checks', UsersRound],
-                ['Проверки', '/analyst/cases', FolderKanban],
-                ['Новая проверка', '/analyst/new-case', PlusCircle]
+                ['Статистика сайта', '/analyst/analytics', BarChart3]
               ].map(([name, href, Icon]) => (
                 <Link key={href} href={href} className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm text-white/70 transition hover:bg-white/7 hover:text-[#F7D784]">
                   <Icon className="h-4 w-4" />

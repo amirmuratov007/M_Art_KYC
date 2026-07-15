@@ -10,6 +10,7 @@ const COOKIE_CONSENT_EVENT = 'heimdall-cookie-consent-change'
 
 export default function App({ Component, pageProps }) {
   const gaId = process.env.NEXT_PUBLIC_GA_ID
+  const ymId = process.env.NEXT_PUBLIC_YM_ID
   const [analyticsAllowed, setAnalyticsAllowed] = useState(false)
 
   useEffect(() => {
@@ -42,7 +43,27 @@ export default function App({ Component, pageProps }) {
               function gtag(){dataLayer.push(arguments);}
               window.gtag = gtag;
               gtag('js', new Date());
-              gtag('config', '${gaId}');
+              gtag('config', '${gaId}', { send_page_view: false });
+            `}
+          </Script>
+        </>
+      )}
+
+      {analyticsAllowed && ymId && (
+        <>
+          <Script src="https://mc.yandex.ru/metrika/tag.js" strategy="afterInteractive" />
+          <Script id="yandex-metrika" strategy="afterInteractive">
+            {`
+              window.ym = window.ym || function(){(window.ym.a = window.ym.a || []).push(arguments)};
+              window.ym.l = Date.now();
+              ym(${ymId}, 'init', {
+                clickmap: true,
+                trackLinks: true,
+                accurateTrackBounce: true,
+                webvisor: false,
+                defer: true,
+                sendTitle: false
+              });
             `}
           </Script>
         </>

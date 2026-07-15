@@ -20,8 +20,13 @@ function renderAccessMessage(title, message) {
 }
 
 async function validateHeimdallPaidAccess() {
-  const params = new URLSearchParams(window.location.search)
-  const token = params.get('token')
+  const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''))
+  const queryParams = new URLSearchParams(window.location.search)
+  const token = hashParams.get('token') || queryParams.get('token')
+
+  if (token) {
+    window.history.replaceState(null, document.title, '/app')
+  }
 
   if (!token) {
     renderAccessMessage('Доступ не найден', 'Откройте персональную ссылку, которую вы получили после оплаты.')
@@ -34,10 +39,12 @@ async function validateHeimdallPaidAccess() {
   }
 
   try {
-    const response = await fetch(`/api/validate-client-access?token=${encodeURIComponent(token)}`, {
+    const response = await fetch('/api/validate-client-access', {
+      method: 'POST',
       cache: 'no-store',
       headers: {
-        'Accept': 'application/json'
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${token}`
       }
     })
     const data = await response.json()

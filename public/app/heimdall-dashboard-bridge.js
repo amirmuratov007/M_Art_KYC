@@ -1,5 +1,5 @@
 async function loadHeimdallDashboardData() {
-  const token = window.HEIMDALL_CLIENT_TOKEN || new URLSearchParams(window.location.search).get('token') || ''
+  const token = window.HEIMDALL_CLIENT_TOKEN || ''
 
   if (!/^[a-f0-9]{64}$/i.test(token)) {
     throw new Error('Client access token is required')

@@ -7,10 +7,6 @@ function isPublicAnalystPath(pathname) {
   return PUBLIC_ANALYST_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`))
 }
 
-function isAnalystApi(pathname) {
-  return pathname.startsWith('/api/risk-intelligence')
-}
-
 export async function proxy(request) {
   const { pathname, search } = request.nextUrl
 
@@ -28,10 +24,6 @@ export async function proxy(request) {
     return response
   }
 
-  if (isAnalystApi(pathname)) {
-    return NextResponse.json({ ok: false, error: 'Требуется вход в аналитическую зону HEIMDALL.' }, { status: 401 })
-  }
-
   const loginUrl = request.nextUrl.clone()
   loginUrl.pathname = '/analyst/login'
   loginUrl.searchParams.set('next', `${pathname}${search || ''}`)
@@ -39,5 +31,5 @@ export async function proxy(request) {
 }
 
 export const config = {
-  matcher: ['/analyst/:path*', '/admin-crm', '/admin-client-checks', '/api/risk-intelligence/:path*'],
+  matcher: ['/analyst/:path*', '/admin-crm', '/admin-client-checks'],
 }
