@@ -26,7 +26,7 @@
 - `HEIMDALL_ANALYST_LOGIN`
 - `HEIMDALL_ANALYST_PASSWORD`
 - `HEIMDALL_ANALYST_SECRET`
-- `HEIMDALL_ADMIN_SECRET`
+- `HEIMDALL_ADMIN_SECRET` (recommended; Heimdall-SA signing falls back to the analyst session secret)
 - `NEXT_PUBLIC_YM_ID`
 - Supabase URL, anon key and service-role key
 
