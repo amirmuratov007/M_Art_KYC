@@ -929,5 +929,35 @@
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
+  <url>
+    <loc>https://www.heimdall-group.ru/journal/poddelnaya-vakansiya-proverka-rabotodatelya</loc>
+    <lastmod>2026-07-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.heimdall-group.ru/journal/nastoyashchiy-sayt-falshivaya-stranica-pereadresaciya</loc>
+    <lastmod>2026-07-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.heimdall-group.ru/journal/podmena-rekvizitov-v-perepiske-bec</loc>
+    <lastmod>2026-07-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.heimdall-group.ru/journal/utechka-dannyh-u-kriticheskogo-podryadchika</loc>
+    <lastmod>2026-07-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.heimdall-group.ru/journal/proverka-gruzoperevozchika-pered-peredachey-tovara</loc>
+    <lastmod>2026-07-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
 
 </urlset>
