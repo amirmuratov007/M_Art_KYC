@@ -1,7 +1,7 @@
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin'
 import { applyRateLimitHeaders, checkRateLimit, hasSpamHoneypot, isPayloadTooLarge } from '@/lib/rateLimit'
 import { cleanMultiline, cleanText, rejectCrossSiteRequest, rejectNonPost, setJsonSecurityHeaders, setNoStore } from '@/lib/apiSecurity'
-import { validateTelegramInitData } from '@/lib/telegramWebAppAuth'
+import { validateTelegramInitData, validateTelegramInitDataThirdParty } from '@/lib/telegramWebAppAuth'
 
 const levelLabels = {
   low: 'низкий',
@@ -76,8 +76,12 @@ export default async function handler(req, res) {
   let telegramIdentity = null
 
   if (initData) {
-    const token = process.env.TELEGRAM_MINIAPP_BOT_TOKEN || process.env.TELEGRAM_BOT_TOKEN || process.env.TG_TOKEN
-    const validation = validateTelegramInitData(initData, token, { maxAgeSeconds: 24 * 60 * 60 })
+    const token = process.env.TELEGRAM_MINIAPP_BOT_TOKEN
+    const botId = process.env.TELEGRAM_MINIAPP_BOT_ID || '8523170241'
+    const hasThirdPartySignature = new URLSearchParams(initData).has('signature')
+    const validation = hasThirdPartySignature
+      ? validateTelegramInitDataThirdParty(initData, botId, { maxAgeSeconds: 24 * 60 * 60 })
+      : validateTelegramInitData(initData, token, { maxAgeSeconds: 24 * 60 * 60 })
 
     if (!validation.ok) {
       return res.status(401).json({ ok: false, error: 'Сессия Telegram недействительна. Откройте приложение заново.' })

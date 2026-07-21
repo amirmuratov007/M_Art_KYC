@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { createHmac } from 'node:crypto'
+import { createHmac, generateKeyPairSync, sign } from 'node:crypto'
 import { readFile } from 'node:fs/promises'
 import test from 'node:test'
 
@@ -79,4 +79,28 @@ test('Telegram init data rejects tampering and expiration', () => {
 
   assert.equal(telegramAuth.validateTelegramInitData(tampered, token, { nowMs, maxAgeSeconds: 3600 }).ok, false)
   assert.equal(telegramAuth.validateTelegramInitData(expired, token, { nowMs, maxAgeSeconds: 3600 }).ok, false)
+})
+
+test('Telegram third-party init data accepts Ed25519 and rejects tampering', () => {
+  const botId = '8523170241'
+  const nowMs = Date.UTC(2026, 6, 21, 8, 0, 0)
+  const values = {
+    auth_date: String(Math.floor(nowMs / 1000) - 20),
+    query_id: 'AAEAAAE',
+    user: JSON.stringify({ id: 8678851817, first_name: 'Artyr' })
+  }
+  const entries = Object.entries(values).sort(([left], [right]) => (left < right ? -1 : left > right ? 1 : 0))
+  const checkString = `${botId}:WebAppData\n${entries.map(([key, value]) => `${key}=${value}`).join('\n')}`
+  const { privateKey, publicKey } = generateKeyPairSync('ed25519')
+  const publicKeyDer = publicKey.export({ format: 'der', type: 'spki' })
+  const publicKeyHex = publicKeyDer.subarray(-32).toString('hex')
+  const signature = sign(null, Buffer.from(checkString), privateKey).toString('base64url')
+  const raw = new URLSearchParams([...entries, ['hash', '0'.repeat(64)], ['signature', signature]]).toString()
+
+  const valid = telegramAuth.validateTelegramInitDataThirdParty(raw, botId, { nowMs, maxAgeSeconds: 3600, publicKeyHex })
+  const tampered = raw.replace('Artyr', 'Admin')
+
+  assert.equal(valid.ok, true)
+  assert.equal(valid.user.id, 8678851817)
+  assert.equal(telegramAuth.validateTelegramInitDataThirdParty(tampered, botId, { nowMs, maxAgeSeconds: 3600, publicKeyHex }).ok, false)
 })
