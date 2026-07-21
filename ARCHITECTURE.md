@@ -21,6 +21,14 @@
 - IP addresses are HMAC-pseudonymized with `ANALYTICS_HASH_SALT` or `HEIMDALL_ANALYST_SECRET`.
 - The protected report is available at `/analyst/analytics`.
 
+## Telegram Mini App
+
+- `/risk-radar` is the mobile-first HEIMDALL Risk Radar for Telegram and regular browsers.
+- Assessment answers and progress remain in local browser storage; only an explicit service request is sent to the backend.
+- `/api/telegram-miniapp-lead` validates signed Telegram `initData` when it is present, rate-limits requests and never stores the raw signed payload.
+- The Mini App does not request passports, document numbers or other sensitive identifiers.
+- The route has a dedicated CSP that permits Telegram Web embedding without relaxing the framing policy for the rest of the site.
+
 ## Required environment variables
 
 - `HEIMDALL_ANALYST_LOGIN`

@@ -4,6 +4,7 @@ const scriptSrc = [
   "'self'",
   "'unsafe-inline'",
   ...(process.env.NODE_ENV === 'production' ? [] : ["'unsafe-eval'"]),
+  'https://telegram.org',
   'https://www.googletagmanager.com',
   'https://mc.yandex.ru',
   'https://yastatic.net'
@@ -80,6 +81,31 @@ const securityHeaders = [
   }
 ]
 
+const telegramMiniAppHeaders = securityHeaders
+  .filter(({ key }) => !['X-Frame-Options', 'Cross-Origin-Opener-Policy', 'Cross-Origin-Resource-Policy', 'Content-Security-Policy'].includes(key))
+  .concat([
+    {
+      key: 'Content-Security-Policy',
+      value: [
+        "default-src 'self'",
+        "base-uri 'self'",
+        "form-action 'self'",
+        "frame-ancestors 'self' https://web.telegram.org https://*.telegram.org",
+        "object-src 'none'",
+        `script-src ${scriptSrc.join(' ')}`,
+        "style-src 'self' 'unsafe-inline'",
+        "img-src 'self' data: blob: https:",
+        "font-src 'self' data:",
+        `connect-src ${connectSrc.join(' ')}`,
+        "manifest-src 'self'",
+        "worker-src 'self'",
+        "frame-src 'self' https://mc.yandex.ru"
+      ].join('; ')
+    },
+    { key: 'X-Robots-Tag', value: 'noindex, nofollow, noarchive' },
+    { key: 'Cache-Control', value: 'public, max-age=0, must-revalidate' }
+  ])
+
 const nextConfig = {
   reactStrictMode: true,
   turbopack: {
@@ -89,8 +115,12 @@ const nextConfig = {
   async headers() {
     return [
       {
-        source: '/:path*',
+        source: '/((?!risk-radar(?:/|$)).*)',
         headers: securityHeaders
+      },
+      {
+        source: '/risk-radar',
+        headers: telegramMiniAppHeaders
       },
       {
         source: '/sw.js',

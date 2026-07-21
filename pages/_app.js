@@ -11,6 +11,7 @@ const COOKIE_CONSENT_EVENT = 'heimdall-cookie-consent-change'
 export default function App({ Component, pageProps }) {
   const gaId = process.env.NEXT_PUBLIC_GA_ID
   const ymId = process.env.NEXT_PUBLIC_YM_ID
+  const isTelegramMiniApp = Boolean(Component.isTelegramMiniApp)
   const [analyticsAllowed, setAnalyticsAllowed] = useState(false)
 
   useEffect(() => {
@@ -69,26 +70,28 @@ export default function App({ Component, pageProps }) {
         </>
       )}
 
-      <Script id="heimdall-service-worker" strategy="afterInteractive">
-        {`
-          if ('serviceWorker' in navigator) {
-            var registerHeimdallWorker = function () {
-              navigator.serviceWorker.register('/sw.js').catch(function () {});
-            };
+      {!isTelegramMiniApp && (
+        <Script id="heimdall-service-worker" strategy="afterInteractive">
+          {`
+            if ('serviceWorker' in navigator) {
+              var registerHeimdallWorker = function () {
+                navigator.serviceWorker.register('/sw.js').catch(function () {});
+              };
 
-            if (document.readyState === 'complete') {
-              registerHeimdallWorker();
-            } else {
-              window.addEventListener('load', registerHeimdallWorker);
+              if (document.readyState === 'complete') {
+                registerHeimdallWorker();
+              } else {
+                window.addEventListener('load', registerHeimdallWorker);
+              }
             }
-          }
-        `}
-      </Script>
+          `}
+        </Script>
+      )}
 
-      <AnimatedCursor />
-      <HeimdallAnalytics analyticsAllowed={analyticsAllowed} />
+      {!isTelegramMiniApp && <AnimatedCursor />}
+      {!isTelegramMiniApp && <HeimdallAnalytics analyticsAllowed={analyticsAllowed} />}
       <Component {...pageProps} />
-      <CookieConsentBanner />
+      {!isTelegramMiniApp && <CookieConsentBanner />}
     </>
   )
 }

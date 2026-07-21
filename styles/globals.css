@@ -530,3 +530,14 @@ pre,
     font-size: clamp(2rem, 10.6vw, 2.75rem) !important;
   }
 }
+
+/* Telegram Mini App is a compact control surface, so keep labels stable and unhyphenated. */
+.telegram-miniapp,
+.telegram-miniapp * {
+  letter-spacing: 0 !important;
+  hyphens: none !important;
+}
+
+.telegram-miniapp {
+  overscroll-behavior: none;
+}
