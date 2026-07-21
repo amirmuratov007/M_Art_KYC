@@ -25,7 +25,7 @@
 
 - `/risk-radar` is the mobile-first HEIMDALL Risk Radar for Telegram and regular browsers.
 - Assessment answers and progress remain in local browser storage; only an explicit service request is sent to the backend.
-- `/api/telegram-miniapp-lead` validates signed Telegram `initData` when it is present, rate-limits requests and never stores the raw signed payload.
+- `/api/telegram-miniapp-lead` validates signed Telegram `initData` with the dedicated `TELEGRAM_MINIAPP_BOT_TOKEN` when it is present, rate-limits requests and never stores the raw signed payload. The notification bot token remains a separate integration.
 - The Mini App does not request passports, document numbers or other sensitive identifiers.
 - The route has a dedicated CSP that permits Telegram Web embedding without relaxing the framing policy for the rest of the site.
 

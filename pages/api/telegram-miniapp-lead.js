@@ -76,7 +76,7 @@ export default async function handler(req, res) {
   let telegramIdentity = null
 
   if (initData) {
-    const token = process.env.TELEGRAM_BOT_TOKEN || process.env.TG_TOKEN
+    const token = process.env.TELEGRAM_MINIAPP_BOT_TOKEN || process.env.TELEGRAM_BOT_TOKEN || process.env.TG_TOKEN
     const validation = validateTelegramInitData(initData, token, { maxAgeSeconds: 24 * 60 * 60 })
 
     if (!validation.ok) {

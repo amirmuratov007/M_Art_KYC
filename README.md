@@ -28,10 +28,12 @@ HEIMDALL_SA_BASE_URL=http://127.0.0.1:5188
 
 TELEGRAM_BOT_TOKEN=
 TELEGRAM_CHAT_ID=
+TELEGRAM_MINIAPP_BOT_TOKEN=
 SUPABASE_LEADS_TABLE=heimdall_leads
 ```
 
 Legacy `TG_TOKEN` and `TG_CHAT_ID` are still supported by some API routes, but use `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` for new deployments.
+`TELEGRAM_MINIAPP_BOT_TOKEN` belongs to the dedicated Risk Radar bot and is used only to validate signed Telegram Mini App sessions. Do not reuse the notification bot for it.
 
 ## Supabase SQL
 
