@@ -959,5 +959,23 @@
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
+  <url>
+    <loc>https://www.heimdall-group.ru/journal/chuzhoy-uchastok-proverka-lichnosti-sobstvennika</loc>
+    <lastmod>2026-07-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.heimdall-group.ru/journal/odin-sotrudnik-kontroliruet-bank-i-zarplatu</loc>
+    <lastmod>2026-07-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.heimdall-group.ru/journal/kompaniya-vyglyadit-nebolshoy-proverka-gruppy</loc>
+    <lastmod>2026-07-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
 
 </urlset>
