@@ -9,6 +9,7 @@ import HeimdallRiskTest from '@/components/HeimdallRiskTest'
 import HeimdallRiskFloatingPlugin from '@/components/HeimdallRiskFloatingPlugin'
 import OsintMotionSystem from '@/components/OsintMotionSystem'
 import OsintSignalMap from '@/components/OsintSignalMap'
+import OsintInvestigationFilm from '@/components/OsintInvestigationFilm'
 import {
   ArrowRight,
   Building2,
@@ -268,6 +269,8 @@ export default function HomePage() {
             </div>
           </div>
         </section>
+
+        <OsintInvestigationFilm />
 
         <section className="relative z-10 mx-auto max-w-7xl px-4 pb-16 sm:px-5 sm:pb-24">
           <div className="grid gap-5 md:grid-cols-3">
