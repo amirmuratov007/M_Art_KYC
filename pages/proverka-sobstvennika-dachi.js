@@ -3,6 +3,7 @@ import PurchaseSellerCheckPage from '@/components/PurchaseSellerCheckPage'
 const content = {
   language: 'ru',
   icon: 'home',
+  filmVariant: 'property',
   canonical: 'https://www.heimdall-group.ru/proverka-sobstvennika-dachi',
   metaTitle: 'Проверка собственника дачи или дома перед покупкой | HEIMDALL',
   metaDescription: 'Проверка собственника дачи, дома или участка перед покупкой: продавец, наследники, представители, долги, суды, земельные споры, связи и признаки проблемной сделки.',

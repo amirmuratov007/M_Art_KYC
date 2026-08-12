@@ -3,6 +3,7 @@ import Link from 'next/link'
 import HeimdallNav from '@/components/HeimdallNav'
 import HeimdallFooter from '@/components/HeimdallFooter'
 import SupportRequestForm from '@/components/SupportRequestForm'
+import ServiceStoryFilm from '@/components/ServiceStoryFilm'
 import { AlertTriangle, ArrowRight, Car, CheckCircle2, FileSearch, Home, Network, ShieldCheck, UserSearch } from 'lucide-react'
 
 const iconMap = {
@@ -84,6 +85,8 @@ export default function PurchaseSellerCheckPage({ content }) {
             </div>
           </div>
         </section>
+
+        {content.filmVariant && <ServiceStoryFilm variant={content.filmVariant} />}
 
         <section id="scope" className="relative z-10 mx-auto max-w-7xl px-5 pb-24">
           <div className="mb-10 max-w-4xl">

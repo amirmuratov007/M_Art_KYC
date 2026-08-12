@@ -3,6 +3,7 @@ import PurchaseSellerCheckPage from '@/components/PurchaseSellerCheckPage'
 const content = {
   language: 'ru',
   icon: 'home',
+  filmVariant: 'property',
   canonical: 'https://www.heimdall-group.ru/proverka-sobstvennika-kvartiry',
   alternate: { hrefLang: 'en', href: 'https://www.heimdall-group.ru/apartment-owner-verification' },
   metaTitle: 'Проверка собственника квартиры перед покупкой | HEIMDALL',

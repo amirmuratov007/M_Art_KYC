@@ -3,6 +3,7 @@ import PurchaseSellerCheckPage from '@/components/PurchaseSellerCheckPage'
 const content = {
   language: 'ru',
   icon: 'seller',
+  filmVariant: 'property',
   canonical: 'https://www.heimdall-group.ru/proverka-prodavca-pered-pokupkoy',
   alternate: { hrefLang: 'en', href: 'https://www.heimdall-group.ru/seller-verification-before-purchase' },
   metaTitle: 'Проверка продавца перед покупкой квартиры или автомобиля | HEIMDALL',

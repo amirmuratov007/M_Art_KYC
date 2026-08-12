@@ -4,6 +4,7 @@ import { useState } from 'react'
 import HeimdallNav from '@/components/HeimdallNav'
 import HeimdallFooter from '@/components/HeimdallFooter'
 import ContactModal from '@/components/ContactModal'
+import ServiceStoryFilm from '@/components/ServiceStoryFilm'
 import { ArrowRight, ShieldCheck, UserSearch, Home, Baby, Car, KeyRound, FileText, CheckCircle2, AlertTriangle, Scale, LockKeyhole } from 'lucide-react'
 
 const staffTypes = [
@@ -130,6 +131,8 @@ export default function PrivateStaffCheckPage() {
             </div>
           </div>
         </section>
+
+        <ServiceStoryFilm variant="nanny" />
 
         <section className="relative z-10 mx-auto max-w-7xl px-5 py-12">
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">

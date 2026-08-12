@@ -3,6 +3,7 @@ import Link from 'next/link'
 import HeimdallNav from '@/components/HeimdallNav'
 import HeimdallFooter from '@/components/HeimdallFooter'
 import SupportRequestForm from '@/components/SupportRequestForm'
+import ServiceStoryFilm from '@/components/ServiceStoryFilm'
 import { ArrowRight, AlertTriangle, Bell, Building2, CheckCircle2, FileSearch, Gauge, LockKeyhole, Network, ShieldCheck, UserSearch } from 'lucide-react'
 
 const problems = [
@@ -126,6 +127,8 @@ export default function SecurityOutsourcingPage() {
             </div>
           </div>
         </section>
+
+        <ServiceStoryFilm variant="security" />
 
         <section className="relative z-10 mx-auto max-w-7xl px-5 pb-24">
           <div className="mb-10 max-w-4xl">

@@ -4,6 +4,7 @@ import { useState } from 'react'
 import HeimdallNav from '@/components/HeimdallNav'
 import HeimdallFooter from '@/components/HeimdallFooter'
 import ContactModal from '@/components/ContactModal'
+import ServiceStoryFilm from '@/components/ServiceStoryFilm'
 import { ArrowRight, CheckCircle2, FileSearch, ShieldCheck, AlertTriangle } from 'lucide-react'
 
 const signals = ["регистрация, деловой профиль и признаки реальной деятельности", "совпадение сайта, документов, контактов, адресов и банковских реквизитов", "проверка производственного профиля и признаков посредника", "негативные публикации, экспортные сигналы и комплаенс-риски"]
@@ -72,6 +73,8 @@ export default function Page() {
             </div>
           </div>
         </section>
+
+        <ServiceStoryFilm variant="china" />
 
         <section className="relative z-10 mx-auto max-w-7xl px-4 pb-24 sm:px-5">
           <div className="grid gap-6 lg:grid-cols-[0.82fr_1fr]">
