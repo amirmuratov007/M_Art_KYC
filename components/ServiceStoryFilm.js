@@ -52,10 +52,10 @@ const stories = {
     intro: 'Коммерческое предложение выглядит убедительно. Фильм показывает, как реестр, производство, экспортный след и реквизиты меняют условия оплаты.',
     ribbon: ['Компания', 'Лицензия', 'Фабрика', 'Сайт', 'Экспорт', 'Реквизиты', 'Логистика', 'Аванс'],
     chapters: [
-      { label: 'Предложение', title: 'Поставщик присылает цену и документы', text: 'Входные данные фиксируются до переговоров о крупном авансе.' },
-      { label: 'Фабрика', title: 'Производственный след собирается из источников', text: 'Регистрация, адрес, сайт, видео и экспортные сигналы сопоставляются между собой.' },
+      { label: 'Фабрика', title: 'Производственная линия работает', text: 'Площадка, сотрудники и выпуск продукции подтверждаются до переговоров об авансе.' },
+      { label: 'Маршрут', title: 'Экспортный маршрут подтверждается', text: 'Видео, геометка, перевозка и порт складываются в проверяемую цепочку поставки.' },
       { label: 'Реквизиты', title: 'Получатель платежа оказывается другой компанией', text: 'Посредник сам по себе допустим, но его роль и полномочия должны быть подтверждены.' },
-      { label: 'Контракт', title: 'Оплата разбивается на безопасные этапы', text: 'Образец, видеоаудит, документы и контроль отгрузки становятся условиями платежа.' }
+      { label: 'Поставка', title: 'Оплата разбивается на безопасные этапы', text: 'Образец, видеоаудит, документы и контроль отгрузки становятся условиями платежа.' }
     ],
     intake: { Icon: Factory, name: 'Guangzhou Huanli', role: 'Поставщик оборудования', status: 'ПРЕДЛОЖЕНИЕ ПОЛУЧЕНО', tags: ['Лицензия', 'Фабрика', 'Счет'] },
     sources: { core: 'Проверка фабрики', count: '18 совпадений в источниках', items: [[Landmark, 'Реестр'], [Video, 'Производство'], [Ship, 'Экспорт'], [Globe2, 'Сайт']] },
@@ -98,86 +98,204 @@ const stories = {
   }
 }
 
-function IntakeScene({ story }) {
-  const { Icon, name, role, status, tags } = story.intake
-  if (story.theme === 'security') {
-    return (
-      <div className="story-scene story-alert-scene">
-        <div className="story-alert-clock"><Clock3 /><strong>02:17</strong><span>ночная смена</span></div>
-        <div className="story-office">
-          <div className="story-office-roof" />
-          <div className="story-office-windows">{Array.from({ length: 18 }, (_, index) => <i key={index} className={index === 11 ? 'story-window-alert' : ''} />)}</div>
-          <span>ФИНАНСОВЫЙ ОТДЕЛ</span>
-        </div>
-        <div className="story-alert-card"><Siren /><div><b>{name}</b><span>{role}</span></div><em>{status}</em></div>
-        <div className="story-alert-wave story-alert-wave-one" /><div className="story-alert-wave story-alert-wave-two" />
-      </div>
-    )
-  }
+function Person({ className = '', label }) {
+  return <div className={`story-person ${className}`}><i /><b /><em /><span>{label}</span></div>
+}
 
+function Vehicle({ className = '', label }) {
+  return <div className={`story-vehicle ${className}`}><b /><i /><i /><span>{label}</span></div>
+}
+
+function NannyArrivalScene() {
   return (
-    <div className="story-scene story-intake-scene">
-      <div className="story-intake-orbit story-orbit-one" /><div className="story-intake-orbit story-orbit-two" />
-      <div className="story-intake-card">
-        <div className="story-intake-head"><span><Icon /></span><div><strong>{name}</strong><small>{role}</small></div><b>{status}</b></div>
-        <div className="story-intake-lines"><i /><i /><i /></div>
-        <div className="story-intake-tags">{tags.map((tag) => <span key={tag}>{tag}</span>)}</div>
-      </div>
-      <div className="story-packet story-packet-one">01</div><div className="story-packet story-packet-two">10</div><div className="story-packet story-packet-three">11</div>
+    <div className="story-scene story-nanny-arrival">
+      <div className="story-home-cutaway"><div className="story-home-roof" /><div className="story-home-door"><KeyRound /></div><div className="story-home-window" /><span>первое знакомство</span></div>
+      <Person className="story-parent" label="родитель" /><Person className="story-nanny" label="кандидат" /><Person className="story-child" label="ребенок" />
+      <div className="story-nanny-bag"><FileCheck2 /><span>анкета</span></div>
+      <div className="story-welcome-line"><i /></div>
     </div>
   )
 }
 
-function SourcesScene({ story }) {
+function NannyReferencesScene() {
   return (
-    <div className="story-scene story-sources-scene">
-      <svg className="story-source-lines" viewBox="0 0 800 440" preserveAspectRatio="none" aria-hidden="true">
-        <path d="M400 214 L126 92" /><path d="M400 214 L674 92" /><path d="M400 214 L674 346" /><path d="M400 214 L126 346" />
-      </svg>
-      <div className="story-source-core"><ScanSearch /><strong>{story.sources.core}</strong><span>сопоставление</span></div>
-      {story.sources.items.map(([Icon, label], index) => <div key={label} className={`story-source-node story-source-${index + 1}`}><Icon /><span>{label}</span><i /></div>)}
-      <div className="story-source-count"><CheckCircle2 /> {story.sources.count}</div>
+    <div className="story-scene story-nanny-calls">
+      <div className="story-phone"><PhoneCall /><span>проверка рекомендаций</span><i /><i /><i /></div>
+      <div className="story-reference-card story-reference-left"><Person label="семья 1" /><div><strong>Работала 3 года</strong><span>контакт подтвержден</span></div><CheckCircle2 /></div>
+      <div className="story-reference-card story-reference-right"><Person label="семья 2" /><div><strong>Работала 2 года</strong><span>контакт подтвержден</span></div><CheckCircle2 /></div>
+      <div className="story-call-wave story-call-wave-one" /><div className="story-call-wave story-call-wave-two" />
     </div>
   )
 }
 
-function TraceScene({ story }) {
+function NannyTimelineScene() {
   return (
-    <div className="story-scene story-trace-scene">
-      <svg className="story-trace-line" viewBox="0 0 860 390" preserveAspectRatio="none" aria-hidden="true"><path d="M86 198 C200 48 270 340 410 194 S630 54 778 196" /></svg>
-      {story.trace.nodes.map(([Icon, title, text], index) => (
-        <div key={title} className={`story-trace-node story-trace-${index + 1} ${index === story.trace.nodes.length - 1 ? 'story-trace-risk' : ''}`}>
-          <span><Icon /></span><strong>{title}</strong><small>{text}</small>
-        </div>
-      ))}
-      <div className="story-trace-runner"><ScanSearch /></div>
-      <div className="story-trace-caption">{story.trace.caption}</div>
+    <div className="story-scene story-nanny-timeline">
+      <div className="story-timeline-person"><Person label="кандидат" /></div>
+      <div className="story-care-timeline"><i /><span className="story-date-one">2019</span><span className="story-date-two">2022</span><span className="story-date-three">2024</span><span className="story-date-four">2026</span><b /></div>
+      <div className="story-job-card story-job-one"><Home /><strong>Семья 1</strong><span>2019 - 2022</span></div>
+      <div className="story-job-card story-job-two"><Home /><strong>Семья 2</strong><span>2022 - 2024</span></div>
+      <div className="story-date-gap"><AlertTriangle /><strong>2 месяца</strong><span>уточнить на интервью</span></div>
     </div>
   )
 }
 
-function OutcomeScene({ story }) {
-  const { Icon, subject, risk, level, findings, stamp } = story.outcome
+function NannyAccessScene() {
   return (
-    <div className="story-scene story-outcome-scene">
-      <div className="story-report-glow" />
-      <div className="story-report">
-        <div className="story-report-head"><ShieldCheck /><b>HEIMDALL</b><span>ОПЕРАТИВНАЯ СПРАВКА</span></div>
-        <div className="story-report-subject"><Icon /><strong>{subject}</strong></div>
-        <div className="story-report-risk"><span>Решение</span><b>{risk}</b></div>
-        <div className="story-report-meter"><i style={{ width: `${level}%` }} /></div>
-        <div className="story-report-findings">{findings.map((item) => <span key={item}><CheckCircle2 />{item}</span>)}</div>
-      </div>
-      <div className="story-report-stamp">{stamp.split('\n').map((line) => <span key={line}>{line}</span>)}</div>
-      <div className="story-report-ready"><CheckCircle2 /> Решение передано клиенту</div>
+    <div className="story-scene story-nanny-access">
+      <div className="story-access-house"><div><Baby /><span>детская</span><b /></div><div><KeyRound /><span>ключи</span><b /></div><div><Globe2 /><span>цифровой доступ</span><b /></div></div>
+      <Person className="story-access-person" label="допуск" />
+      <div className="story-access-list"><span><CheckCircle2 /> Испытательный срок</span><span><CheckCircle2 /> Границы доступа</span><span><CheckCircle2 /> Контрольная встреча</span></div>
+      <div className="story-access-key"><KeyRound /></div>
     </div>
   )
 }
 
-const sceneComponents = [IntakeScene, SourcesScene, TraceScene, OutcomeScene]
+function ChinaFactoryScene() {
+  return (
+    <div className="story-scene story-china-factory">
+      <div className="story-factory"><div className="story-chimney"><i /><i /><i /></div><Factory /><strong>GUANGZHOU HUANLI</strong><span>производственная площадка</span></div>
+      <div className="story-conveyor"><div className="story-belt">{[0, 1, 2, 3, 4].map((item) => <PackageCheck key={item} />)}</div></div>
+      <Vehicle className="story-forklift" label="погрузчик" />
+      <Person className="story-factory-worker" label="контроль" />
+    </div>
+  )
+}
+
+function ChinaRouteScene() {
+  return (
+    <div className="story-scene story-china-route">
+      <div className="story-route-map"><Globe2 /><span className="story-city story-city-one">Гуанчжоу</span><span className="story-city story-city-two">Шэньчжэнь</span><span className="story-city story-city-three">порт</span><i /></div>
+      <Vehicle className="story-route-truck" label="груз" />
+      <div className="story-route-ship"><Ship /><span>экспортный след подтвержден</span></div>
+      <div className="story-video-proof"><Video /><div><strong>Видео с линии</strong><span>геометка совпала</span></div><CheckCircle2 /></div>
+    </div>
+  )
+}
+
+function ChinaPaymentScene() {
+  return (
+    <div className="story-scene story-china-payment">
+      <div className="story-invoice story-invoice-main"><Factory /><strong>Производитель</strong><span>Guangzhou Huanli</span><b>ДОГОВОР</b></div>
+      <div className="story-payment-arrow"><span>аванс</span><i /></div>
+      <div className="story-invoice story-invoice-risk"><Landmark /><strong>Получатель</strong><span>Shenzhen Trade Ltd.</span><b>СЧЕТ</b></div>
+      <div className="story-payment-alert"><AlertTriangle /><span>Компании не совпадают</span></div>
+      <Person className="story-payment-analyst" label="аналитик" />
+    </div>
+  )
+}
+
+function ChinaShippingScene() {
+  return (
+    <div className="story-scene story-china-shipping">
+      <div className="story-shipping-sky"><i /><i /></div>
+      <div className="story-container-ship"><div className="story-containers">{[0, 1, 2, 3, 4, 5].map((item) => <i key={item} />)}</div><Ship /><span>контрольная отгрузка</span></div>
+      <div className="story-sea"><i /><i /><i /></div>
+      <div className="story-shipping-steps"><span><CheckCircle2 /> образец</span><span><CheckCircle2 /> аудит</span><span><CheckCircle2 /> отгрузка</span><span><CheckCircle2 /> остаток</span></div>
+    </div>
+  )
+}
+
+function PropertyArrivalScene() {
+  return (
+    <div className="story-scene story-property-arrival">
+      <div className="story-apartment-building"><Building2 /><div>{Array.from({ length: 12 }, (_, item) => <i key={item} />)}</div><span>объект - 76 м²</span></div>
+      <Vehicle className="story-property-car" label="просмотр" />
+      <Person className="story-property-buyer" label="покупатель" /><Person className="story-property-seller" label="продавец" />
+      <div className="story-property-pin"><Home /><span>объект получен</span></div>
+    </div>
+  )
+}
+
+function PropertyHistoryScene() {
+  const cards = [['2014', 'покупка'], ['2019', 'наследство'], ['2026', 'продажа']]
+  return (
+    <div className="story-scene story-property-history">
+      <div className="story-property-gallery">{cards.map(([year, label], index) => <div key={year} className={`story-property-photo story-photo-${index + 1}`}><Building2 /><strong>{year}</strong><span>{label}</span></div>)}</div>
+      <div className="story-history-rail"><i /><b /><b /><b /></div>
+      <div className="story-history-caption"><FileCheck2 /> Три перехода права восстановлены по времени</div>
+    </div>
+  )
+}
+
+function PropertySellerScene() {
+  return (
+    <div className="story-scene story-property-seller-scene">
+      <Person className="story-seller-main" label="собственник" /><Person className="story-seller-agent" label="представитель" />
+      <div className="story-power-card"><KeyRound /><strong>Доверенность</strong><span>полномочия проверяются</span></div>
+      <div className="story-debt-card"><AlertTriangle /><strong>Долговой спор</strong><span>объясняет срочность</span></div>
+      <svg className="story-seller-links" viewBox="0 0 800 360" preserveAspectRatio="none"><path d="M190 190 C330 40 460 55 610 172" /><path d="M190 190 C350 330 510 315 610 172" /></svg>
+    </div>
+  )
+}
+
+function PropertyDealScene() {
+  return (
+    <div className="story-scene story-property-deal">
+      <div className="story-deal-table"><FileCheck2 /><span>аккредитив открыт</span></div>
+      <Person className="story-deal-buyer" label="покупатель" /><Person className="story-deal-seller" label="продавец" />
+      <div className="story-moving-key"><KeyRound /></div>
+      <div className="story-deal-shield"><ShieldCheck /><strong>Сделка с условиями</strong><span>контрольные точки выполнены</span></div>
+    </div>
+  )
+}
+
+function SecurityAlertScene() {
+  return (
+    <div className="story-scene story-alert-scene">
+      <div className="story-alert-clock"><Clock3 /><strong>02:17</strong><span>ночная смена</span></div>
+      <div className="story-office"><div className="story-office-roof" /><div className="story-office-windows">{Array.from({ length: 18 }, (_, index) => <i key={index} className={index === 11 ? 'story-window-alert' : ''} />)}</div><span>ФИНАНСОВЫЙ ОТДЕЛ</span></div>
+      <div className="story-alert-card"><Siren /><div><b>ПОДМЕНА РЕКВИЗИТОВ</b><span>Платежная заявка № 184</span></div><em>СИГНАЛ 02:17</em></div>
+      <div className="story-alert-wave story-alert-wave-one" /><div className="story-alert-wave story-alert-wave-two" />
+    </div>
+  )
+}
+
+function SecurityOpsScene() {
+  return (
+    <div className="story-scene story-security-ops">
+      <div className="story-ops-wall"><div><MessageCircle /><span>почта</span></div><div><Globe2 /><span>домен</span></div><div><Landmark /><span>платеж</span></div></div>
+      <div className="story-ops-desk story-desk-one"><i /><Person label="дежурный" /></div><div className="story-ops-desk story-desk-two"><i /><Person label="аналитик" /></div>
+      <div className="story-ops-signal"><ScanSearch /><span>сверка за 7 минут</span></div>
+      <div className="story-data-fly story-data-one">ДОМЕН</div><div className="story-data-fly story-data-two">СЧЕТ</div><div className="story-data-fly story-data-three">ПОЧТА</div>
+    </div>
+  )
+}
+
+function SecurityTraceScene() {
+  return (
+    <div className="story-scene story-security-trace">
+      <div className="story-mail-card"><MessageCircle /><strong>supplier-co.ru</strong><span>ожидаемый домен</span></div>
+      <div className="story-mail-card story-mail-fake"><AlertTriangle /><strong>suppller-co.ru</strong><span>подмена одной буквы</span></div>
+      <div className="story-security-call"><PhoneCall /><div><strong>Контрольный звонок</strong><span>счет не менялся</span></div><CheckCircle2 /></div>
+      <div className="story-trace-beam"><i /></div>
+      <Person className="story-trace-analyst" label="сверка" />
+    </div>
+  )
+}
+
+function SecurityCloseScene() {
+  return (
+    <div className="story-scene story-security-close">
+      <div className="story-bank-gate"><Landmark /><strong>ПЛАТЕЖ</strong><span>4,8 млн ₽</span></div>
+      <div className="story-payment-packet">₽<i /></div>
+      <div className="story-shield-gate"><ShieldCheck /><span>ОСТАНОВЛЕН</span></div>
+      <Vehicle className="story-security-car" label="реагирование" />
+      <div className="story-close-report"><FileCheck2 /><div><strong>Инцидент закрыт</strong><span>доступы и регламент обновлены</span></div><CheckCircle2 /></div>
+    </div>
+  )
+}
+
+const storyScenes = {
+  nanny: [NannyArrivalScene, NannyReferencesScene, NannyTimelineScene, NannyAccessScene],
+  china: [ChinaFactoryScene, ChinaRouteScene, ChinaPaymentScene, ChinaShippingScene],
+  property: [PropertyArrivalScene, PropertyHistoryScene, PropertySellerScene, PropertyDealScene],
+  security: [SecurityAlertScene, SecurityOpsScene, SecurityTraceScene, SecurityCloseScene]
+}
 
 export default function ServiceStoryFilm({ variant }) {
   const story = stories[variant]
+  const sceneComponents = storyScenes[variant] || []
   const [active, setActive] = useState(0)
   const [paused, setPaused] = useState(false)
   const [inView, setInView] = useState(false)

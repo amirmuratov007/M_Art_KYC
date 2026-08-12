@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/router'
 import HeimdallLogo from '@/components/HeimdallLogo'
 import ContactModal from '@/components/ContactModal'
+import { detectSiteLanguage, getLanguageHref, hasLanguageCounterpart } from '@/lib/languageRoutes.mjs'
 import { Menu, X, ChevronDown, UserRound } from 'lucide-react'
 
 const ruMenu = [
@@ -28,7 +29,7 @@ const ruMenu = [
       ['Контрагент в Дубае', '/proverka-kontragenta-dubai'],
       ['Контрагент в Казахстане', '/proverka-kontragenta-kazakhstan'],
       ['Контрагент в Турции', '/proverka-kontragenta-turkey'],
-      ['Поставщик из Китая', '/china-supplier-verification']
+      ['Поставщик из Китая', '/proverka-postavshchika-iz-kitaya']
     ]
   },
   {
@@ -82,7 +83,7 @@ const enMenu = [
       ['Counterparty Check Dubai', '/counterparty-check-dubai-en'],
       ['Counterparty Check Kazakhstan', '/counterparty-check-kazakhstan-en'],
       ['Counterparty Check Turkey', '/counterparty-check-turkey-en'],
-      ['China Supplier Verification', '/china-supplier-verification-en']
+      ['China Supplier Verification', '/china-supplier-verification']
     ]
   },
   {
@@ -124,83 +125,23 @@ const enMenu = [
   }
 ]
 
-const langMap = {
-  '/': '/en',
-  '/en': '/',
-  '/account': '/account',
-
-  '/proverka-kontragenta-dubai': '/counterparty-check-dubai-en',
-  '/counterparty-check-dubai-en': '/proverka-kontragenta-dubai',
-  '/proverka-kontragenta-kazakhstan': '/counterparty-check-kazakhstan-en',
-  '/counterparty-check-kazakhstan-en': '/proverka-kontragenta-kazakhstan',
-  '/proverka-kontragenta-turkey': '/counterparty-check-turkey-en',
-  '/counterparty-check-turkey-en': '/proverka-kontragenta-turkey',
-  '/china-supplier-verification': '/china-supplier-verification-en',
-  '/china-supplier-verification-en': '/china-supplier-verification',
-
-  '/business-support': '/business-support-en',
-  '/business-support-en': '/business-support',
-  '/security-outsourcing': '/security-outsourcing-en',
-  '/security-outsourcing-en': '/security-outsourcing',
-  '/risk-intelligence': '/risk-intelligence-en',
-  '/risk-intelligence-en': '/risk-intelligence',
-  '/internal-investigations': '/internal-investigations-en',
-  '/internal-investigations-en': '/internal-investigations',
-  '/pricing': '/pricing-en',
-  '/pricing-en': '/pricing',
-  '/business-intelligence-support-en': '/business-support',
-  '/client-app': '/client-app-en',
-  '/client-app-en': '/client-app',
-  '/app-download': '/app-download-en',
-  '/app-download-en': '/app-download',
-  '/demo-client-app': '/demo-client-app-en',
-  '/demo-client-app-en': '/demo-client-app',
-  '/journal': '/journal-en',
-  '/journal-en': '/journal',
-  '/cases': '/cases-en',
-  '/cases-en': '/cases',
-  '/methodology': '/methodology-en',
-  '/methodology-en': '/methodology',
-  '/trust-center': '/trust-center-en',
-  '/trust-center-en': '/trust-center',
-  '/data-sources': '/data-sources-en',
-  '/data-sources-en': '/data-sources',
-  '/privacy': '/privacy-en',
-  '/privacy-en': '/privacy',
-  '/faq': '/faq-en',
-  '/faq-en': '/faq',
-  '/sample-reports': '/sample-reports-en',
-  '/sample-reports-en': '/sample-reports',
-
-  '/executive-background-check-en': '/proverka-kandidatov',
-  '/cfo-screening-en': '/proverka-kandidatov',
-  '/procurement-risk-check-en': '/proverka-kontragenta',
-  '/pep-screening-en': '/aml-kyc-russia',
-  '/ofac-screening-en': '/aml-kyc-russia',
-  '/ubo-verification-en': '/proverka-beneficiarov',
-  '/sanctions-screening-dubai-en': '/aml-kyc-russia'
-}
-
-function detectLanguage(pathname) {
-  if (pathname === '/en') return 'en'
-  if (pathname.endsWith('-en')) return 'en'
-  if (pathname.startsWith('/journal-en')) return 'en'
-  return 'ru'
-}
-
-export default function HeimdallNav({ language }) {
+export default function HeimdallNav({ language, languageHref: languageHrefOverride }) {
   const router = useRouter()
-  const currentLanguage = language || detectLanguage(router.pathname)
+  const currentLanguage = language || detectSiteLanguage(router.pathname, router.asPath)
   const ru = currentLanguage === 'ru'
   const menu = ru ? ruMenu : enMenu
   const [mobileOpen, setMobileOpen] = useState(false)
   const [contactOpen, setContactOpen] = useState(false)
   const [activeDropdown, setActiveDropdown] = useState(null)
-  const languageHref = langMap[router.pathname] || (ru ? '/en' : '/')
+  const languageAsPath = router.query.test && !router.asPath.includes('?')
+    ? `${router.asPath}?test=${encodeURIComponent(router.query.test)}`
+    : router.asPath
+  const languageHref = languageHrefOverride || getLanguageHref(router.pathname, currentLanguage, languageAsPath)
+  const canSwitchLanguage = hasLanguageCounterpart(router.pathname, router.asPath)
 
   return (
     <>
-      <header className="relative z-[9000] border-b border-white/10 bg-[#050816]/95 backdrop-blur-2xl">
+      <header className="heimdall-primary-nav relative z-[9000] border-b border-white/10 bg-[#050816]/95 backdrop-blur-2xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-5">
           <HeimdallLogo href={ru ? '/' : '/en'} />
 
@@ -236,9 +177,11 @@ export default function HeimdallNav({ language }) {
               {ru ? 'Кабинет' : 'Account'}
             </Link>
 
-            <Link href={languageHref} className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/80">
-              {ru ? 'EN' : 'RU'}
-            </Link>
+            {canSwitchLanguage && (
+              <Link href={languageHref} className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/80">
+                {ru ? 'EN' : 'RU'}
+              </Link>
+            )}
 
             <button type="button" onClick={() => setContactOpen(true)} className="rounded-full bg-sky-500 px-5 py-2.5 text-sm font-semibold text-white shadow-[0_0_35px_rgba(56,189,248,0.22)]">
               {ru ? 'Связаться' : 'Contact'}
@@ -285,10 +228,12 @@ export default function HeimdallNav({ language }) {
                   </div>
                 ))}
 
-                <div className="grid grid-cols-2 gap-3">
-                  <Link href={languageHref} onClick={() => setMobileOpen(false)} className="rounded-2xl border border-white/10 bg-white/10 px-4 py-4 text-center text-sm font-semibold text-white">
-                    {ru ? 'EN' : 'RU'}
-                  </Link>
+                <div className={`grid gap-3 ${canSwitchLanguage ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                  {canSwitchLanguage && (
+                    <Link href={languageHref} onClick={() => setMobileOpen(false)} className="rounded-2xl border border-white/10 bg-white/10 px-4 py-4 text-center text-sm font-semibold text-white">
+                      {ru ? 'EN' : 'RU'}
+                    </Link>
+                  )}
 
                   <button type="button" onClick={() => { setMobileOpen(false); setContactOpen(true) }} className="rounded-2xl bg-sky-500 px-4 py-4 text-center text-sm font-semibold text-white">
                     {ru ? 'Связаться' : 'Contact'}

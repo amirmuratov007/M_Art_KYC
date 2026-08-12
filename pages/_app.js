@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import AnimatedCursor from '@/components/AnimatedCursor'
 import CookieConsentBanner from '@/components/CookieConsentBanner'
 import HeimdallAnalytics from '@/components/HeimdallAnalytics'
+import GlobalHomeEmblem from '@/components/GlobalHomeEmblem'
 
 const COOKIE_CONSENT_KEY = 'heimdall_cookie_consent'
 const COOKIE_CONSENT_EVENT = 'heimdall-cookie-consent-change'
@@ -90,6 +91,7 @@ export default function App({ Component, pageProps }) {
 
       {!isTelegramMiniApp && <AnimatedCursor />}
       {!isTelegramMiniApp && <HeimdallAnalytics analyticsAllowed={analyticsAllowed} />}
+      {!isTelegramMiniApp && <GlobalHomeEmblem />}
       <Component {...pageProps} />
       {!isTelegramMiniApp && <CookieConsentBanner />}
     </>

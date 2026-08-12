@@ -80,10 +80,7 @@ export default function ServicePage() {
 
     const params = new URLSearchParams(window.location.search)
     const urlLang = params.get('lang')
-    const savedLang = window.localStorage.getItem('heimdall_lang')
-    const nextLang = urlLang === 'en' || savedLang === 'en' ? 'en' : 'ru'
-
-    window.localStorage.setItem('heimdall_lang', nextLang)
+    const nextLang = urlLang === 'en' ? 'en' : 'ru'
     setLanguage(nextLang)
   }, [])
 
@@ -91,7 +88,6 @@ export default function ServicePage() {
     const next = language === 'ru' ? 'en' : 'ru'
 
     if (typeof window !== 'undefined') {
-      window.localStorage.setItem('heimdall_lang', next)
       const url = new URL(window.location.href)
       url.searchParams.set('lang', next)
       window.history.replaceState({}, '', url.toString())
@@ -157,7 +153,7 @@ export default function ServicePage() {
 
         <header className="relative z-10 border-b border-white/10 bg-[#050816]/70 backdrop-blur-2xl">
           <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5">
-            <Link href={language === 'ru' ? '/' : '/?lang=en'} className="group flex items-center gap-4">
+            <Link href={language === 'ru' ? '/' : '/en'} className="group flex items-center gap-4">
               <img src="/heimdall-logo-mark.png" alt="HEIMDALL" className="h-12 w-12 rounded-2xl" />
               <div>
                 <div className="text-xl font-semibold tracking-[0.34em] text-white">HEIMDALL</div>
@@ -168,7 +164,7 @@ export default function ServicePage() {
               <button onClick={switchLanguage} className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs text-white/80">
                 {language === 'ru' ? 'RU / EN' : 'EN / RU'}
               </button>
-              <Link href={language === 'ru' ? '/#lead' : '/?lang=en#lead'} className="hidden rounded-full bg-sky-500 px-5 py-2.5 text-sm font-semibold md:block">
+              <Link href={language === 'ru' ? '/#lead' : '/en#lead'} className="hidden rounded-full bg-sky-500 px-5 py-2.5 text-sm font-semibold md:block">
                 {t.cta}
               </Link>
             </div>
@@ -200,11 +196,11 @@ export default function ServicePage() {
                 {t.description}
               </p>
               <div className="mt-10 flex flex-col gap-4 sm:flex-row">
-                <Link href={language === 'ru' ? '/#lead' : '/?lang=en#lead'} className="inline-flex items-center justify-center gap-3 rounded-2xl bg-sky-500 px-7 py-4 font-semibold shadow-[0_0_45px_rgba(56,189,248,0.30)] transition hover:bg-sky-400">
+                <Link href={language === 'ru' ? '/#lead' : '/en#lead'} className="inline-flex items-center justify-center gap-3 rounded-2xl bg-sky-500 px-7 py-4 font-semibold shadow-[0_0_45px_rgba(56,189,248,0.30)] transition hover:bg-sky-400">
                   {t.cta}
                   <ArrowRight className="h-4 w-4" />
                 </Link>
-                <Link href={language === 'ru' ? '/' : '/?lang=en'} className="inline-flex items-center justify-center rounded-2xl border border-white/10 bg-white/5 px-7 py-4 font-semibold transition hover:border-sky-300/35">
+                <Link href={language === 'ru' ? '/' : '/en'} className="inline-flex items-center justify-center rounded-2xl border border-white/10 bg-white/5 px-7 py-4 font-semibold transition hover:border-sky-300/35">
                   {t.back}
                 </Link>
                 <a href="/heimdall-presentation-ru-en.pdf" className="inline-flex items-center justify-center rounded-2xl border border-sky-300/25 bg-sky-300/10 px-7 py-4 font-semibold text-sky-100 transition hover:border-sky-300/45">
@@ -291,7 +287,7 @@ export default function ServicePage() {
                 <h2 className="text-4xl font-semibold tracking-[-0.04em]">{t.finalTitle}</h2>
                 <p className="mt-4 max-w-3xl text-lg leading-8 text-white/64">{t.finalText}</p>
               </div>
-              <Link href={language === 'ru' ? '/#lead' : '/?lang=en#lead'} className="rounded-2xl bg-sky-500 px-7 py-4 text-center font-semibold shadow-[0_0_45px_rgba(56,189,248,0.30)]">
+              <Link href={language === 'ru' ? '/#lead' : '/en#lead'} className="rounded-2xl bg-sky-500 px-7 py-4 text-center font-semibold shadow-[0_0_45px_rgba(56,189,248,0.30)]">
                 {t.cta}
               </Link>
             </div>
