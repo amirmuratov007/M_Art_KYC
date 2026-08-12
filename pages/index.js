@@ -7,6 +7,8 @@ import ContactModal from '@/components/ContactModal'
 import HeimdallConversionPanel from '@/components/HeimdallConversionPanel'
 import HeimdallRiskTest from '@/components/HeimdallRiskTest'
 import HeimdallRiskFloatingPlugin from '@/components/HeimdallRiskFloatingPlugin'
+import OsintMotionSystem from '@/components/OsintMotionSystem'
+import OsintSignalMap from '@/components/OsintSignalMap'
 import {
   ArrowRight,
   Building2,
@@ -77,6 +79,7 @@ export default function HomePage() {
       </Head>
 
       <main className="min-h-screen overflow-hidden bg-[#050816] text-white">
+        <OsintMotionSystem />
         <div className="fixed inset-0 pointer-events-none">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_10%,rgba(37,99,235,0.24),transparent_32%),radial-gradient(circle_at_86%_18%,rgba(14,165,233,0.14),transparent_30%),linear-gradient(135deg,#050816_0%,#08111f_48%,#050816_100%)]" />
           <div className="absolute inset-0 opacity-[0.055] [background-image:linear-gradient(rgba(255,255,255,0.14)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.14)_1px,transparent_1px)] [background-size:52px_52px]" />
@@ -144,8 +147,8 @@ export default function HomePage() {
                 </div>
               </div>
 
-              <div className="mt-6 overflow-hidden rounded-[28px] border border-white/10 bg-[radial-gradient(circle_at_50%_0%,rgba(214,168,79,0.12),transparent_48%),linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01))] p-5 sm:p-7">
-                <img src="/heimdall-logo-full.png" alt="HEIMDALL" className="mx-auto w-full max-w-[520px]" />
+              <div className="mt-6 overflow-hidden rounded-[28px] border border-white/10 bg-[radial-gradient(circle_at_50%_0%,rgba(214,168,79,0.12),transparent_48%),linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01))]">
+                <OsintSignalMap />
               </div>
 
               <div className="mt-6 grid gap-3">
