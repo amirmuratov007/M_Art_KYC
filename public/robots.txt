@@ -9,3 +9,4 @@ Disallow: /app$
 Disallow: /app/
 
 Sitemap: https://www.heimdall-group.ru/sitemap.xml
+Sitemap: https://www.heimdall-group.ru/sitemap-journal.xml

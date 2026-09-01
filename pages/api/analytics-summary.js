@@ -62,6 +62,20 @@ function moscowDateKey(dateValue) {
   }).format(new Date(dateValue))
 }
 
+function buildDailySeries(rows, days, todayStart) {
+  const counts = new Map(rows.map((row) => [moscowDateKey(row.created_at), 0]))
+  for (const row of rows) {
+    const key = moscowDateKey(row.created_at)
+    counts.set(key, (counts.get(key) || 0) + 1)
+  }
+
+  return Array.from({ length: days }, (_, index) => {
+    const offset = days - index - 1
+    const key = moscowDateKey(new Date(todayStart.getTime() - offset * 24 * 60 * 60 * 1000))
+    return { name: key, views: counts.get(key) || 0 }
+  })
+}
+
 export default async function handler(req, res) {
   setNoStore(res)
   setJsonSecurityHeaders(res)
@@ -107,6 +121,10 @@ export default async function handler(req, res) {
       const createdAt = new Date(row.created_at)
       return createdAt >= yesterdayStart && createdAt < todayStart
     }).length
+    const averageViewsPerVisitor = uniqueVisitors ? Number((rows.length / uniqueVisitors).toFixed(1)) : 0
+    const todayChangePercent = yesterdayViews
+      ? Math.round(((todayViews - yesterdayViews) / yesterdayViews) * 100)
+      : null
 
     return res.status(200).json({
       ok: true,
@@ -116,6 +134,8 @@ export default async function handler(req, res) {
       uniqueVisitors,
       todayViews,
       yesterdayViews,
+      averageViewsPerVisitor,
+      todayChangePercent,
       topPages: countBy(rows, (row) => row.path || '/', 15),
       referrers: countBy(rows, (row) => {
         if (!row.referrer) return 'direct'
@@ -126,8 +146,7 @@ export default async function handler(req, res) {
         }
       }, 10),
       languages: countBy(rows, (row) => row.language || 'unknown', 10),
-      dailyViews: countBy(rows, (row) => moscowDateKey(row.created_at), days)
-        .sort((a, b) => a.name.localeCompare(b.name)),
+      dailyViews: buildDailySeries(rows, days, todayStart),
       generatedAt: new Date().toISOString()
     })
   } catch (error) {

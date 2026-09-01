@@ -6,6 +6,37 @@
   color-scheme: dark;
 }
 
+.skip-to-content {
+  position: fixed;
+  z-index: 20000;
+  top: 10px;
+  left: 10px;
+  padding: 12px 16px;
+  border: 1px solid rgba(247, 215, 132, 0.55);
+  border-radius: 6px;
+  color: #050816;
+  background: #f7d784;
+  font-weight: 700;
+  transform: translateY(-160%);
+  transition: transform 160ms ease;
+}
+
+.skip-to-content:focus { transform: translateY(0); }
+
+:where(a, button, input, select, textarea):focus-visible {
+  outline: 2px solid #7dd3fc;
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 .global-home-emblem {
   position: fixed;
   z-index: 8500;
@@ -995,7 +1026,7 @@ li,
 div {
   overflow-wrap: break-word;
   word-break: normal;
-  hyphens: auto;
+  hyphens: none;
 }
 
 /* Do not split normal Russian words into single letters on narrow screens. */

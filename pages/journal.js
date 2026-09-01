@@ -1,28 +1,35 @@
 import Head from 'next/head'
 import Link from 'next/link'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import HeimdallNav from '@/components/HeimdallNav'
 import telegramPosts from '../data/telegramPosts'
-import { Search, Send, ArrowRight } from 'lucide-react'
+import { formatJournalDate, sortJournalPosts } from '@/lib/journal'
+import { Search, Send, ArrowRight, Sparkles } from 'lucide-react'
 
 const allCategory = 'Все'
 const categories = [allCategory, ...Array.from(new Set(telegramPosts.map((post) => post.category)))]
+const pageSize = 12
 
 export default function JournalPage() {
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState(allCategory)
+  const [visibleCount, setVisibleCount] = useState(pageSize)
 
   const filteredPosts = useMemo(() => {
     const q = query.trim().toLowerCase()
-    return telegramPosts
+    return sortJournalPosts(telegramPosts
       .filter((post) => {
         const byCategory = category === allCategory || post.category === category
         const searchText = [post.title, post.text, post.category, ...(post.body || [])].join(' ').toLowerCase()
         const byQuery = !q || searchText.includes(q)
         return byCategory && byQuery
-      })
-      .sort((a, b) => new Date(b.date) - new Date(a.date))
+      }))
   }, [query, category])
+
+  useEffect(() => setVisibleCount(pageSize), [query, category])
+
+  const visiblePosts = filteredPosts.slice(0, visibleCount)
+  const newestDate = sortJournalPosts(telegramPosts)[0]?.date
 
   const hasActiveFilters = query.trim() || category !== allCategory
   const resetFilters = () => {
@@ -38,7 +45,7 @@ export default function JournalPage() {
         <link rel="canonical" href="https://www.heimdall-group.ru/journal" />
       </Head>
 
-      <main className="min-h-screen overflow-hidden bg-[#050816] text-white">
+      <main id="main-content" className="min-h-screen overflow-hidden bg-[#050816] text-white">
         <div className="fixed inset-0 pointer-events-none">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_10%,rgba(37,99,235,0.24),transparent_32%),radial-gradient(circle_at_86%_18%,rgba(14,165,233,0.14),transparent_30%),linear-gradient(135deg,#050816_0%,#08111f_48%,#050816_100%)]" />
         </div>
@@ -49,13 +56,13 @@ export default function JournalPage() {
           <div className="max-w-5xl">
             <div className="inline-flex items-center gap-3 rounded-full border border-sky-300/20 bg-sky-300/10 px-5 py-2 text-sm uppercase tracking-[0.24em] text-sky-200">
               <Send className="h-4 w-4" />
-              HEIMDALL Telegram Feed
+              Журнал HEIMDALL
             </div>
             <h1 className="mt-10 text-5xl font-semibold leading-[0.95] tracking-[-0.06em] md:text-8xl">
-              Публикации из Telegram-канала
+              Аналитический журнал
             </h1>
             <p className="mt-10 max-w-3xl text-xl leading-9 text-white/64">
-              Здесь собраны публикации HEIMDALL о проверке контрагентов, кандидатов, бенефициаров, санкционных рисках, due diligence и корпоративной безопасности.
+              Практические разборы проверок контрагентов, кандидатов, собственников, бенефициаров и корпоративных рисков. Каждый материал отвечает на один рабочий вопрос и помогает принять решение до сделки или найма.
             </p>
             <Link href="/proverka-prodavca-pered-pokupkoy" className="mt-8 inline-flex items-center gap-3 rounded-2xl border border-[#D6A84F]/25 bg-[#D6A84F]/10 px-5 py-4 text-sm font-semibold text-[#F7D784] transition hover:border-[#D6A84F]/45">
               Новый раздел: проверка продавца перед покупкой
@@ -78,8 +85,8 @@ export default function JournalPage() {
               ))}
             </div>
           </div>
-          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm text-white/45">
-            <span>Найдено публикаций: <span className="font-semibold text-white/75">{filteredPosts.length}</span></span>
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm text-white/45" aria-live="polite">
+            <span>Найдено публикаций: <span className="font-semibold text-white/75">{filteredPosts.length}</span>. Показано: <span className="font-semibold text-white/75">{visiblePosts.length}</span></span>
             {hasActiveFilters && (
               <button type="button" onClick={resetFilters} className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-white/62 transition hover:border-sky-300/30 hover:text-white">
                 Сбросить фильтр
@@ -90,12 +97,17 @@ export default function JournalPage() {
 
         <section className="relative z-10 mx-auto max-w-7xl px-5 pb-24">
           <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-            {filteredPosts.map((post) => (
+            {visiblePosts.map((post) => (
               <article key={post.slug} className="group rounded-[34px] border border-white/10 bg-white/[0.045] p-7 backdrop-blur-2xl transition duration-500 hover:-translate-y-2 hover:border-sky-300/35 hover:bg-white/[0.07]">
                 <div className="mb-7 flex items-center justify-between gap-4">
                   <span className="rounded-full border border-sky-300/20 bg-sky-300/10 px-3 py-1 text-sm text-sky-200">{post.category}</span>
-                  <span className="text-sm text-white/40">{post.date}</span>
+                  <time dateTime={post.date} className="text-sm text-white/40">{formatJournalDate(post.date)}</time>
                 </div>
+                {post.date === newestDate && (
+                  <div className="mb-4 inline-flex items-center gap-2 text-xs font-semibold uppercase text-[#F7D784]">
+                    <Sparkles className="h-3.5 w-3.5" /> Новая публикация
+                  </div>
+                )}
                 <h2 className="text-2xl font-semibold tracking-[-0.03em]">{post.title}</h2>
                 <p className="mt-5 text-sm leading-7 text-white/60">{post.text}</p>
                 <Link href={`/journal/${post.slug}`} className="mt-8 inline-flex items-center gap-2 text-sm font-semibold text-sky-200">
@@ -109,6 +121,14 @@ export default function JournalPage() {
           {filteredPosts.length === 0 && (
             <div className="rounded-[34px] border border-white/10 bg-white/[0.045] p-10 text-center text-white/55">
               Публикации не найдены.
+            </div>
+          )}
+
+          {visiblePosts.length < filteredPosts.length && (
+            <div className="mt-10 flex justify-center">
+              <button type="button" onClick={() => setVisibleCount((count) => count + pageSize)} className="inline-flex min-h-12 items-center justify-center rounded-lg border border-sky-300/25 bg-sky-300/10 px-6 font-semibold text-sky-100 transition hover:border-sky-300/45 hover:bg-sky-300/15">
+                Показать еще {Math.min(pageSize, filteredPosts.length - visiblePosts.length)}
+              </button>
             </div>
           )}
         </section>

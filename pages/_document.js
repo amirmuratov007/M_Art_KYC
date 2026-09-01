@@ -22,6 +22,7 @@ export default function Document() {
         <link rel="manifest" href="/site.webmanifest" />
       </Head>
       <body>
+        <a href="#__next" className="skip-to-content">Перейти к основному содержанию</a>
         <Main />
         <NextScript />
       </body>

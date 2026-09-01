@@ -34,6 +34,14 @@ const securityHeaders = [
     value: 'nosniff'
   },
   {
+    key: 'X-DNS-Prefetch-Control',
+    value: 'off'
+  },
+  {
+    key: 'X-Download-Options',
+    value: 'noopen'
+  },
+  {
     key: 'X-Permitted-Cross-Domain-Policies',
     value: 'none'
   },
@@ -69,6 +77,8 @@ const securityHeaders = [
       "form-action 'self'",
       "frame-ancestors 'none'",
       "object-src 'none'",
+      "upgrade-insecure-requests",
+      "block-all-mixed-content",
       `script-src ${scriptSrc.join(' ')}`,
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob: https:",
@@ -92,6 +102,8 @@ const telegramMiniAppHeaders = securityHeaders
         "form-action 'self'",
         "frame-ancestors 'self' https://web.telegram.org https://*.telegram.org",
         "object-src 'none'",
+        "upgrade-insecure-requests",
+        "block-all-mixed-content",
         `script-src ${scriptSrc.join(' ')}`,
         "style-src 'self' 'unsafe-inline'",
         "img-src 'self' data: blob: https:",

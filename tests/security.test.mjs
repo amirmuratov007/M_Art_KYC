@@ -12,6 +12,14 @@ const safeUrl = await importSource('../lib/safeUrl.js')
 const heimdallSaAuth = await importSource('../lib/heimdallSaAuth.js')
 const analystSession = await importSource('../lib/analystSession.js')
 
+test('production headers block mixed content and unsafe downloads', async () => {
+  const config = await readFile(new URL('../next.config.js', import.meta.url), 'utf8')
+  assert.match(config, /upgrade-insecure-requests/)
+  assert.match(config, /block-all-mixed-content/)
+  assert.match(config, /X-Download-Options/)
+  assert.match(config, /X-DNS-Prefetch-Control/)
+})
+
 test('analytics removes queries and excludes private workspaces', () => {
   assert.equal(analytics.normalizeAnalyticsPath('/pricing?email=private@example.com#form'), '/pricing')
   assert.equal(analytics.isPrivateAnalyticsPath('/analyst/heimdall-sa?subject=person'), true)
@@ -50,4 +58,3 @@ test('production analyst sessions never fall back to the login password', () => 
   assert.equal(analystSession.getAuthSecret({ NODE_ENV: 'production', HEIMDALL_ANALYST_PASSWORD: 'password' }), '')
   assert.equal(analystSession.getAuthSecret({ NODE_ENV: 'development', HEIMDALL_ANALYST_PASSWORD: 'password' }), 'password')
 })
-

@@ -1,17 +1,21 @@
 import { useEffect, useMemo, useState } from 'react'
 import { AnalystLayout } from '@/components/analyst/AnalystUI'
-import { BarChart3, Eye, RefreshCw, UsersRound } from 'lucide-react'
+import { Activity, BarChart3, Eye, RefreshCw, TrendingUp, UsersRound } from 'lucide-react'
 
 const periods = [7, 30, 90]
 
 function Metric({ label, value, icon: Icon }) {
+  const displayValue = value === null || value === undefined
+    ? 'Нет данных'
+    : Number(value).toLocaleString('ru-RU')
+
   return (
     <div className="border border-white/10 bg-white/[0.045] p-5">
       <div className="flex items-center justify-between gap-3 text-sm text-white/48">
         <span>{label}</span>
         <Icon className="h-4 w-4 text-sky-300" />
       </div>
-      <div className="mt-3 text-3xl font-semibold text-[#F7D784]">{Number(value || 0).toLocaleString('ru-RU')}</div>
+      <div className="mt-3 text-3xl font-semibold text-[#F7D784]">{displayValue}</div>
     </div>
   )
 }
@@ -88,11 +92,13 @@ export default function AnalyticsPage() {
       {error && <div className="mt-6 border border-red-300/25 bg-red-300/10 p-4 text-sm text-red-100">{error}</div>}
       {!error && !data?.storageReady && !loading && <div className="mt-6 border border-amber-300/25 bg-amber-300/10 p-4 text-sm text-amber-100">Хранилище аналитики пока не готово или не содержит данных.</div>}
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         <Metric label="Просмотры за период" value={data?.views} icon={Eye} />
         <Metric label="Уникальные посетители" value={data?.uniqueVisitors} icon={UsersRound} />
         <Metric label="Сегодня" value={data?.todayViews} icon={BarChart3} />
         <Metric label="Вчера" value={data?.yesterdayViews} icon={BarChart3} />
+        <Metric label="Страниц на посетителя" value={data?.averageViewsPerVisitor} icon={Activity} />
+        <Metric label="Изменение к вчерашнему дню, %" value={data?.todayChangePercent} icon={TrendingUp} />
       </div>
 
       <div className="mt-4 grid gap-4 xl:grid-cols-2">
@@ -104,4 +110,3 @@ export default function AnalyticsPage() {
     </AnalystLayout>
   )
 }
-

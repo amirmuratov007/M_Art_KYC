@@ -2,8 +2,10 @@ import Head from 'next/head'
 import Link from 'next/link'
 import HeimdallNav from '@/components/HeimdallNav'
 import HeimdallFooter from '@/components/HeimdallFooter'
+import JournalArticleTools from '@/components/JournalArticleTools'
 import telegramPosts from '../../data/telegramPosts'
-import { ArrowLeft, Send, ArrowRight } from 'lucide-react'
+import { formatJournalDate, getJournalNeighbors, getRelatedJournalPosts } from '@/lib/journal'
+import { ArrowLeft, Send, ArrowRight, ExternalLink } from 'lucide-react'
 
 export async function getStaticPaths() {
   return {
@@ -24,9 +26,8 @@ export default function JournalPostPage({ post }) {
   const wordCount = paragraphs.join(' ').trim().split(/\s+/).filter(Boolean).length
   const readingTime = Math.max(2, Math.ceil(wordCount / 180))
   const canonical = `https://www.heimdall-group.ru/journal/${post.slug}`
-  const relatedPosts = telegramPosts
-    .filter((item) => item.slug !== post.slug && item.category === post.category)
-    .slice(0, 3)
+  const relatedPosts = getRelatedJournalPosts(telegramPosts, post)
+  const { newer, older } = getJournalNeighbors(telegramPosts, post.slug)
   const articleJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Article',
@@ -44,6 +45,15 @@ export default function JournalPostPage({ post }) {
     },
     mainEntityOfPage: canonical
   }
+  const breadcrumbJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Главная', item: 'https://www.heimdall-group.ru/' },
+      { '@type': 'ListItem', position: 2, name: 'Журнал', item: 'https://www.heimdall-group.ru/journal' },
+      { '@type': 'ListItem', position: 3, name: post.title, item: canonical }
+    ]
+  }
 
   return (
     <>
@@ -54,13 +64,16 @@ export default function JournalPostPage({ post }) {
         <meta property="og:description" content={post.text} />
         <meta property="og:type" content="article" />
         <meta property="og:url" content={canonical} />
+        <meta property="og:image" content="https://www.heimdall-group.ru/og-cover.jpg" />
         <meta property="article:published_time" content={post.date} />
+        <meta property="article:section" content={post.category} />
         <meta name="twitter:card" content="summary_large_image" />
         <link rel="canonical" href={canonical} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
       </Head>
 
-      <main className="min-h-screen overflow-hidden bg-[#050816] text-white">
+      <main id="main-content" className="min-h-screen overflow-hidden bg-[#050816] text-white">
         <div className="fixed inset-0 pointer-events-none">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_10%,rgba(37,99,235,0.24),transparent_32%),radial-gradient(circle_at_86%_18%,rgba(14,165,233,0.14),transparent_30%),linear-gradient(135deg,#050816_0%,#08111f_48%,#050816_100%)]" />
           <div className="absolute inset-0 opacity-[0.045] [background-image:linear-gradient(rgba(255,255,255,0.14)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.14)_1px,transparent_1px)] [background-size:52px_52px]" />
@@ -68,7 +81,7 @@ export default function JournalPostPage({ post }) {
 
         <HeimdallNav language="ru" />
 
-        <article className="relative z-10 mx-auto max-w-4xl px-5 py-20">
+        <article data-journal-article className="relative z-10 mx-auto max-w-4xl px-5 py-20">
           <Link href="/journal" className="inline-flex items-center gap-2 text-sm font-semibold text-sky-200">
             <ArrowLeft className="h-4 w-4" />
             Назад к публикациям
@@ -83,11 +96,17 @@ export default function JournalPostPage({ post }) {
             {post.title}
           </h1>
 
-          <div className="mt-6 text-sm text-white/40">{post.date} · {readingTime} мин чтения</div>
+          <div className="mt-6 flex flex-wrap items-center gap-2 text-sm text-white/40">
+            <time dateTime={post.date}>{formatJournalDate(post.date)}</time>
+            <span aria-hidden="true">·</span>
+            <span>{readingTime} мин чтения</span>
+          </div>
+
+          <JournalArticleTools title={post.title} url={canonical} />
 
           <div className="mt-10 rounded-[34px] border border-white/10 bg-white/[0.045] p-8 backdrop-blur-2xl">
-            {paragraphs.map((paragraph) => (
-              <p key={paragraph} className="mb-6 text-lg leading-9 text-white/70 last:mb-0">
+            {paragraphs.map((paragraph, index) => (
+              <p key={`${post.slug}-${index}`} className="mb-6 text-lg leading-9 text-white/70 last:mb-0">
                 {paragraph}
               </p>
             ))}
@@ -98,10 +117,17 @@ export default function JournalPostPage({ post }) {
               <div className="text-sm uppercase tracking-[0.24em] text-[#F7D784]">Связанные страницы</div>
               <div className="mt-6 grid gap-3">
                 {post.links.map(([label, href]) => (
-                  <Link key={href} href={href} className="inline-flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-black/20 px-5 py-4 text-sm font-semibold text-white transition hover:border-[#D6A84F]/35">
-                    {label}
-                    <ArrowRight className="h-4 w-4 shrink-0 text-[#F7D784]" />
-                  </Link>
+                  href.startsWith('https://') ? (
+                    <a key={href} href={href} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-black/20 px-5 py-4 text-sm font-semibold text-white transition hover:border-[#D6A84F]/35">
+                      {label}
+                      <ExternalLink className="h-4 w-4 shrink-0 text-[#F7D784]" />
+                    </a>
+                  ) : (
+                    <Link key={href} href={href} className="inline-flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-black/20 px-5 py-4 text-sm font-semibold text-white transition hover:border-[#D6A84F]/35">
+                      {label}
+                      <ArrowRight className="h-4 w-4 shrink-0 text-[#F7D784]" />
+                    </Link>
+                  )
                 ))}
               </div>
             </section>
@@ -119,6 +145,23 @@ export default function JournalPostPage({ post }) {
                 ))}
               </div>
             </section>
+          )}
+
+          {(newer || older) && (
+            <nav aria-label="Соседние публикации" className="mt-10 grid gap-3 sm:grid-cols-2">
+              {newer ? (
+                <Link href={`/journal/${newer.slug}`} className="group rounded-lg border border-white/10 bg-white/[0.045] p-5 transition hover:border-sky-300/35">
+                  <span className="text-xs uppercase text-white/38">Новая публикация</span>
+                  <span className="mt-2 block text-sm font-semibold leading-6 text-white/78 group-hover:text-white">{newer.title}</span>
+                </Link>
+              ) : <span />}
+              {older && (
+                <Link href={`/journal/${older.slug}`} className="group rounded-lg border border-white/10 bg-white/[0.045] p-5 text-right transition hover:border-sky-300/35">
+                  <span className="text-xs uppercase text-white/38">Предыдущая публикация</span>
+                  <span className="mt-2 block text-sm font-semibold leading-6 text-white/78 group-hover:text-white">{older.title}</span>
+                </Link>
+              )}
+            </nav>
           )}
         </article>
 
