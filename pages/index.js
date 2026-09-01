@@ -10,6 +10,7 @@ import HeimdallRiskFloatingPlugin from '@/components/HeimdallRiskFloatingPlugin'
 import OsintMotionSystem from '@/components/OsintMotionSystem'
 import OsintSignalMap from '@/components/OsintSignalMap'
 import OsintInvestigationFilm from '@/components/OsintInvestigationFilm'
+import NeuralRiskCinema from '@/components/NeuralRiskCinema'
 import {
   ArrowRight,
   Building2,
@@ -283,6 +284,8 @@ export default function HomePage() {
             ))}
           </div>
         </section>
+
+        <NeuralRiskCinema />
 
         <section className="relative z-10 mx-auto max-w-7xl px-4 pb-16 sm:px-5 sm:pb-24">
           <div className="grid gap-6 rounded-[36px] border border-[#D6A84F]/20 bg-[#D6A84F]/[0.07] p-6 backdrop-blur-2xl sm:rounded-[42px] sm:p-10 lg:grid-cols-[1fr_auto] lg:items-center">
