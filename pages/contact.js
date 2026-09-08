@@ -14,7 +14,7 @@ const reasons = [
 ]
 
 const contacts = [
-  ['Телефон', '8 968 638-49-59', 'tel:+79686384959', Phone],
+  ['Телефон', '+7 993 698-49-59', 'tel:+79936984959', Phone],
   ['Email', 'a.muradov@heimdall-group.ru', 'mailto:a.muradov@heimdall-group.ru', Mail],
   ['Telegram-канал', '@heimdall_risk', 'https://t.me/heimdall_risk', MessageCircle]
 ]

@@ -4,7 +4,7 @@ const sections = [
   {
     title: '1. Контакты HEIMDALL',
     items: [
-      'Телефон: 8 968 638-49-59.',
+      'Телефон: +7 993 698-49-59.',
       'Email: a.muradov@heimdall-group.ru.',
       'Сайт: https://www.heimdall-group.ru.',
       'Основные каналы связи: телефон, email, Telegram или иные каналы, отдельно согласованные с клиентом.'

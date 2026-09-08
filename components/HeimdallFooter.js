@@ -17,7 +17,7 @@ export default function HeimdallFooter({ language = 'ru' }) {
 
           <div className="mt-6 grid gap-3 rounded-[28px] border border-white/10 bg-white/[0.045] p-5 text-sm leading-7 text-white/64">
             <div className="text-xs uppercase tracking-[0.22em] text-[#F7D784]">{ru ? 'Контакты' : 'Contacts'}</div>
-            <a href="tel:+79686384959" className="break-words transition hover:text-sky-200">8 968 638-49-59</a>
+            <a href="tel:+79936984959" className="break-words transition hover:text-sky-200">+7 993 698-49-59</a>
             <a href="mailto:a.muradov@heimdall-group.ru" className="break-words transition hover:text-sky-200">a.muradov@heimdall-group.ru</a>
             <div className="text-white/45">{ru ? 'Временные контакты для связи и обработки обращений.' : 'Temporary contacts for requests and communications.'}</div>
           </div>

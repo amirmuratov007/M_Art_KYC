@@ -8,7 +8,7 @@ const sections = [
   {
     title: '2. Контакты для связи',
     items: [
-      'Телефон: 8 968 638-49-59.',
+      'Телефон: +7 993 698-49-59.',
       'Email: a.muradov@heimdall-group.ru.',
       'Сайт: https://www.heimdall-group.ru.'
     ]
