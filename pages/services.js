@@ -8,7 +8,16 @@ import { ArrowRight, FileSearch, ShieldCheck, Network, UserSearch, Scale, Buildi
 
 const services = [
   {
-    title: 'Проверка контрагентов',
+    title: 'Экспресс-проверка контрагента',
+    text: 'Компания, владельцы, суды, долги, санкционные и репутационные сигналы в короткой справке.',
+    href: '/proverka-kontragenta',
+    icon: Gauge,
+    bestFor: 'перед авансом или договором, когда решение нужно за один рабочий день',
+    featured: true,
+    meta: '19 000 ₽ / 1 рабочий день'
+  },
+  {
+    title: 'Расширенная проверка контрагента',
     text: 'Суды, владельцы, связанные компании, репутация, санкционные и финансовые сигналы.',
     href: '/proverka-kontragenta-pered-sdelkoy',
     icon: FileSearch,
@@ -207,11 +216,12 @@ export default function ServicesPage() {
             const Icon = service.icon
 
             return (
-              <div key={service.href} className="group rounded-[36px] border border-white/10 bg-white/[0.045] p-7 backdrop-blur-2xl transition duration-500 hover:-translate-y-2 hover:border-[#D6A84F]/35 hover:bg-white/[0.07]">
+              <div key={service.href} className={`group rounded-[36px] border p-7 backdrop-blur-2xl transition duration-500 hover:-translate-y-2 hover:border-[#D6A84F]/35 ${service.featured ? 'border-[#D6A84F]/35 bg-[#D6A84F]/[0.08]' : 'border-white/10 bg-white/[0.045] hover:bg-white/[0.07]'}`}>
                 <div className="mb-7 flex h-14 w-14 items-center justify-center rounded-2xl border border-[#D6A84F]/25 bg-[#D6A84F]/10 text-[#F7D784]">
                   <Icon className="h-6 w-6" />
                 </div>
                 <h2 className="text-2xl font-semibold tracking-[-0.04em]">{service.title}</h2>
+                {service.meta && <div className="mt-3 text-sm font-semibold text-[#F7D784]">{service.meta}</div>}
                 <p className="mt-5 text-sm leading-7 text-white/60">{service.text}</p>
                 <p className="mt-5 rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm leading-6 text-white/58">
                   <span className="text-[#F7D784]">Лучше всего:</span> {service.bestFor}

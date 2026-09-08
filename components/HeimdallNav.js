@@ -11,7 +11,8 @@ const ruMenu = [
     title: 'Услуги',
     href: '/services',
     items: [
-      ['Проверка контрагентов', '/proverka-kontragenta'],
+      ['Экспресс-проверка за 1 день', '/proverka-kontragenta'],
+      ['Расширенная проверка контрагента', '/proverka-kontragenta-pered-sdelkoy'],
       ['Проверка кандидатов', '/proverka-kandidatov'],
       ['Проверка бенефициаров', '/proverka-beneficiarov'],
       ['Покупка квартиры, дома или авто', '/proverka-prodavca-pered-pokupkoy'],

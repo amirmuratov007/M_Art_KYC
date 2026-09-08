@@ -20,6 +20,7 @@ import {
   normalizeAnalyticsPath,
   sanitizeAnalyticsReferrer
 } from '@/lib/analyticsPrivacy'
+import { conversionEventTitle } from '@/lib/conversionEvents.mjs'
 
 function hashIp(ip) {
   const salt = process.env.ANALYTICS_HASH_SALT || process.env.HEIMDALL_ANALYST_SECRET || ''
@@ -52,6 +53,7 @@ export default async function handler(req, res) {
   const body = req.body || {}
   const userAgent = cleanText(req.headers['user-agent'] || '', 500)
   const path = normalizeAnalyticsPath(body.path)
+  const eventTitle = conversionEventTitle(cleanText(body.event, 80))
 
   if (isLikelyBot(userAgent) || isPrivateAnalyticsPath(path)) {
     return res.status(200).json({ ok: true, stored: false })
@@ -61,7 +63,7 @@ export default async function handler(req, res) {
 
   const event = {
     path,
-    title: '',
+    title: eventTitle,
     referrer: sanitizeAnalyticsReferrer(body.referrer),
     language: cleanText(body.language, 40),
     timezone: cleanText(body.timezone, 80),

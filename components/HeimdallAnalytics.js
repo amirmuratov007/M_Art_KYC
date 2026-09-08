@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { useRouter } from 'next/router'
 import { isPrivateAnalyticsPath, normalizeAnalyticsPath, sanitizeAnalyticsReferrer } from '@/lib/analyticsPrivacy'
+import { trackConversion } from '@/lib/conversionAnalytics'
 
 function sendInternalPageview(path) {
   if (typeof window === 'undefined') return
@@ -85,6 +86,24 @@ export default function HeimdallAnalytics({ analyticsAllowed = false }) {
       router.events.off('routeChangeComplete', track)
     }
   }, [analyticsAllowed, router.events])
+
+  useEffect(() => {
+    if (!analyticsAllowed) return undefined
+
+    const onClick = (event) => {
+      const link = event.target.closest?.('a')
+      if (!link) return
+      const href = link.getAttribute('href') || ''
+
+      if (href.startsWith('tel:')) trackConversion('phone_click')
+      else if (href.includes('t.me/')) trackConversion('telegram_click')
+      else if (href.includes('/sample-reports') || href.includes('/reports/')) trackConversion('sample_report_open')
+      else if (href.split('?')[0] === '/proverka-kontragenta') trackConversion('express_product_click')
+    }
+
+    document.addEventListener('click', onClick)
+    return () => document.removeEventListener('click', onClick)
+  }, [analyticsAllowed])
 
   return null
 }

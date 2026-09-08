@@ -9,6 +9,7 @@ import {
   setNoStore
 } from '@/lib/apiSecurity'
 import { isPrivateAnalyticsPath, normalizeAnalyticsPath, sanitizeAnalyticsReferrer } from '@/lib/analyticsPrivacy'
+import { getConversionEventFromTitle } from '@/lib/conversionEvents.mjs'
 
 function getAuthToken(req) {
   const header = cleanText(req.headers.authorization || '', 300)
@@ -97,7 +98,7 @@ export default async function handler(req, res) {
     const supabase = getSupabaseAdmin()
     const { data, error } = await supabase
       .from('heimdall_pageviews')
-      .select('created_at,path,referrer,language,ip_hash')
+      .select('created_at,path,title,referrer,language,ip_hash')
       .gte('created_at', since.toISOString())
       .order('created_at', { ascending: false })
       .limit(10000)
@@ -106,13 +107,17 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true, storageReady: false, views: 0, message: 'Analytics storage is not ready' })
     }
 
-    const rows = (data || [])
+    const normalizedRows = (data || [])
       .map((row) => ({
         ...row,
         path: normalizeAnalyticsPath(row.path),
         referrer: sanitizeAnalyticsReferrer(row.referrer)
       }))
       .filter((row) => !isPrivateAnalyticsPath(row.path))
+    const conversionRows = normalizedRows
+      .map((row) => ({ ...row, event: getConversionEventFromTitle(row.title) }))
+      .filter((row) => row.event)
+    const rows = normalizedRows.filter((row) => !getConversionEventFromTitle(row.title))
     const todayStart = startOfMoscowDay()
     const yesterdayStart = new Date(todayStart.getTime() - 24 * 60 * 60 * 1000)
     const uniqueVisitors = new Set(rows.map((row) => row.ip_hash).filter(Boolean)).size
@@ -136,6 +141,9 @@ export default async function handler(req, res) {
       yesterdayViews,
       averageViewsPerVisitor,
       todayChangePercent,
+      conversionTotal: conversionRows.length,
+      conversionEvents: countBy(conversionRows, (row) => row.event, 15),
+      conversionPages: countBy(conversionRows, (row) => row.path || '/', 15),
       topPages: countBy(rows, (row) => row.path || '/', 15),
       referrers: countBy(rows, (row) => {
         if (!row.referrer) return 'direct'

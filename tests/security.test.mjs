@@ -11,6 +11,7 @@ const analytics = await importSource('../lib/analyticsPrivacy.js')
 const safeUrl = await importSource('../lib/safeUrl.js')
 const heimdallSaAuth = await importSource('../lib/heimdallSaAuth.js')
 const analystSession = await importSource('../lib/analystSession.js')
+const conversionEvents = await import('../lib/conversionEvents.mjs')
 
 test('production headers block mixed content and unsafe downloads', async () => {
   const config = await readFile(new URL('../next.config.js', import.meta.url), 'utf8')
@@ -26,6 +27,13 @@ test('analytics removes queries and excludes private workspaces', () => {
   assert.equal(analytics.isPrivateAnalyticsPath('/admin-crm'), true)
   assert.equal(analytics.isPrivateAnalyticsPath('/pricing'), false)
   assert.equal(analytics.sanitizeAnalyticsReferrer('https://example.com/search?q=secret'), 'https://example.com/search')
+})
+
+test('conversion analytics accepts only known event names', () => {
+  assert.equal(conversionEvents.conversionEventTitle('lead_submit_success'), 'event:lead_submit_success')
+  assert.equal(conversionEvents.getConversionEventFromTitle('event:phone_click'), 'phone_click')
+  assert.equal(conversionEvents.conversionEventTitle('admin_access'), '')
+  assert.equal(conversionEvents.getConversionEventFromTitle('pageview'), '')
 })
 
 test('report links allow only local paths and HTTPS', () => {

@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ArrowRight, CheckCircle2, LockKeyhole, ShieldCheck, Sparkles } from 'lucide-react'
 import { useHeimdallAuth } from '@/components/HeimdallAuthProvider'
+import { trackConversion } from '@/lib/conversionAnalytics'
 
 const topicsRu = [
   'Проверка контрагента перед сделкой',
@@ -39,6 +40,7 @@ export default function HeimdallConversionPanel({ language = 'ru' }) {
   const isAuthenticated = Boolean(user)
   const [status, setStatus] = useState('idle')
   const [errorMessage, setErrorMessage] = useState('')
+  const formOpenTracked = useRef(false)
   const [form, setForm] = useState({
     name: '',
     company: '',
@@ -59,11 +61,17 @@ export default function HeimdallConversionPanel({ language = 'ru' }) {
   }, [isAuthenticated, displayName, userCompany, user?.email])
 
   const update = (key, value) => setForm((current) => ({ ...current, [key]: value }))
+  const trackFormOpen = () => {
+    if (formOpenTracked.current) return
+    formOpenTracked.current = true
+    trackConversion('lead_form_open')
+  }
 
   const submit = async (event) => {
     event.preventDefault()
     setStatus('loading')
     setErrorMessage('')
+    trackConversion('lead_form_submit')
 
     try {
       let response
@@ -115,6 +123,7 @@ export default function HeimdallConversionPanel({ language = 'ru' }) {
         throw new Error(data.error || 'Request failed')
       }
 
+      trackConversion('lead_submit_success')
       setStatus('success')
       setForm({
         name: isAuthenticated ? (displayName || user?.email || '') : '',
@@ -124,6 +133,7 @@ export default function HeimdallConversionPanel({ language = 'ru' }) {
         message: ''
       })
     } catch (error) {
+      trackConversion('lead_submit_error')
       setErrorMessage(error.message || 'Request failed')
       setStatus('error')
     }
@@ -169,7 +179,7 @@ export default function HeimdallConversionPanel({ language = 'ru' }) {
           </div>
         </div>
 
-        <form onSubmit={submit} className="rounded-[30px] border border-white/10 bg-[#07101f]/90 p-5 shadow-2xl sm:rounded-[38px] sm:p-8">
+        <form onSubmit={submit} onFocus={trackFormOpen} className="rounded-[30px] border border-white/10 bg-[#07101f]/90 p-5 shadow-2xl sm:rounded-[38px] sm:p-8">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <div className="text-sm uppercase tracking-[0.24em] text-sky-300/80">{ru ? 'Заявка' : 'Request'}</div>

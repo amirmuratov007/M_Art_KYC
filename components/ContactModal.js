@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { X, ArrowRight, CheckCircle2, ShieldCheck } from 'lucide-react'
 import { useHeimdallAuth } from '@/components/HeimdallAuthProvider'
+import { trackConversion } from '@/lib/conversionAnalytics'
 
 export default function ContactModal({ open, onClose, language = 'ru', defaultTopic }) {
   const ru = language === 'ru'
@@ -32,6 +33,10 @@ export default function ContactModal({ open, onClose, language = 'ru', defaultTo
     }))
   }, [open, defaultTopic, fallbackTopic, isAuthenticated, displayName, userCompany, user?.email])
 
+  useEffect(() => {
+    if (open) trackConversion('lead_form_open')
+  }, [open])
+
   if (!open) return null
 
   const update = (key, value) => setForm((current) => ({ ...current, [key]: value }))
@@ -40,6 +45,7 @@ export default function ContactModal({ open, onClose, language = 'ru', defaultTo
     event.preventDefault()
     setStatus('loading')
     setErrorMessage('')
+    trackConversion('lead_form_submit')
 
     try {
       let response
@@ -84,6 +90,7 @@ export default function ContactModal({ open, onClose, language = 'ru', defaultTo
         throw new Error(data.error || 'Request failed')
       }
 
+      trackConversion('lead_submit_success')
       setStatus('success')
       setForm({
         name: isAuthenticated ? (displayName || user?.email || '') : '',
@@ -93,6 +100,7 @@ export default function ContactModal({ open, onClose, language = 'ru', defaultTo
         message: ''
       })
     } catch (error) {
+      trackConversion('lead_submit_error')
       setErrorMessage(error.message || 'Request failed')
       setStatus('error')
     }

@@ -1,8 +1,18 @@
 import { useEffect, useMemo, useState } from 'react'
 import { AnalystLayout } from '@/components/analyst/AnalystUI'
-import { Activity, BarChart3, Eye, RefreshCw, TrendingUp, UsersRound } from 'lucide-react'
+import { Activity, BarChart3, Eye, MousePointerClick, RefreshCw, TrendingUp, UsersRound } from 'lucide-react'
 
 const periods = [7, 30, 90]
+const conversionLabels = {
+  express_product_click: 'Переход к экспресс-проверке',
+  lead_form_open: 'Начало заполнения формы',
+  lead_form_submit: 'Попытка отправки формы',
+  lead_submit_success: 'Успешная заявка',
+  lead_submit_error: 'Ошибка отправки заявки',
+  phone_click: 'Нажатие на телефон',
+  telegram_click: 'Переход в Telegram',
+  sample_report_open: 'Открытие примера отчета'
+}
 
 function Metric({ label, value, icon: Icon }) {
   const displayValue = value === null || value === undefined
@@ -99,6 +109,7 @@ export default function AnalyticsPage() {
         <Metric label="Вчера" value={data?.yesterdayViews} icon={BarChart3} />
         <Metric label="Страниц на посетителя" value={data?.averageViewsPerVisitor} icon={Activity} />
         <Metric label="Изменение к вчерашнему дню, %" value={data?.todayChangePercent} icon={TrendingUp} />
+        <Metric label="Целевые действия" value={data?.conversionTotal} icon={MousePointerClick} />
       </div>
 
       <div className="mt-4 grid gap-4 xl:grid-cols-2">
@@ -106,6 +117,8 @@ export default function AnalyticsPage() {
         <Ranking title="Популярные страницы" items={data?.topPages} />
         <Ranking title="Источники переходов" items={data?.referrers} />
         <Ranking title="Языки браузера" items={data?.languages} />
+        <Ranking title="Целевые действия" items={(data?.conversionEvents || []).map((item) => ({ ...item, name: conversionLabels[item.name] || item.name }))} />
+        <Ranking title="Страницы с целевыми действиями" items={data?.conversionPages} />
       </div>
     </AnalystLayout>
   )

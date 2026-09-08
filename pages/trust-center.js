@@ -34,15 +34,22 @@ const pillars = [
 const principles = [
   ['Законная цель', 'Проверка проводится для оценки делового, комплаенс, кадрового или контрагентского риска.'],
   ['Проверяемые факты', 'Выводы отделяются от предположений, слабые совпадения не выдаются за установленный риск.'],
-  ['Human review', 'Критические совпадения и связи проходят аналитическую проверку перед включением в отчет.'],
+  ['Проверка аналитиком', 'Критические совпадения и связи проходят аналитическую проверку перед включением в отчет.'],
   ['Минимизация данных', 'В отчет попадает то, что важно для решения, а не весь массив найденной информации.'],
 ]
 
 const signals = [
-  ['Ownership', 'бенефициары, директора, связанные компании и признаки фактического контроля', Network],
-  ['Litigation', 'суды, претензии, банкротные сигналы, исполнительные производства и долговая нагрузка', Scale],
-  ['Compliance', 'санкции, PEP, AML/KYC, cross-border exposure и регуляторные риски', ShieldCheck],
-  ['Reputation', 'adverse media, публичные конфликты, отраслевые сигналы и цифровой след', Eye],
+  ['Владение', 'бенефициары, директора, связанные компании и признаки фактического контроля', Network],
+  ['Судебный фон', 'суды, претензии, банкротные сигналы, исполнительные производства и долговая нагрузка', Scale],
+  ['Комплаенс', 'санкции, публичные должностные лица, платежные маршруты и регуляторные риски', ShieldCheck],
+  ['Репутация', 'негативные публикации, публичные конфликты, отраслевые сигналы и цифровой след', Eye],
+]
+
+const beforePayment = [
+  ['Состав работы', 'Какие объекты, источники и вопросы входят в проверку.'],
+  ['Цена и срок', 'Фиксируются до начала после оценки исходных данных.'],
+  ['Данные исполнителя', 'Полные реквизиты указываются в договоре и счете до оплаты.'],
+  ['Формат результата', 'Клиент заранее понимает, какую справку или отчет получит.']
 ]
 
 export default function TrustCenterPage() {
@@ -66,7 +73,7 @@ export default function TrustCenterPage() {
           <div className="max-w-5xl">
             <div className="inline-flex items-center gap-3 rounded-full border border-[#D6A84F]/25 bg-[#D6A84F]/10 px-5 py-2 text-xs uppercase tracking-[0.24em] text-[#F7D784]">
               <ShieldCheck className="h-4 w-4" />
-              Trust Center
+              Центр доверия
             </div>
 
             <h1 className="mt-9 text-5xl font-semibold leading-[0.95] tracking-[-0.06em] md:text-8xl">
@@ -84,6 +91,18 @@ export default function TrustCenterPage() {
               <Link href="/methodology" className="inline-flex items-center justify-center rounded-2xl border border-white/10 bg-white/5 px-6 py-4 font-semibold text-white/85">
                 Методология
               </Link>
+            </div>
+          </div>
+        </section>
+
+        <section className="relative z-10 mx-auto max-w-7xl px-4 pb-24 sm:px-5">
+          <div className="border-y border-[#D6A84F]/25 py-10">
+            <div className="text-sm uppercase tracking-[0.2em] text-[#F7D784]">До начала и оплаты</div>
+            <h2 className="mt-4 max-w-4xl text-3xl font-semibold md:text-5xl">Условия проверки согласуются заранее</h2>
+            <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+              {beforePayment.map(([title, text]) => (
+                <div key={title} className="border border-white/10 bg-white/[0.04] p-5"><h3 className="font-semibold">{title}</h3><p className="mt-3 text-sm leading-6 text-white/56">{text}</p></div>
+              ))}
             </div>
           </div>
         </section>
@@ -109,7 +128,7 @@ export default function TrustCenterPage() {
         <section className="relative z-10 mx-auto max-w-7xl px-4 pb-24 sm:px-5">
           <div className="rounded-[42px] border border-white/10 bg-white/[0.045] p-8 backdrop-blur-2xl md:p-12">
             <div className="mb-10 max-w-4xl">
-              <div className="text-sm uppercase tracking-[0.25em] text-[#F7D784]/80">Operating principles</div>
+              <div className="text-sm uppercase tracking-[0.25em] text-[#F7D784]/80">Рабочие принципы</div>
               <h2 className="mt-4 text-4xl font-semibold tracking-[-0.05em] md:text-6xl">Принципы проверки</h2>
             </div>
             <div className="grid gap-5 md:grid-cols-2">
@@ -131,7 +150,7 @@ export default function TrustCenterPage() {
         <section className="relative z-10 mx-auto max-w-7xl px-4 pb-28 sm:px-5">
           <div className="rounded-[42px] border border-white/10 bg-white/[0.045] p-8 backdrop-blur-2xl md:p-12">
             <div className="mb-10 max-w-4xl">
-              <div className="text-sm uppercase tracking-[0.25em] text-[#F7D784]/80">Risk Intelligence</div>
+              <div className="text-sm uppercase tracking-[0.25em] text-[#F7D784]/80">Аналитика рисков</div>
               <h2 className="mt-4 text-4xl font-semibold tracking-[-0.05em] md:text-6xl">Что именно проверяется</h2>
             </div>
             <div className="grid gap-5 md:grid-cols-2">

@@ -19,12 +19,12 @@ export default function HeimdallFooter({ language = 'ru' }) {
             <div className="text-xs uppercase tracking-[0.22em] text-[#F7D784]">{ru ? 'Контакты' : 'Contacts'}</div>
             <a href="tel:+79936984959" className="break-words transition hover:text-sky-200">+7 993 698-49-59</a>
             <a href="mailto:a.muradov@heimdall-group.ru" className="break-words transition hover:text-sky-200">a.muradov@heimdall-group.ru</a>
-            <div className="text-white/45">{ru ? 'Временные контакты для связи и обработки обращений.' : 'Temporary contacts for requests and communications.'}</div>
+            <div className="text-white/45">{ru ? 'Контакты для заявок, договоров и вопросов по обработке данных.' : 'Contacts for requests, agreements and data processing questions.'}</div>
           </div>
 
           <div className="mt-6 flex flex-wrap gap-3 text-xs text-white/62 sm:text-sm">
             {(ru
-              ? ['1000+ источников', '24-72 часа', 'Конфиденциальный формат', 'Trust Center']
+              ? ['1000+ источников', '24-72 часа', 'Конфиденциальный формат', 'Центр доверия']
               : ['1000+ sources', '24-72 hours', 'Confidential workflow', 'Trust Center']
             ).map((item) => (
               <span key={item} className="rounded-full border border-white/10 bg-white/[0.06] px-4 py-2">
@@ -38,7 +38,7 @@ export default function HeimdallFooter({ language = 'ru' }) {
           <div className="grid content-start gap-3 text-sm">
             <div className="text-xs uppercase tracking-[0.22em] text-[#F7D784]">{ru ? 'Материалы' : 'Resources'}</div>
             <Link href={ru ? '/cases' : '/cases-en'} className="text-white/58 transition hover:text-sky-200">{ru ? 'Кейсы' : 'Cases'}</Link>
-            <Link href={ru ? '/journal' : '/journal-en'} className="text-white/58 transition hover:text-sky-200">Journal</Link>
+            <Link href={ru ? '/journal' : '/journal-en'} className="text-white/58 transition hover:text-sky-200">{ru ? 'Журнал' : 'Journal'}</Link>
             <a href="https://t.me/heimdall_risk" target="_blank" rel="noreferrer" className="text-white/58 transition hover:text-sky-200">{ru ? 'Telegram-канал' : 'Telegram channel'}</a>
             {ru && <Link href="/security-checklist" className="text-white/58 transition hover:text-sky-200">50 пунктов безопасности</Link>}
             {ru && <Link href="/security-audit" className="text-white/58 transition hover:text-sky-200">Аудит безопасности</Link>}

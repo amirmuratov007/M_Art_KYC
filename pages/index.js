@@ -63,6 +63,22 @@ const operatingSystem = [
   ['Единый риск-реестр', 'Собираем выводы в понятную очередь решений: что остановить, что усилить, что мониторить и кому ограничить доступ.', ClipboardCheck]
 ]
 
+const organizationJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'HEIMDALL',
+  url: 'https://www.heimdall-group.ru/',
+  email: 'a.muradov@heimdall-group.ru',
+  telephone: '+79936984959',
+  sameAs: ['https://t.me/heimdall_risk'],
+  contactPoint: {
+    '@type': 'ContactPoint',
+    telephone: '+79936984959',
+    contactType: 'customer service',
+    availableLanguage: ['Russian', 'English']
+  }
+}
+
 export default function HomePage() {
   const [contactOpen, setContactOpen] = useState(false)
   const [topic, setTopic] = useState('Общий запрос')
@@ -78,6 +94,7 @@ export default function HomePage() {
         <title>HEIMDALL | Корпоративная разведка и проверка рисков</title>
         <meta name="description" content="HEIMDALL помогает компаниям проверять контрагентов, кандидатов, бенефициаров и бизнес-риски до сделки, найма или партнерства." />
         <link rel="canonical" href="https://www.heimdall-group.ru/" />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }} />
       </Head>
 
       <main className="min-h-screen overflow-hidden bg-[#050816] text-white">
@@ -93,21 +110,21 @@ export default function HomePage() {
           <div>
             <div className="inline-flex max-w-full items-center gap-3 rounded-full border border-[#D6A84F]/25 bg-[#D6A84F]/10 px-4 py-2 text-xs uppercase tracking-[0.18em] text-[#F7D784] sm:px-5 sm:text-sm">
               <LockKeyhole className="h-4 w-4 shrink-0" />
-              <span className="truncate">Risk Control &amp; Business Intelligence</span>
+              <span className="truncate">Экспресс-проверка за один рабочий день</span>
             </div>
 
             <h1 className="mt-8 max-w-5xl text-4xl font-semibold leading-[0.98] tracking-[-0.055em] sm:text-6xl md:text-7xl lg:text-8xl">
-              Корпоративная разведка и проверка рисков до сделки, найма и партнерства
+              Проверьте контрагента до аванса, договора или отсрочки
             </h1>
 
             <p className="mt-7 max-w-3xl text-base leading-8 text-white/64 sm:text-xl sm:leading-9">
-              HEIMDALL помогает быстро понять, с кем вы имеете дело: кто стоит за компанией, где скрыты связи, судебные и санкционные риски, конфликт интересов и репутационные красные флаги.
+              Пришлите ИНН, название или сайт. За 19 000 рублей вы получите краткую справку с фактами, тревожными сигналами и рекомендацией по следующему шагу.
             </p>
 
             <div className="mt-9 grid gap-4 sm:flex sm:flex-row">
-              <button onClick={() => openContact('Проверка контрагента')} className="inline-flex items-center justify-center gap-3 rounded-2xl bg-sky-500 px-6 py-4 font-semibold text-white shadow-[0_0_45px_rgba(56,189,248,0.30)]">
-                Проверить контрагента <ArrowRight className="h-4 w-4" />
-              </button>
+              <Link href="/proverka-kontragenta" className="inline-flex items-center justify-center gap-3 rounded-2xl bg-sky-500 px-6 py-4 font-semibold text-white shadow-[0_0_45px_rgba(56,189,248,0.30)]">
+                Отправить ИНН <ArrowRight className="h-4 w-4" />
+              </Link>
 
               <Link href="/sample-reports" className="inline-flex items-center justify-center gap-3 rounded-2xl border border-[#D6A84F]/25 bg-[#D6A84F]/10 px-6 py-4 font-semibold text-[#F7D784]">
                 Получить пример отчета
@@ -126,9 +143,9 @@ export default function HomePage() {
 
             <div className="mt-8 grid gap-4 sm:grid-cols-3">
               {[
-                ['1000+ источников', 'Реестры, суды, adverse media и корпоративные связи.'],
-                ['24-72 часа', 'Первичный вывод по стандартным проверкам и ускоренный старт.'],
-                ['Конфиденциально', 'Задачи и результаты проверки остаются внутри клиентского контура.']
+                ['19 000 ₽', 'Фиксированная стоимость экспресс-проверки.'],
+                ['1 рабочий день', 'После подтверждения задачи и получения исходных данных.'],
+                ['Стоимость учитывается', 'При переходе к расширенной проверке.']
               ].map(([title, text]) => (
                 <div key={title} className="rounded-[24px] border border-white/10 bg-white/[0.045] p-4 backdrop-blur-2xl">
                   <div className="text-sm font-semibold text-[#F7D784]">{title}</div>
@@ -142,10 +159,10 @@ export default function HomePage() {
             <div className="rounded-[28px] border border-[#D6A84F]/20 bg-[#07101f]/90 p-5 sm:rounded-[34px] sm:p-7">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="inline-flex items-center gap-2 rounded-full border border-[#D6A84F]/20 bg-[#D6A84F]/10 px-4 py-2 text-xs uppercase tracking-[0.18em] text-[#F7D784]">
-                  <ShieldCheck className="h-4 w-4" /> Brand Signal
+                  <ShieldCheck className="h-4 w-4" /> Сигнал риска
                 </div>
                 <div className="inline-flex items-center gap-2 rounded-full border border-sky-300/20 bg-sky-300/10 px-4 py-2 text-xs uppercase tracking-[0.18em] text-sky-200">
-                  <Gauge className="h-4 w-4" /> HEIMDALL Snapshot
+                  <Gauge className="h-4 w-4" /> Краткий вывод
                 </div>
               </div>
 
@@ -156,7 +173,7 @@ export default function HomePage() {
               <div className="mt-6 grid gap-3">
                 {[
                   'Контрагенты, бенефициары и связанные лица',
-                  'Executive screening, конфликт интересов и чувствительные роли',
+                  'Проверка руководителей, конфликт интересов и чувствительные роли',
                   'Санкции, суды, репутационные сигналы и корпоративные связи'
                 ].map((item) => (
                   <div key={item} className="flex items-start gap-3 rounded-2xl border border-white/10 bg-black/25 px-4 py-4">
@@ -170,8 +187,8 @@ export default function HomePage() {
                 {[
                   ['Риск контрагента', '82/100'],
                   ['Рекомендация', 'Расширенная проверка'],
-                  ['Trust Center', 'Методология и privacy'],
-                  ['Формат доступа', 'Telegram + кабинет']
+                  ['Центр доверия', 'Методология и конфиденциальность'],
+                  ['Формат доступа', 'Telegram и личный кабинет']
                 ].map(([label, value]) => (
                   <div key={label} className="rounded-2xl border border-white/10 bg-black/25 px-4 py-4">
                     <div className="text-xs uppercase tracking-[0.18em] text-white/45">{label}</div>
@@ -291,7 +308,7 @@ export default function HomePage() {
           <div className="grid gap-6 rounded-[36px] border border-[#D6A84F]/20 bg-[#D6A84F]/[0.07] p-6 backdrop-blur-2xl sm:rounded-[42px] sm:p-10 lg:grid-cols-[1fr_auto] lg:items-center">
             <div>
               <div className="inline-flex items-center gap-3 rounded-full border border-[#D6A84F]/25 bg-black/20 px-4 py-2 text-sm uppercase tracking-[0.22em] text-[#F7D784]"><Bell className="h-4 w-4" /> Новый сервис</div>
-              <h2 className="mt-6 text-3xl font-semibold tracking-[-0.05em] sm:text-5xl">Business Support</h2>
+              <h2 className="mt-6 text-3xl font-semibold tracking-[-0.05em] sm:text-5xl">Сопровождение бизнеса</h2>
               <p className="mt-5 max-w-3xl text-base leading-8 text-white/64 sm:text-lg">Постоянное сопровождение по корпоративной разведке, due diligence и проверке рисков для компаний, работающих в чувствительных юрисдикциях. От 200 000 рублей в месяц.</p>
             </div>
             <Link href="/business-support" className="inline-flex items-center justify-center gap-3 rounded-2xl bg-[#D6A84F] px-6 py-4 font-semibold text-[#050816]">Смотреть сопровождение <ArrowRight className="h-4 w-4" /></Link>
@@ -301,11 +318,11 @@ export default function HomePage() {
         <section className="relative z-10 mx-auto max-w-7xl px-4 pb-16 sm:px-5 sm:pb-24">
           <div className="grid gap-6 rounded-[36px] border border-sky-300/20 bg-sky-300/[0.07] p-6 backdrop-blur-2xl sm:rounded-[42px] sm:p-10 lg:grid-cols-[1fr_auto] lg:items-center">
             <div>
-              <div className="inline-flex items-center gap-3 rounded-full border border-sky-300/25 bg-black/20 px-4 py-2 text-sm uppercase tracking-[0.22em] text-sky-200"><Newspaper className="h-4 w-4" /> Journal</div>
+              <div className="inline-flex items-center gap-3 rounded-full border border-sky-300/25 bg-black/20 px-4 py-2 text-sm uppercase tracking-[0.22em] text-sky-200"><Newspaper className="h-4 w-4" /> Журнал</div>
               <h2 className="mt-6 text-3xl font-semibold tracking-[-0.05em] sm:text-5xl">Аналитические публикации HEIMDALL</h2>
               <p className="mt-5 max-w-3xl text-base leading-8 text-white/64 sm:text-lg">Кейсы, red flags, корпоративные риски, скрытые бенефициары и проверки чувствительных позиций.</p>
             </div>
-            <Link href="/journal" className="inline-flex items-center justify-center gap-3 rounded-2xl bg-sky-500 px-6 py-4 font-semibold text-white">Открыть Journal <ArrowRight className="h-4 w-4" /></Link>
+            <Link href="/journal" className="inline-flex items-center justify-center gap-3 rounded-2xl bg-sky-500 px-6 py-4 font-semibold text-white">Открыть журнал <ArrowRight className="h-4 w-4" /></Link>
           </div>
         </section>
 
