@@ -2,9 +2,39 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://www.heimdall-group.ru/journal</loc>
-    <lastmod>2026-09-01</lastmod>
+    <lastmod>2026-10-06</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.90</priority>
+  </url>
+  <url>
+    <loc>https://www.heimdall-group.ru/journal/hudozhestvennyy-keis-sklad-tolko-v-prezentacii</loc>
+    <lastmod>2026-10-06</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.78</priority>
+  </url>
+  <url>
+    <loc>https://www.heimdall-group.ru/journal/hudozhestvennyy-keis-byvshiy-sotrudnik-v-obshchem-oblake</loc>
+    <lastmod>2026-10-06</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.78</priority>
+  </url>
+  <url>
+    <loc>https://www.heimdall-group.ru/journal/hudozhestvennyy-keis-ofis-s-neoformlennym-arendatorom</loc>
+    <lastmod>2026-10-06</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.78</priority>
+  </url>
+  <url>
+    <loc>https://www.heimdall-group.ru/journal/hudozhestvennyy-keis-kandidat-s-dvumya-krugami-interesov</loc>
+    <lastmod>2026-10-06</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.78</priority>
+  </url>
+  <url>
+    <loc>https://www.heimdall-group.ru/journal/hudozhestvennyy-keis-pyat-zayavok-odin-telefon</loc>
+    <lastmod>2026-10-06</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.78</priority>
   </url>
   <url>
     <loc>https://www.heimdall-group.ru/journal/postavshchik-neyroseti-proverka-do-zagruzki-dannyh</loc>
