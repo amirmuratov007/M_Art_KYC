@@ -6,7 +6,7 @@ export default function HeimdallPageShell({ title, description, switchHref, swit
   return (
     <>
       <Head>
-        <title>{title} — HEIMDALL</title>
+        <title>{`${title} - HEIMDALL`}</title>
         <meta name="description" content={description} />
       </Head>
 
