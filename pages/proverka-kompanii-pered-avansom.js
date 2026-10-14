@@ -8,6 +8,11 @@ import { ArrowRight, CheckCircle2, FileSearch, ShieldCheck, AlertTriangle } from
 
 const signals = ["признаки технической компании или посредника без активов", "связи с проблемными юридическими лицами", "история споров, долгов и неисполненных обязательств", "несостыковки в документах, реквизитах и коммуникации"]
 const useCases = ["перед предоплатой новому поставщику", "перед оплатой импортной поставки", "если контрагент давит на срочный перевод"]
+const stages = [
+  ['01', 'Быстрый отсев', 'Сверяем компанию, участников сделки, счет и документы. Если здесь есть критичный факт, расходы на глубокую проверку не нужны.'],
+  ['02', 'Экспресс-проверка', 'За один рабочий день получаете факты по финансам, судам, владельцам и платежному контуру.'],
+  ['03', 'Углубление по сигналу', 'Расширяем проверку только когда сумма, срок отношений или найденные факты этого требуют.'],
+]
 
 export default function Page() {
   const [open, setOpen] = useState(false)
@@ -40,7 +45,7 @@ export default function Page() {
             </h1>
 
             <p className="mt-8 max-w-3xl text-lg leading-8 text-white/64 md:text-xl md:leading-9">
-              Аванс часто становится точкой невозврата. Проверяем компанию до того, как деньги уйдут.
+              Аванс часто становится точкой невозврата. Начинаем с достаточного объема проверки и углубляемся только при найденных сигналах.
             </p>
 
             <div className="mt-10 flex flex-col gap-4 sm:flex-row">
@@ -69,6 +74,22 @@ export default function Page() {
                   </div>
                 ))}
               </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="relative z-10 mx-auto max-w-7xl px-4 pb-24 sm:px-5">
+          <div className="border-y border-[#D6A84F]/25 py-10">
+            <div className="text-sm uppercase tracking-[0.2em] text-[#F7D784]">Проверка по этапам</div>
+            <h2 className="mt-4 max-w-4xl text-3xl font-semibold md:text-5xl">Не тратить на проверку больше, чем требует сделка</h2>
+            <div className="mt-8 grid gap-4 md:grid-cols-3">
+              {stages.map(([number, title, text]) => (
+                <div key={number} className="border border-white/10 bg-white/[0.04] p-6">
+                  <div className="text-sm font-semibold text-[#F7D784]">{number}</div>
+                  <h3 className="mt-4 text-xl font-semibold">{title}</h3>
+                  <p className="mt-3 text-sm leading-7 text-white/60">{text}</p>
+                </div>
+              ))}
             </div>
           </div>
         </section>

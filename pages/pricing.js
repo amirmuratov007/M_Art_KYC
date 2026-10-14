@@ -130,6 +130,13 @@ const outsourcingPlans = [
   }
 ]
 
+const counterpartyLevels = [
+  ['Экспресс', '19 000 ₽', '1 рабочий день', 'Для нового контрагента, аванса или первой сделки.'],
+  ['Расширенная', 'от 45 000 ₽', '2-5 рабочих дней', 'Когда важны владельцы, связи, суды и условия договора.'],
+  ['Глубокая проверка', 'по задаче', 'согласуем заранее', 'Для крупной сделки, инвестиций, покупки доли или сложной структуры.'],
+  ['Мониторинг', 'по согласованному контуру', 'на период отношений', 'Подключается отдельно, когда риск существует не один день, а весь срок работы с контрагентом.'],
+]
+
 const investigationPlans = [
   {
     title: 'Внутренний скрининг',
@@ -217,14 +224,14 @@ export default function PricingPage() {
               Единый прайс HEIMDALL
             </h1>
             <p className="mt-9 max-w-3xl text-xl leading-9 text-white/64">
-              Проверки, информационная безопасность, внутренние расследования и сопровождение как внешняя служба безопасности. Выберите формат под риск, бюджет и срочность.
+              Для большинства компаний первая задача проста: проверить контрагента перед деньгами. Ниже есть ясная лестница от экспресс-проверки до постоянного мониторинга, а специальные услуги вынесены отдельно.
             </p>
             <div className="mt-10 flex flex-col gap-4 sm:flex-row">
               <button onClick={() => openContact('Подобрать услугу по прайсу')} className="inline-flex items-center justify-center gap-3 rounded-2xl bg-sky-500 px-7 py-4 font-semibold text-white shadow-[0_0_45px_rgba(56,189,248,0.28)]">
                 Подобрать услугу <ArrowRight className="h-4 w-4" />
               </button>
-              <a href="#recurring" className="inline-flex items-center justify-center gap-3 rounded-2xl border border-[#D6A84F]/25 bg-[#D6A84F]/10 px-7 py-4 font-semibold text-[#F7D784]">
-                Ежемесячное сопровождение
+              <a href="#counterparty-levels" className="inline-flex items-center justify-center gap-3 rounded-2xl border border-[#D6A84F]/25 bg-[#D6A84F]/10 px-7 py-4 font-semibold text-[#F7D784]">
+                Уровни проверки
               </a>
               <Link href="/security-outsourcing" className="inline-flex items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/10 px-7 py-4 font-semibold text-white">
                 Служба безопасности
@@ -247,11 +254,29 @@ export default function PricingPage() {
           </div>
         </section>
 
+        <section id="counterparty-levels" className="relative z-10 mx-auto max-w-7xl px-5 pb-24">
+          <div className="mb-10 max-w-4xl">
+            <div className="text-sm uppercase tracking-[0.24em] text-[#F7D784]/80">Контрагент и сделка</div>
+            <h2 className="mt-5 text-4xl font-semibold tracking-[-0.05em] md:text-6xl">Выбирайте глубину проверки по риску сделки</h2>
+            <p className="mt-6 text-lg leading-8 text-white/60">Мониторинг не прячется внутри разовой проверки. Его подключают отдельно, когда отношения с контрагентом длятся месяцами.</p>
+          </div>
+          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+            {counterpartyLevels.map(([title, price, term, text], index) => (
+              <div key={title} className={`border p-6 ${index === 0 ? 'border-[#D6A84F]/35 bg-[#D6A84F]/[0.08]' : 'border-white/10 bg-white/[0.045]'}`}>
+                <div className="text-sm uppercase tracking-[0.2em] text-[#F7D784]/80">{term}</div>
+                <h3 className="mt-5 text-2xl font-semibold">{title}</h3>
+                <div className="mt-4 text-2xl font-semibold text-sky-100">{price}</div>
+                <p className="mt-5 text-sm leading-7 text-white/60">{text}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
         <section id="one-time" className="relative z-10 mx-auto max-w-7xl px-5 pb-24">
           <div className="mb-10 max-w-4xl">
             <div className="text-sm uppercase tracking-[0.24em] text-sky-300/80">Разовые услуги</div>
-            <h2 className="mt-5 text-4xl font-semibold tracking-[-0.05em] md:text-6xl">Когда нужно быстро принять решение</h2>
-            <p className="mt-6 text-lg leading-8 text-white/60">Подходит, если нужно проверить конкретного контрагента, поставщика, кандидата, бенефициара или сделку.</p>
+            <h2 className="mt-5 text-4xl font-semibold tracking-[-0.05em] md:text-6xl">Специальные разовые задачи</h2>
+            <p className="mt-6 text-lg leading-8 text-white/60">Поставщики, кандидаты, личные сделки и сложные корпоративные ситуации. Основной путь проверки контрагента указан выше.</p>
           </div>
           <div className="grid gap-5 md:grid-cols-2">
             {oneTimeServices.map((service) => {

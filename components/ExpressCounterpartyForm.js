@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react'
+import Link from 'next/link'
 import { ArrowRight, CheckCircle2, LockKeyhole } from 'lucide-react'
 import { trackConversion } from '@/lib/conversionAnalytics'
 
@@ -110,7 +111,9 @@ export default function ExpressCounterpartyForm() {
         <ArrowRight className="h-4 w-4" />
       </button>
 
-      <p className="mt-4 text-xs leading-6 text-white/42">Нажимая кнопку, вы соглашаетесь с обработкой персональных данных и политикой конфиденциальности. Сообщение не создает обязательства по оплате.</p>
+      <p className="mt-4 text-xs leading-6 text-white/42">
+        Нажимая кнопку, вы соглашаетесь с <Link href="/personal-data-policy" className="underline decoration-white/25 underline-offset-2 hover:text-white">обработкой персональных данных</Link> и <Link href="/privacy" className="underline decoration-white/25 underline-offset-2 hover:text-white">политикой конфиденциальности</Link>. Сообщение не создает обязательства по оплате.
+      </p>
 
       {status === 'success' && (
         <div className="mt-5 flex items-start gap-3 border border-emerald-300/25 bg-emerald-300/10 p-4 text-sm leading-6 text-emerald-100">

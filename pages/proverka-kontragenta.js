@@ -6,23 +6,32 @@ import ExpressCounterpartyForm from '@/components/ExpressCounterpartyForm'
 import { AlertTriangle, ArrowRight, CheckCircle2, Clock3, FileSearch, LockKeyhole, Scale, ShieldCheck } from 'lucide-react'
 
 const included = [
-  'статус компании, регистрационные данные, руководители и владельцы',
+  'статус компании, руководители, владельцы и связанные лица',
   'суды, исполнительные производства, банкротные и долговые сигналы',
-  'санкционные, репутационные и связанные корпоративные риски',
-  'несостыковки между договором, счетом, сайтом и получателем денег'
+  'сверка договора, счета, сайта и получателя денег',
+  'факты, которые меняют условия оплаты или требуют остановить сделку'
 ]
 
 const result = [
-  ['Факты', 'Короткая проверяемая сводка со ссылками на источники.'],
-  ['Красные флаги', 'Сигналы, которые способны изменить условия сделки.'],
-  ['Решение', 'Работать, запросить документы, изменить расчеты или остановиться.']
+  ['Финансы', 'Долги, банкротные признаки и нагрузка с коротким пояснением.'],
+  ['Суды', 'Типы споров, повторяемость и факты, важные для сделки.'],
+  ['Владение', 'Руководители, владельцы, связи и несовпадения.'],
+  ['Платеж', 'Сверка реквизитов и вывод по безопасному следующему шагу.']
 ]
 
 const faq = [
   ['Каких данных достаточно для старта?', 'ИНН, название компании или адрес сайта. Полезно добавить договор, счет и коротко описать предстоящее решение.'],
+  ['Почему не ограничиться ЕГРЮЛ или агрегатором?', 'Реестры полезны для первичной карточки компании. Экспресс-проверка связывает факты с вашей сделкой: суммой аванса, документами, получателем денег, связями участников и сроком решения.'],
   ['Когда начинается срок?', 'После подтверждения задачи и получения достаточных исходных данных. Точный срок фиксируем до начала работы.'],
-  ['Что происходит, если нужна глубокая проверка?', 'Сначала сообщим, почему экспресс-формата недостаточно. При переходе к расширенной проверке стоимость экспресс-проверки учитывается в итоговой цене.'],
+  ['Что происходит, если нужна глубокая проверка?', 'Сначала сообщим, почему экспресс-формата недостаточно. При переходе к расширенной проверке стоимость экспресс-проверки учитывается в итоговой цене. Мониторинг предлагается отдельно, когда отношения с контрагентом длятся месяцами.'],
   ['Используются ли закрытые базы?', 'Нет. Работа строится на законных источниках, документах клиента и проверяемой аналитике.']
+]
+
+const serviceLevels = [
+  ['Экспресс', '1 рабочий день', 'Первичный вывод перед оплатой или договором.'],
+  ['Расширенная', '2-5 рабочих дней', 'Для сделки, где важны связи, владельцы и история компании.'],
+  ['Глубокая проверка', 'по согласованному заданию', 'Для сложной структуры, инвестиций, крупных сумм и зарубежного элемента.'],
+  ['Мониторинг', 'на период отношений', 'Отслеживание значимых изменений по уже проверенному контрагенту.']
 ]
 
 const serviceJsonLd = {
@@ -96,13 +105,13 @@ export default function CounterpartyExpressPage() {
               Проверьте контрагента до аванса или подписания
             </h1>
             <p className="mt-7 max-w-3xl text-base leading-8 text-white/66 sm:text-xl sm:leading-9">
-              Быстрый аналитический скрининг компании, людей и платежного маршрута. На выходе - факты, тревожные сигналы и понятное решение по следующему шагу.
+              Проверяем не набор разрозненных карточек, а вашу конкретную сделку: участников, документы, получателя денег и факты, которые влияют на условия оплаты.
             </p>
 
             <div className="mt-8 flex flex-wrap items-end gap-6 border-y border-white/10 py-6">
               <div><div className="text-sm text-white/45">Стоимость</div><div className="mt-1 text-4xl font-semibold text-[#F7D784]">19 000 ₽</div></div>
               <div><div className="text-sm text-white/45">Срок</div><div className="mt-1 text-xl font-semibold">1 рабочий день</div></div>
-              <div><div className="text-sm text-white/45">Формат</div><div className="mt-1 text-xl font-semibold">Краткая справка</div></div>
+              <div><div className="text-sm text-white/45">Формат</div><div className="mt-1 text-xl font-semibold">1 страница и источники</div></div>
             </div>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -126,14 +135,32 @@ export default function CounterpartyExpressPage() {
 
         <section className="relative z-10 border-y border-white/10 bg-white/[0.025]">
           <div className="mx-auto max-w-7xl px-4 py-16 sm:px-5 sm:py-20">
-            <div className="max-w-3xl"><div className="text-sm uppercase tracking-[0.2em] text-sky-300">Результат</div><h2 className="mt-4 text-3xl font-semibold sm:text-5xl">Справка, которую можно использовать в решении</h2></div>
-            <div className="mt-10 grid gap-5 md:grid-cols-3">
+            <div className="max-w-3xl"><div className="text-sm uppercase tracking-[0.2em] text-sky-300">Результат</div><h2 className="mt-4 text-3xl font-semibold sm:text-5xl">Одна страница для решения, а не непрозрачный балл</h2><p className="mt-5 text-base leading-8 text-white/62">В каждой категории показываем, что найдено, почему это важно и как это влияет на сделку. Отдельно отмечаем факты, которые требуют подтверждения.</p></div>
+            <div className="mt-10 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
               {result.map(([title, text], index) => (
                 <article key={title} className="border border-white/10 bg-[#07101f] p-6">
                   <div className="text-sm text-[#F7D784]">0{index + 1}</div><h3 className="mt-4 text-2xl font-semibold">{title}</h3><p className="mt-3 text-sm leading-7 text-white/58">{text}</p>
                 </article>
               ))}
             </div>
+          </div>
+        </section>
+
+        <section className="relative z-10 mx-auto grid max-w-7xl gap-8 px-4 py-16 sm:px-5 sm:py-20 lg:grid-cols-[0.7fr_1.3fr]">
+          <div>
+            <div className="text-sm uppercase tracking-[0.2em] text-[#F7D784]">Лестница проверки</div>
+            <h2 className="mt-4 text-3xl font-semibold sm:text-5xl">Углубляемся только когда для этого есть причина</h2>
+            <p className="mt-6 text-base leading-8 text-white/62">Короткая сделка и отношения на полгода требуют разного контроля. Поэтому мониторинг не прячется внутри разовой проверки, а подключается отдельной опцией.</p>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            {serviceLevels.map(([title, term, text], index) => (
+              <div key={title} className="border border-white/10 bg-white/[0.045] p-5">
+                <div className="text-sm font-semibold text-[#F7D784]">0{index + 1}</div>
+                <h3 className="mt-3 text-xl font-semibold">{title}</h3>
+                <div className="mt-2 text-sm text-sky-200">{term}</div>
+                <p className="mt-3 text-sm leading-6 text-white/58">{text}</p>
+              </div>
+            ))}
           </div>
         </section>
 

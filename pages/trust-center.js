@@ -81,7 +81,7 @@ export default function TrustCenterPage() {
             </h1>
 
             <p className="mt-8 max-w-3xl text-lg leading-8 text-white/64 md:text-xl md:leading-9">
-              Один раздел для клиента, юриста, комплаенс-офицера и службы безопасности: как HEIMDALL проверяет риски, какие данные использует, как защищает конфиденциальность и где проходят границы аналитики.
+              Здесь можно заранее понять, что именно будет проверяться, как устроен отчет, откуда берутся факты и как обрабатываются материалы клиента.
             </p>
 
             <div className="mt-10 flex flex-wrap gap-3">
@@ -91,6 +91,9 @@ export default function TrustCenterPage() {
               <Link href="/methodology" className="inline-flex items-center justify-center rounded-2xl border border-white/10 bg-white/5 px-6 py-4 font-semibold text-white/85">
                 Методология
               </Link>
+              <Link href="/personal-data-policy" className="inline-flex items-center justify-center rounded-2xl border border-white/10 bg-white/5 px-6 py-4 font-semibold text-white/85">
+                Персональные данные
+              </Link>
             </div>
           </div>
         </section>
@@ -98,7 +101,7 @@ export default function TrustCenterPage() {
         <section className="relative z-10 mx-auto max-w-7xl px-4 pb-24 sm:px-5">
           <div className="border-y border-[#D6A84F]/25 py-10">
             <div className="text-sm uppercase tracking-[0.2em] text-[#F7D784]">До начала и оплаты</div>
-            <h2 className="mt-4 max-w-4xl text-3xl font-semibold md:text-5xl">Условия проверки согласуются заранее</h2>
+            <h2 className="mt-4 max-w-4xl text-3xl font-semibold md:text-5xl">До оплаты понятны предмет, цена, срок и результат</h2>
             <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
               {beforePayment.map(([title, text]) => (
                 <div key={title} className="border border-white/10 bg-white/[0.04] p-5"><h3 className="font-semibold">{title}</h3><p className="mt-3 text-sm leading-6 text-white/56">{text}</p></div>

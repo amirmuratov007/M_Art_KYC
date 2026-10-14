@@ -13,14 +13,20 @@ const ruMenu = [
     items: [
       ['Экспресс-проверка за 1 день', '/proverka-kontragenta'],
       ['Расширенная проверка контрагента', '/proverka-kontragenta-pered-sdelkoy'],
-      ['Проверка кандидатов', '/proverka-kandidatov'],
-      ['Проверка бенефициаров', '/proverka-beneficiarov'],
-      ['Покупка квартиры, дома или авто', '/proverka-prodavca-pered-pokupkoy'],
-      ['Аудит безопасности бизнеса', '/security-audit'],
-      ['AML / KYC', '/aml-kyc-russia'],
-      ['Due Diligence', '/due-diligence-russia'],
-      ['Внутренние расследования', '/internal-investigations'],
+      ['Глубокая проверка сделки', '/due-diligence-russia'],
+      ['Мониторинг контрагентов', '/business-support'],
+      ['Проверка кандидатов и руководителей', '/proverka-kandidatov'],
       ['Единый прайс', '/pricing']
+    ]
+  },
+  {
+    title: 'Личные сделки',
+    href: '/proverka-prodavca-pered-pokupkoy',
+    items: [
+      ['Проверка продавца перед покупкой', '/proverka-prodavca-pered-pokupkoy'],
+      ['Квартира, дом или дача', '/proverka-sobstvennika-kvartiry'],
+      ['Автомобиль', '/proverka-sobstvennika-avtomobilya'],
+      ['Домашний персонал', '/private-staff-check']
     ]
   },
   {
