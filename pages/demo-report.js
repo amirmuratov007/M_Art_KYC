@@ -1,22 +1,154 @@
 import Head from 'next/head'
 import Link from 'next/link'
-import HeimdallLogo from '@/components/HeimdallLogo'
-import { ArrowRight, AlertTriangle, CheckCircle2, ShieldCheck, Eye, Network, FileSearch } from 'lucide-react'
+import { useRouter } from 'next/router'
+import HeimdallNav from '@/components/HeimdallNav'
+import HeimdallFooter from '@/components/HeimdallFooter'
+import { AlertTriangle, ArrowRight, CheckCircle2, CircleHelp, FileCheck2, FileSearch, Landmark, Network, Scale, ShieldCheck, WalletCards } from 'lucide-react'
 
-const findings = [["Непрозрачная структура", "Выявлены промежуточные юридические лица в другой юрисдикции."], ["Связанный директор", "Один из директоров связан с компанией, фигурирующей в судебном споре."], ["Репутационный сигнал", "В открытых источниках выявлены негативные публикации."], ["Документы требуют проверки", "Пакет документов неполный и содержит расхождения."]]
-const sections = ["Структура владения", "Санкционные сигналы", "Судебная история", "Репутационный фон"]
+const variants = {
+  company: {
+    label: 'Демонстрационная справка по компании',
+    subject: 'ООО «Северный Контур»',
+    type: 'Новый поставщик перед авансом',
+    decision: 'Запросить документы до оплаты',
+    decisionText: 'Есть несостыковка между договором и платежными реквизитами. Остальные категории не дают критичного основания останавливать сделку, но платеж лучше не проводить до сверки.',
+    status: 'Требует уточнения',
+    categories: [
+      ['Финансы', 'Подтверждено', 'Критичных банкротных и исполнительных сигналов в демонстрационной проверке не найдено.', Landmark, 'good'],
+      ['Суды', 'Нужно уточнить', 'Есть хозяйственный спор. Для решения важны предмет спора, сумма и текущая стадия.', Scale, 'neutral'],
+      ['Владение', 'Подтверждено', 'Руководитель и владельцы сопоставлены с данными по компании.', Network, 'good'],
+      ['Платеж', 'Риск для сделки', 'Счет выставлен от лица, которое не совпадает с договорной стороной. Нужны подтверждающие документы.', WalletCards, 'risk'],
+    ],
+    facts: [
+      ['Договор и счет', 'В документах указан разный получатель платежа.', 'Материалы клиента'],
+      ['Судебный спор', 'Выявлен один хозяйственный спор, требующий уточнения статуса.', 'Судебные материалы'],
+      ['Владение', 'Данные руководителя и участников согласованы между источниками.', 'Официальные реестры'],
+    ],
+    questions: ['Получить письмо о праве принимать платеж за поставщика.', 'Запросить актуальные реквизиты и основание для их изменения.', 'Уточнить предмет и статус судебного спора.'],
+  },
+  candidate: {
+    label: 'Демонстрационная справка по кандидату',
+    subject: 'Алексей Воронов',
+    type: 'Кандидат на должность с доступом к закупкам',
+    decision: 'Провести интервью по двум фактам',
+    decisionText: 'Критичных стоп-факторов в демонстрационной проверке нет. Перед предложением стоит уточнить период работы в двух организациях и возможный конфликт интересов.',
+    status: 'Нужно уточнить',
+    categories: [
+      ['Биография', 'Нужно уточнить', 'В одном периоде работы есть расхождение между резюме и открытыми сведениями.', FileCheck2, 'neutral'],
+      ['Судебный фон', 'Подтверждено', 'Критичных личных споров в демонстрационной проверке не найдено.', Scale, 'good'],
+      ['Связи', 'Нужно уточнить', 'Есть пересечение с бывшим поставщиком работодателя.', Network, 'neutral'],
+      ['Доступ и роль', 'Подтверждено', 'Для должности нужны разграничение полномочий и стандартная проверка рекомендаций.', ShieldCheck, 'good'],
+    ],
+    facts: [
+      ['Период работы', 'Один месяц в резюме не подтверждается доступными источниками.', 'Резюме и открытые данные'],
+      ['Связь с поставщиком', 'Бывший коллега связан с поставщиком прошлой компании.', 'Корпоративные сведения'],
+      ['Судебный фон', 'Существенных совпадений по заданным данным не найдено.', 'Официальные источники'],
+    ],
+    questions: ['Попросить кандидата пояснить расхождение в периоде работы.', 'Уточнить характер связи с бывшим поставщиком.', 'Получить рекомендации с двух последних мест работы.'],
+  },
+  ownership: {
+    label: 'Демонстрационная справка по бенефициарам',
+    subject: 'Группа «Северный Контур»',
+    type: 'Проверка структуры владения перед сделкой',
+    decision: 'Расширить проверку структуры',
+    decisionText: 'В демонстрационной структуре есть несколько звеньев, которые требуют документов о контроле. Без них нельзя подтвердить конечного бенефициара и оценить условия сделки полностью.',
+    status: 'Требует расширения',
+    categories: [
+      ['Структура владения', 'Риск для сделки', 'Одно звено владения требует документального подтверждения.', Network, 'risk'],
+      ['Суды', 'Подтверждено', 'Критичных корпоративных споров по основному обществу не найдено.', Scale, 'good'],
+      ['Финансы', 'Нужно уточнить', 'Нужна свежая отчетность по одному из обществ группы.', Landmark, 'neutral'],
+      ['Документы', 'Риск для сделки', 'Предоставленный пакет не подтверждает конечный контроль.', FileSearch, 'risk'],
+    ],
+    facts: [
+      ['Цепочка владения', 'Одно юридическое лицо из цепочки не раскрыто в пакете документов.', 'Документы клиента'],
+      ['Корпоративные связи', 'Зафиксирована связь двух участников через общего руководителя.', 'Официальные реестры'],
+      ['Отчетность', 'По одному обществу требуется более свежая финансовая отчетность.', 'Публичные сведения'],
+    ],
+    questions: ['Запросить схему группы и документы о конечном контроле.', 'Получить актуальную отчетность по отмеченному обществу.', 'Сверить полномочия лиц, подписывающих документы по сделке.'],
+  },
+}
+
+const toneClass = {
+  good: 'border-emerald-300/25 bg-emerald-300/10 text-emerald-100',
+  neutral: 'border-amber-300/25 bg-amber-300/10 text-amber-100',
+  risk: 'border-rose-300/25 bg-rose-300/10 text-rose-100',
+}
 
 export default function DemoReportPage() {
+  const router = useRouter()
+  const key = typeof router.query.type === 'string' ? router.query.type : 'company'
+  const report = variants[key] || variants.company
+
   return (
     <>
-      <Head><title>Демо-отчёт HEIMDALL — HEIMDALL</title><meta name="description" content="Демонстрационный формат отчёта: индекс риска, краткое заключение, выявленные факты и рекомендация." /></Head>
+      <Head>
+        <title>{`Демо-справка: ${report.subject} - HEIMDALL`}</title>
+        <meta name="description" content="Демонстрационный одностраничный формат справки HEIMDALL: решение, категории проверки, факты, вопросы и источники." />
+        <meta name="robots" content="noindex" />
+      </Head>
       <main className="min-h-screen overflow-hidden bg-[#050816] text-white">
-        <div className="fixed inset-0 pointer-events-none"><div className="absolute inset-0 bg-[radial-gradient(circle_at_16%_12%,rgba(37,99,235,0.26),transparent_32%),radial-gradient(circle_at_84%_18%,rgba(14,165,233,0.14),transparent_30%),linear-gradient(135deg,#050816_0%,#08111f_48%,#050816_100%)]" /><div className="absolute inset-0 opacity-[0.06] [background-image:linear-gradient(rgba(255,255,255,0.12)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.12)_1px,transparent_1px)] [background-size:48px_48px]" /></div>
-        <header className="relative z-10 border-b border-white/10 bg-[#050816]/70 backdrop-blur-2xl"><div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5"><HeimdallLogo /><div className="flex gap-3"><Link href="/demo-report-en" className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm">EN</Link><Link href="/#lead" className="rounded-full bg-sky-500 px-5 py-2.5 text-sm font-semibold">Запросить проверку</Link></div></div></header>
-        <section className="relative z-10 mx-auto max-w-7xl px-5 py-24"><div className="grid gap-12 lg:grid-cols-[0.95fr_1.05fr] lg:items-center"><div><div className="inline-flex items-center gap-3 rounded-full border border-sky-300/20 bg-sky-300/10 px-5 py-2 text-sm uppercase tracking-[0.24em] text-sky-200"><Eye className="h-4 w-4" /> Demo Intelligence Report</div><h1 className="mt-10 text-5xl font-semibold leading-[0.95] tracking-[-0.06em] md:text-8xl">Как выглядит управленческий отчёт HEIMDALL</h1><p className="mt-10 max-w-3xl text-xl leading-9 text-white/64">Демонстрационный формат отчёта: индекс риска, краткое заключение, выявленные факты и рекомендация.</p></div><div className="rounded-[42px] border border-sky-300/20 bg-white/[0.045] p-7 backdrop-blur-2xl"><div className="rounded-[34px] border border-white/10 bg-[#07101f]/90 p-7"><div className="flex items-center justify-between"><div><div className="text-xs uppercase tracking-[0.25em] text-sky-300/70">Индекс риска</div><div className="mt-3 text-7xl font-semibold tracking-[-0.08em] text-sky-100">72</div></div><div className="flex h-32 w-32 items-center justify-center rounded-full border border-amber-300/30 bg-amber-300/10 text-amber-200"><AlertTriangle className="h-12 w-12" /></div></div><div className="mt-8 h-3 overflow-hidden rounded-full bg-white/10"><div className="h-full w-[72%] rounded-full bg-gradient-to-r from-sky-400 via-amber-300 to-rose-400" /></div></div></div></div></section>
-        <section className="relative z-10 mx-auto max-w-7xl px-5 pb-24"><div className="grid gap-5 lg:grid-cols-[0.9fr_1.1fr]"><div className="rounded-[34px] border border-white/10 bg-white/[0.045] p-8 backdrop-blur-2xl"><div className="text-sm uppercase tracking-[0.25em] text-sky-300/80">Краткое заключение</div><p className="mt-6 text-xl leading-9 text-white/70">Объект проверки имеет повышенный риск из-за репутационных сигналов, непрозрачной структуры владения и связей с проблемными контрагентами.</p></div><div className="rounded-[34px] border border-amber-300/20 bg-amber-300/10 p-8 backdrop-blur-2xl"><div className="text-sm uppercase tracking-[0.25em] text-amber-200/80">Рекомендация</div><p className="mt-6 text-xl leading-9 text-white/72">Не продолжать процесс без дополнительных документов, подтверждения бенефициаров и расширенной проверки связанных лиц.</p></div></div></section>
-        <section className="relative z-10 mx-auto max-w-7xl px-5 pb-24"><div className="grid gap-5 md:grid-cols-4">{sections.map((s,i)=><div key={s} className="rounded-[30px] border border-white/10 bg-white/[0.045] p-6 backdrop-blur-2xl"><div className="mb-6 flex h-12 w-12 items-center justify-center rounded-2xl border border-sky-300/20 bg-sky-300/10 text-sky-200">{i===0?<Network className="h-5 w-5" />:i===1?<ShieldCheck className="h-5 w-5" />:i===2?<FileSearch className="h-5 w-5" />:<Eye className="h-5 w-5" />}</div><h2 className="text-xl font-semibold">{s}</h2><div className="mt-5 h-2 rounded-full bg-white/10"><div className="h-full rounded-full bg-sky-400" style={{width:`${44+i*13}%`}} /></div></div>)}</div></section>
-        <section className="relative z-10 mx-auto max-w-7xl px-5 pb-32"><div className="rounded-[42px] border border-white/10 bg-white/[0.045] p-8 backdrop-blur-2xl md:p-12"><div className="mb-10 text-sm uppercase tracking-[0.25em] text-sky-300/80">Findings</div><div className="grid gap-5 md:grid-cols-2">{findings.map(([a,b])=><div key={a} className="rounded-3xl border border-white/10 bg-black/25 p-6"><CheckCircle2 className="mb-5 h-5 w-5 text-sky-300" /><h3 className="text-xl font-semibold">{a}</h3><p className="mt-3 text-sm leading-7 text-white/60">{b}</p></div>)}</div><Link href="/#lead" className="mt-10 inline-flex rounded-2xl bg-sky-500 px-7 py-4 font-semibold">Запросить проверку <ArrowRight className="ml-2 h-4 w-4" /></Link></div></section>
+        <div className="fixed inset-0 pointer-events-none"><div className="absolute inset-0 bg-[radial-gradient(circle_at_17%_8%,rgba(37,99,235,0.2),transparent_28%),linear-gradient(135deg,#050816_0%,#08111f_48%,#050816_100%)]" /></div>
+        <HeimdallNav language="ru" />
+
+        <section className="relative z-10 mx-auto max-w-7xl px-4 py-8 sm:px-5 md:py-12">
+          <div className="mb-5 flex flex-wrap items-center justify-between gap-3 text-sm text-white/52">
+            <div className="inline-flex items-center gap-2"><FileCheck2 className="h-4 w-4 text-sky-200" /> {report.label}</div>
+            <div>Вымышленный объект. Формат демонстрирует структуру результата.</div>
+          </div>
+
+          <article className="border border-white/12 bg-[#07101f]/90 shadow-2xl backdrop-blur-2xl">
+            <header className="grid gap-6 border-b border-white/10 p-6 md:grid-cols-[1fr_auto] md:items-start md:p-8">
+              <div>
+                <div className="text-xs uppercase tracking-[0.2em] text-sky-200">Объект проверки</div>
+                <h1 className="mt-3 text-3xl font-semibold md:text-4xl">{report.subject}</h1>
+                <p className="mt-3 text-sm leading-7 text-white/60">{report.type}</p>
+              </div>
+              <div className={`w-fit border px-4 py-3 text-sm font-semibold ${toneClass[report.status === 'Требует расширения' ? 'risk' : 'neutral']}`}>{report.status}</div>
+            </header>
+
+            <section className="grid gap-5 border-b border-white/10 p-6 md:grid-cols-[0.7fr_1.3fr] md:p-8">
+              <div>
+                <div className="text-xs uppercase tracking-[0.2em] text-[#F7D784]">Решение по сделке</div>
+                <div className="mt-3 flex items-center gap-3 text-2xl font-semibold text-[#F7D784]"><AlertTriangle className="h-6 w-6" />{report.decision}</div>
+              </div>
+              <p className="text-base leading-8 text-white/75">{report.decisionText}</p>
+            </section>
+
+            <section className="p-6 md:p-8">
+              <div className="flex items-center gap-3"><ShieldCheck className="h-5 w-5 text-sky-200" /><h2 className="text-xl font-semibold">Чек-лист проверки</h2></div>
+              <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                {report.categories.map(([title, status, text, Icon, tone]) => (
+                  <div key={title} className="border border-white/10 bg-black/20 p-5">
+                    <div className="flex items-start justify-between gap-3"><Icon className="h-5 w-5 text-sky-200" /><span className={`border px-2 py-1 text-xs ${toneClass[tone]}`}>{status}</span></div>
+                    <h3 className="mt-5 font-semibold">{title}</h3>
+                    <p className="mt-3 text-sm leading-6 text-white/60">{text}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            <section className="grid gap-6 border-t border-white/10 p-6 md:grid-cols-[1.2fr_0.8fr] md:p-8">
+              <div>
+                <h2 className="flex items-center gap-3 text-xl font-semibold"><FileSearch className="h-5 w-5 text-sky-200" /> Факты и источники</h2>
+                <div className="mt-5 divide-y divide-white/10 border-y border-white/10">
+                  {report.facts.map(([title, text, source]) => (
+                    <div key={title} className="grid gap-2 py-4 md:grid-cols-[0.28fr_1fr_auto] md:items-center"><div className="font-semibold">{title}</div><p className="text-sm leading-6 text-white/60">{text}</p><div className="text-xs text-sky-200">{source}</div></div>
+                  ))}
+                </div>
+              </div>
+              <div className="border border-[#D6A84F]/25 bg-[#D6A84F]/[0.07] p-5">
+                <h2 className="flex items-center gap-3 text-xl font-semibold"><CircleHelp className="h-5 w-5 text-[#F7D784]" /> Что запросить дальше</h2>
+                <ol className="mt-5 grid gap-3 text-sm leading-6 text-white/70">{report.questions.map((question, index) => <li key={question} className="flex gap-3"><span className="font-semibold text-[#F7D784]">0{index + 1}</span><span>{question}</span></li>)}</ol>
+              </div>
+            </section>
+          </article>
+
+          <div className="mt-8 flex flex-wrap items-center justify-between gap-4 border-t border-white/10 pt-6 text-sm text-white/55">
+            <p>В отчете отделяются подтвержденные факты, вопросы и риски для решения. Демонстрационный объект вымышлен.</p>
+            <Link href="/proverka-kontragenta" className="inline-flex items-center gap-2 bg-sky-500 px-5 py-3 font-semibold text-white">Проверить контрагента <ArrowRight className="h-4 w-4" /></Link>
+          </div>
+        </section>
+        <HeimdallFooter language="ru" />
       </main>
     </>
   )
